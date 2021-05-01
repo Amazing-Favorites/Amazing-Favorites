@@ -54,14 +54,15 @@ namespace Newbe.BookmarkManager.Pages
                 else
                 {
                     _formModel.BookmarkTreeNode = bookmarkTreeNode;
-                    var bk = BkManager.Get(tab.Url);
-                    if (bk != null)
-                    {
-                        _formModel.Tags = bk.Tags?.Keys.ToHashSet() ?? new HashSet<string>();
-                    }
-
-                    Logger.LogInformation("Bk found");
                 }
+
+                var bk = BkManager.Get(tab.Url);
+                if (bk != null)
+                {
+                    _formModel.Tags = bk.Tags?.Keys.ToHashSet() ?? new HashSet<string>();
+                }
+
+                Logger.LogInformation("Bk found");
 
                 _formModel.IsLoading = false;
                 _formModel.IsShowEditor = true;

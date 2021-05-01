@@ -1,0 +1,86 @@
+name: Claptrap build
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/ci
+      - feature/ut
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    container: mcr.microsoft.com/dotnet/sdk:5.0
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v1
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v1
+        with:
+          path: ~/.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "11" # The JDK version to make available on the path.
+          java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
+          architecture: x64 # (x64 or x86) - defaults to x64
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.sonar/scanner 
+          dotnet tool update dotnet-sonarscanner --tool-path ~/.sonar/scanner
+
+      - name: Install dependencies
+        run: |
+          cd $GITHUB_WORKSPACE/src
+          dotnet restore
+      - name: build and test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+        run: |
+          # ~/.sonar/scanner/dotnet-sonarscanner begin /k:"newbe36524_Newbe.Claptrap" /o:"newbe36524" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths='"src/*.Tests/TestResults/*/coverage.opencover.xml"'
+          dotnet build $GITHUB_WORKSPACE/src --configuration Release
+          dotnet test $GITHUB_WORKSPACE/src --configuration Release -l "console;verbosity=detailed" --collect:"XPlat Code Coverage" --settings $GITHUB_WORKSPACE/src/coverlet.runsettings --logger:nunit -- NUnit.Where="namespace =~ ^Newbe"
+          # ~/.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      - uses: MirrorNG/nunit-reporter@v1.0.11
+        if: always()
+        with:
+          path: src/*.Tests/TestResults/*.xml
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Codecov
+      #   uses: codecov/codecov-action@v1.0.13
+      #   # with:
+      #   #   # User defined upload name. Visible in Codecov UI
+      #   #   name: # optional
+      #   #   # Repository upload token - get it from codecov.io. Required only for private repositories
+      #   #   token: # optional
+      #   #   # Path to coverage file to upload
+      #   #   file: # optional
+      #   #   # Flag upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
+      #   #   flags: # optional
+      #   #   # Specify whether or not CI build should fail if Codecov runs into an error during upload
+      #   #   fail_ci_if_error: # optional
+      # - name: Codacy Coverage Reporter
+      #   uses: codacy/codacy-coverage-reporter-action@0.2.0
+      #   with:
+      #     # Project token for the Codacy project you want to send coverage information
+      #     project-token: ${{ secrets.CODACY_TOKEN }}
+      #     # Optional comma separated list of coverage reports to send to Codacy
+      #     coverage-reports: src/*.Tests/TestResults/*/coverage.opencover.xml # optional, default is
