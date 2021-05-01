@@ -9,18 +9,15 @@ namespace Newbe.BookmarkManager.Services
     public class BkManager : IBkManager
     {
         private readonly IBkDataHolder _bkDataHolder;
-        private readonly IBookmarkDataHolder _bookmarkDataHolder;
         private readonly IClock _clock;
         private readonly ILogger<BkManager> _logger;
 
         public BkManager(
             ILogger<BkManager> logger,
             IBkDataHolder bkDataHolder,
-            IBookmarkDataHolder bookmarkDataHolder,
             IClock clock)
         {
             _bkDataHolder = bkDataHolder;
-            _bookmarkDataHolder = bookmarkDataHolder;
             _clock = clock;
             _logger = logger;
         }
