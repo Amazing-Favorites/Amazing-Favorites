@@ -1,0 +1,114 @@
+﻿@page "/Manager/index.html"
+@using Newbe.BookmarkManager.Services
+@inherits Blazor.BrowserExtension.Pages.IndexPage
+
+<Layout>
+    <Header>
+        <Row>
+            <Col Span="20">
+                <Title Style="color: white">Amazing Favorites</Title>
+            </Col>
+            <Col Style="text-align: right" Span="4">
+                <Space>
+                    <SpaceItem>
+                        <Button OnClick="_ => _controlPanelVisible = true">
+                            <Icon Type="setting" Theme="twotone"/>
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </Col>
+        </Row>
+    </Header>
+    <Content>
+        <Row>
+            <Col Span="24">
+                <AntList Bordered DataSource="@_targetBks">
+                    <Header>
+                        <Row>
+                            <Col Span="24">
+                                <Alert Type="@AlertType.Success" Message="@_searchTips[_searchTipIndex]"/>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col Span="24">
+                                <Spin Spinning="@_searchInputLoading">
+                                    <Search Placeholder="input keyword to search"
+                                            OnInput="OnSearchInput"
+                                            OnkeyDown="OnSearchInputKeydown"
+                                            OnkeyUp="OnSearchInputKeyup"
+                                            EnterButton="true"
+                                            AutoFocus="true"
+                                            @bind-Value="@_searchValue"/>
+                                </Spin>
+                            </Col>
+                        </Row>
+                    </Header>
+                    <ChildContent Context="bk">
+                        <ListItem>
+                            <Col Span="24">
+                                @if (bk.ShowIndex && bk.LineIndex < 10)
+                                {
+                                    <code>alt + </code>
+                                }
+                                @bk.LineIndex
+                                <Button Type="link"
+                                        OnClick="e => OnClickUrl(bk)">
+                                    <Space>
+                                        <SpaceItem>
+                                            <Badge Count="bk.Bk.ClickedCount"
+                                                   Size="small"
+                                                   Style="background-color: #52c41a; ">
+                                                <ChildContent>
+                                                    <Image Width="16px"
+                                                           Height="16px"
+                                                           Preview="false"
+                                                           Src="@bk.Bk.FavIconUrl"
+                                                           Fallback="@WebHelper.DefaultImagePlaceHolder"/>
+                                                </ChildContent>
+                                            </Badge>
+                                        </SpaceItem>
+                                        <SpaceItem Style="width: 100%">@bk.Bk.Title</SpaceItem>
+                                    </Space>
+                                </Button>
+                                @if (bk.Bk.Tags != null)
+                                {
+                                    @foreach (var (key, _) in bk.Bk.Tags)
+                                    {
+                                        <Tag Closable="true"
+                                             OnClosing="e => OnRemovingTag(bk.Bk, key)"
+                                             OnClick="e => OnClickTag(bk.Bk, key)"
+                                             Color="@WebHelper.GetTagColor(key)">
+                                            @key
+                                        </Tag>
+                                    }
+                                }
+                                <span style="display: @(bk.NewTagInputVisible ? "inline-block" : "none")">
+                                    <Input OnPressEnter="e => OnCreatingTag(bk)"
+                                           OnBlur="e => OnCreatingTag(bk)"
+                                           @ref="@bk.NewTagRef"
+                                           @bind-Value="@bk.NewTag"
+                                           Placeholder="enter to add tag"
+                                           AutoFocus/>
+                                </span>
+                                <span style="display: @(!bk.NewTagInputVisible ? "inline-block" : "none")">
+                                    <Tag Class="site-tag-plus" OnClick="e => bk.NewTagInputVisible = true">
+                                        <Icon Type="plus"/>New Tag
+                                    </Tag>
+                                </span>
+                            </Col>
+                        </ListItem>
+                    </ChildContent>
+                    <Footer>
+
+                    </Footer>
+                </AntList>
+            </Col>
+        </Row>
+    </Content>
+    <Footer>
+        Welcome to submit you suggestion at <a href="https://github.com/newbe36524/Amazing-Favorites" target="_blank">github.com</a>
+    </Footer>
+</Layout>
+<Drawer Closable="true" Visible="_controlPanelVisible" Placement="right" Title='("Control Panel")' OnClose="_ => _controlPanelVisible = false">
+    <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting</Button>
+</Drawer>

@@ -1,8 +1,8 @@
 ﻿{
   "manifest_version": 2,
-  "name": "WebAssembly C#",
+  "name": "Amazing Favorites",
   "version": "0.1.0",
-  "description": ".NET inside a chrome extension",
+  "description": "Amazing Favorites help you to manage you bookmarks efficiently",
   "background": {
     "page": "index.html?path=background",
     "persistent": true
@@ -14,9 +14,11 @@
     "WebExtensionScripts/*"
   ],
   "permissions": [
-    "*://*/*",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "tabs",
+    "bookmarks",
+    "storage"
   ],
   "browser_action": {
     "default_popup": "index.html?path=popup",
