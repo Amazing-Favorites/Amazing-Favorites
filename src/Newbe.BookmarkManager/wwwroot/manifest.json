@@ -14,8 +14,6 @@
     "WebExtensionScripts/*"
   ],
   "permissions": [
-    "webRequest",
-    "webRequestBlocking",
     "tabs",
     "bookmarks",
     "storage"
