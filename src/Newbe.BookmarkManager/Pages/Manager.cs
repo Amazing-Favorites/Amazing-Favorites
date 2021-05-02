@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -233,6 +234,13 @@ namespace Newbe.BookmarkManager.Pages
             await BkManager.RestoreAsync();
             _searchSubject.OnNext(_searchValue);
             ClockControlPanel();
+        }
+
+        private Task OnClickDumpDataAsync()
+        {
+            var json = JsonSerializer.Serialize(BkDataHolder.Collection);
+            Logger.LogInformation(json);
+            return Task.CompletedTask;
         }
 
         private void ClockControlPanel()

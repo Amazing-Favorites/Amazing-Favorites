@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Newbe.BookmarkManager.Services
 {
     public class BkSearcher : IBkSearcher
     {
+        private readonly ILogger<BkSearcher> _logger;
         private readonly IBkDataHolder _bkDataHolder;
         private readonly IBookmarkDataHolder _bookmarkDataHolder;
 
-        public BkSearcher(IBkDataHolder bkDataHolder,
+        public BkSearcher(
+            ILogger<BkSearcher> logger,
+            IBkDataHolder bkDataHolder,
             IBookmarkDataHolder bookmarkDataHolder)
         {
+            _logger = logger;
             _bkDataHolder = bkDataHolder;
             _bookmarkDataHolder = bookmarkDataHolder;
         }
@@ -34,15 +39,24 @@ namespace Newbe.BookmarkManager.Services
                     .ToArray();
             }
 
-            var keywords = searchText
-                .Split(" ")
-                .Select(x => x.Trim())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToArray();
+            var input = SearchInput.Parse(searchText);
+            _logger.LogInformation(
+                "Search text parse result, SourceText: {SearchInput} Keywords: {Keywords}, Tags: {Tags}",
+                input.SourceText,
+                input.Keywords,
+                input.Tags);
 
-            var tags = keywords.Where(x => x.StartsWith("t:")).ToArray();
-            var tagSearchValues = tags.Select(x => x[2..]).ToArray();
-            keywords = keywords.Except(tags).ToArray();
+            var matchTags = _bkDataHolder.Collection.Tags
+                .Where(tag =>
+                    input.Tags.Contains(tag.Key) || input.Keywords.Any(keyword => StringContains(tag.Key, keyword)))
+                .Select(x => x.Key)
+                .ToHashSet();
+
+            var matchTagAlias = _bkDataHolder.Collection.Tags
+                .Where(tag => input.Keywords.Any(keyword =>
+                    tag.Value.TagAlias.Values.Any(tagAlias => StringContains(tagAlias, keyword))))
+                .Select(x => x.Key)
+                .ToHashSet();
 
             var re = source
                 .Where(FilterByNode())
@@ -62,37 +76,23 @@ namespace Newbe.BookmarkManager.Services
                     ClickCount = item.ClickedCount
                 };
 
-                result.AddScore(ScoreReason.ClickCount, item.ClickedCount);
-
-                result.AddScore(ScoreReason.Title, keywords.Any(x => StringContains(item.Title, x)));
+                result.AddScore(ScoreReason.Title, input.Keywords.Any(x => StringContains(item.Title, x)));
 
                 result.AddScore(ScoreReason.TitleAlias, item.TitleAlias?.Values != null &&
                                                         item.TitleAlias.Values.Any(al =>
-                                                            keywords.Any(x => StringContains(al, x))));
+                                                            input.Keywords.Any(x => StringContains(al, x))));
 
-                result.AddScore(ScoreReason.Url, keywords.Any(x => StringContains(item.Url, x)));
+                result.AddScore(ScoreReason.Url, input.Keywords.Any(x => StringContains(item.Url, x)));
                 if (item.Tags?.Any() == true)
                 {
-                    foreach (var x in keywords)
-                    {
-                        var matched = item.Tags.Keys.Any(key => StringContains(key, x)) ||
-                                      item.Tags.Values.Any(t =>
-                                          t.TagAlias?.Values.Any(ta =>
-                                              StringContains(ta, x)) == true);
-                        if (matched)
-                        {
-                            result.AddScore(ScoreReason.TagAlias, true);
-                            break;
-                        }
-                    }
-
-
-                    result.AddScore(ScoreReason.Tags, tagSearchValues.Any() &&
-                                                      item.Tags.Keys.Any(tag =>
-                                                          tagSearchValues.Contains(tag,
-                                                              StringComparer.OrdinalIgnoreCase)));
+                    result.AddScore(ScoreReason.Tags, item.Tags.Any(matchTags.Contains));
+                    result.AddScore(ScoreReason.TagAlias, item.Tags.Any(matchTagAlias.Contains));
                 }
 
+                if (result.Score > 0)
+                {
+                    result.AddScore(ScoreReason.ClickCount, item.ClickedCount);
+                }
                 return result;
             }
 
@@ -106,5 +106,37 @@ namespace Newbe.BookmarkManager.Services
         {
             return bks => _bookmarkDataHolder.Nodes.ContainsKey(bks.Url);
         }
+    }
+
+    public record SearchInput
+    {
+        public static SearchInput Parse(string searchText)
+        {
+            var searchInput = new SearchInput
+            {
+                SourceText = searchText
+            };
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return searchInput;
+            }
+
+            var keywords = searchText
+                .Split(" ")
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToArray();
+
+            var tags = keywords.Where(x => x.StartsWith("t:")).ToArray();
+            var tagSearchValues = tags.Select(x => x[2..]).ToArray();
+            keywords = keywords.Except(tags).ToArray();
+            searchInput.Keywords = keywords;
+            searchInput.Tags = tagSearchValues;
+            return searchInput;
+        }
+
+        public string SourceText { get; set; }
+        public string[] Keywords { get; set; }
+        public string[] Tags { get; set; }
     }
 }

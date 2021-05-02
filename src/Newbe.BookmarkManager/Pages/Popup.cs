@@ -59,7 +59,7 @@ namespace Newbe.BookmarkManager.Pages
                 var bk = BkManager.Get(tab.Url);
                 if (bk != null)
                 {
-                    _formModel.Tags = bk.Tags?.Keys.ToHashSet() ?? new HashSet<string>();
+                    _formModel.Tags = bk.Tags?.ToHashSet() ?? new HashSet<string>();
                 }
 
                 Logger.LogInformation("Bk found");

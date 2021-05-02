@@ -72,13 +72,13 @@
                                 </Button>
                                 @if (bk.Bk.Tags != null)
                                 {
-                                    @foreach (var (key, _) in bk.Bk.Tags)
+                                    @foreach (var tag in bk.Bk.Tags)
                                     {
                                         <Tag Closable="true"
-                                             OnClosing="e => OnRemovingTag(bk.Bk, key)"
-                                             OnClick="e => OnClickTag(bk.Bk, key)"
-                                             Color="@WebHelper.GetTagColor(key)">
-                                            @key
+                                             OnClosing="e => OnRemovingTag(bk.Bk, tag)"
+                                             OnClick="e => OnClickTag(bk.Bk, tag)"
+                                             Color="@WebHelper.GetTagColor(tag)">
+                                            @tag
                                         </Tag>
                                     }
                                 }
@@ -110,5 +110,11 @@
     </Footer>
 </Layout>
 <Drawer Closable="true" Visible="_controlPanelVisible" Placement="right" Title='("Control Panel")' OnClose="_ => _controlPanelVisible = false">
-    <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting</Button>
+    <Row>
+        <Col Span="24">
+            <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
+            <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting</Button>
+        </Col>
+    </Row>
+
 </Drawer>

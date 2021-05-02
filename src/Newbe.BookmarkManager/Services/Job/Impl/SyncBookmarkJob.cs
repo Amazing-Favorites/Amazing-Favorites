@@ -31,7 +31,7 @@ namespace Newbe.BookmarkManager.Services
 
         public async ValueTask StartAsync()
         {
-            _bookmarkDataHolder.StartAsync();
+            await _bookmarkDataHolder.StartAsync();
             _loadHandler = _jobSubject
                 .Merge(Observable.Interval(TimeSpan.FromSeconds(10)))
                 .Select(_ => Observable.FromAsync(async () =>

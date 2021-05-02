@@ -9,10 +9,10 @@ namespace Newbe.BookmarkManager.Services
     {
         BkEntityCollection Collection { get; }
         ValueTask AppendBookmarksAsync(IEnumerable<BookmarkTreeNode> nodes);
-        ValueTask MarkUpdatedAsync();
         ValueTask SaveNowAsync();
         ValueTask RestoreAsync();
         ValueTask InitAsync();
+        Task PushDataChangeActionAsync(Func<Task> action);
         event EventHandler<EventArgs> OnDataReload;
     }
 }
