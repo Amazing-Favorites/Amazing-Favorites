@@ -49,11 +49,5 @@ namespace Newbe.BookmarkManager.Services
                 .Concat()
                 .Subscribe(_ => { });
         }
-
-        public ValueTask LoadNowAsync()
-        {
-            _jobSubject.OnNext(_clock.UtcNow);
-            return ValueTask.CompletedTask;
-        }
     }
 }

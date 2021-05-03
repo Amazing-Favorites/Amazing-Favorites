@@ -54,7 +54,7 @@ namespace Newbe.BookmarkManager.Services
 
             var matchTagAlias = _bkDataHolder.Collection.Tags
                 .Where(tag => input.Keywords.Any(keyword =>
-                    tag.Value.TagAlias.Values.Any(tagAlias => StringContains(tagAlias, keyword))))
+                    tag.Value.TagAlias.Values.Any(tagAlias => StringContains(tagAlias.Alias, keyword))))
                 .Select(x => x.Key)
                 .ToHashSet();
 
@@ -80,7 +80,7 @@ namespace Newbe.BookmarkManager.Services
 
                 result.AddScore(ScoreReason.TitleAlias, item.TitleAlias?.Values != null &&
                                                         item.TitleAlias.Values.Any(al =>
-                                                            input.Keywords.Any(x => StringContains(al, x))));
+                                                            input.Keywords.Any(x => StringContains(al.Alias, x))));
 
                 result.AddScore(ScoreReason.Url, input.Keywords.Any(x => StringContains(item.Url, x)));
                 if (item.Tags?.Any() == true)
@@ -93,12 +93,13 @@ namespace Newbe.BookmarkManager.Services
                 {
                     result.AddScore(ScoreReason.ClickCount, item.ClickedCount);
                 }
+
                 return result;
             }
 
             static bool StringContains(string a, string target)
             {
-                return a.Contains(target, StringComparison.OrdinalIgnoreCase);
+                return !string.IsNullOrWhiteSpace(a) && a.Contains(target, StringComparison.OrdinalIgnoreCase);
             }
         }
 

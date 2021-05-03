@@ -33,7 +33,6 @@ namespace Newbe.BookmarkManager.Services
                     {
                         bk.Tags.Remove(tag);
                         _logger.LogInformation("Tag {Tag} removed from {Url}", tag, url);
-                        return Task.CompletedTask;
                     });
                 }
             }
@@ -76,7 +75,6 @@ namespace Newbe.BookmarkManager.Services
                     bk.Tags ??= new();
                     bk.Tags.Add(key);
                     _logger.LogInformation("Tag {Tag} added for {Url}", key, url);
-                    return Task.CompletedTask;
                 });
             }
 
@@ -113,7 +111,6 @@ namespace Newbe.BookmarkManager.Services
                     {
                         bk.FavIconUrl = furl;
                         _logger.LogInformation("FavIconUrl: {FavIconUrl} updated for url: {Url}", furl, bk.Url);
-                        return Task.CompletedTask;
                     });
                 }
             }
@@ -127,17 +124,15 @@ namespace Newbe.BookmarkManager.Services
 
         public async ValueTask AddClickAsync(string url, int moreCount)
         {
-            await _bkDataHolder.PushDataChangeActionAsync(() =>
+            var bkEntityCollection = _bkDataHolder.Collection;
+            if (bkEntityCollection.Bks.TryGetValue(url, out var bk))
             {
-                var bkEntityCollection = _bkDataHolder.Collection;
-                if (bkEntityCollection.Bks.TryGetValue(url, out var bk))
+                await _bkDataHolder.PushDataChangeActionAsync(() =>
                 {
                     bk.ClickedCount += moreCount;
                     bk.LastClickTime = _clock.UtcNow;
-                }
-
-                return Task.CompletedTask;
-            });
+                });
+            }
         }
 
         public async ValueTask RestoreAsync()

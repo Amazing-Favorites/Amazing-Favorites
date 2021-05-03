@@ -18,6 +18,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public IBkDataHolder BkDataHolder { get; set; }
         [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
+        [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -46,6 +47,7 @@ namespace Newbe.BookmarkManager.Pages
             await BkDataHolder.InitAsync();
             BkDataHolder.OnDataReload += BkDataHolderOnOnDataReload;
             await SyncBookmarkJob.StartAsync();
+            await SyncAliasJob.StartAsync();
             _searchSubject
                 .Throttle(TimeSpan.FromMilliseconds(1000))
                 .Select(x => x?.Trim())
