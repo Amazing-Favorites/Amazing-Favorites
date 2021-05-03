@@ -27,13 +27,28 @@ namespace Newbe.BookmarkManager.Services
             var bkEntityCollection = _bkDataHolder.Collection;
             if (bkEntityCollection.Bks.TryGetValue(url, out var bk))
             {
-                if (bk.Tags?.ContainsKey(tag) == true)
+                if (bk.Tags?.Contains(tag) == true)
                 {
-                    bk.Tags.Remove(tag);
-                    _logger.LogInformation("Tag {Tag} removed from {Url}", tag, url);
+                    await _bkDataHolder.PushDataChangeActionAsync(() =>
+                    {
+                        bk.Tags.Remove(tag);
+                        _logger.LogInformation("Tag {Tag} removed from {Url}", tag, url);
+                    });
                 }
+            }
+        }
 
-                await _bkDataHolder.MarkUpdatedAsync();
+        private void AddTagToCollection(string tag)
+        {
+            if (!_bkDataHolder.Collection.Tags.TryGetValue(tag, out var oldTag))
+            {
+                _logger.LogInformation("A new tag {Tag} added to all collection", oldTag);
+                oldTag = new BkTag
+                {
+                    Tag = tag,
+                    TagAlias = new()
+                };
+                _bkDataHolder.Collection.Tags[tag] = oldTag;
             }
         }
 
@@ -48,22 +63,21 @@ namespace Newbe.BookmarkManager.Services
             var bkEntityCollection = _bkDataHolder.Collection;
             if (bkEntityCollection.Bks.TryGetValue(url, out var bk))
             {
-                bk.Tags ??= new();
                 var key = tag.Trim();
-                if (bk.Tags.ContainsKey(key))
+                if (bk.Tags != null && bk.Tags.Contains(key))
                 {
                     return false;
                 }
 
-                bk.Tags[key] = new BkTag
+                await _bkDataHolder.PushDataChangeActionAsync(() =>
                 {
-                    Tag = key,
-                    TagAlias = new Dictionary<BkAliasType, string>()
-                };
-                _logger.LogInformation("Tag {Tag} added for {Url}", tag, url);
+                    AddTagToCollection(key);
+                    bk.Tags ??= new();
+                    bk.Tags.Add(key);
+                    _logger.LogInformation("Tag {Tag} added for {Url}", key, url);
+                });
             }
 
-            await _bkDataHolder.MarkUpdatedAsync();
             return true;
         }
 
@@ -72,35 +86,33 @@ namespace Newbe.BookmarkManager.Services
             var bkEntityCollection = _bkDataHolder.Collection;
             if (bkEntityCollection.Bks.TryGetValue(url, out var bk))
             {
-                bk.Tags = tags.ToDictionary(x => x, x => new BkTag
+                var tagList = tags.ToList();
+                foreach (var tag in tagList)
                 {
-                    Tag = x,
-                    TagAlias = new Dictionary<BkAliasType, string>()
-                });
+                    AddTagToCollection(tag);
+                }
 
-                _logger.LogInformation("Tag {Tags} added for {Url}", tags, url);
+                bk.Tags = tagList;
+
+                _logger.LogInformation("Tag {Tags} added for {Url}", tagList, url);
                 await _bkDataHolder.SaveNowAsync();
             }
         }
 
         public async ValueTask UpdateFavIconUrlAsync(Dictionary<string, string> urls)
         {
-            var updatedCount = 0;
             foreach (var (url, furl) in urls)
             {
                 var bkEntityCollection = _bkDataHolder.Collection;
                 if (bkEntityCollection.Bks.TryGetValue(url, out var bk) &&
                     bk.FavIconUrl != furl)
                 {
-                    bk.FavIconUrl = furl;
-                    updatedCount++;
+                    await _bkDataHolder.PushDataChangeActionAsync(() =>
+                    {
+                        bk.FavIconUrl = furl;
+                        _logger.LogInformation("FavIconUrl: {FavIconUrl} updated for url: {Url}", furl, bk.Url);
+                    });
                 }
-            }
-
-            if (updatedCount > 0)
-            {
-                _logger.LogInformation("There are {Count} favicon url updated", updatedCount);
-                await _bkDataHolder.MarkUpdatedAsync();
             }
         }
 
@@ -115,11 +127,12 @@ namespace Newbe.BookmarkManager.Services
             var bkEntityCollection = _bkDataHolder.Collection;
             if (bkEntityCollection.Bks.TryGetValue(url, out var bk))
             {
-                bk.ClickedCount += moreCount;
-                bk.LastClickTime = _clock.UtcNow;
+                await _bkDataHolder.PushDataChangeActionAsync(() =>
+                {
+                    bk.ClickedCount += moreCount;
+                    bk.LastClickTime = _clock.UtcNow;
+                });
             }
-
-            await _bkDataHolder.MarkUpdatedAsync();
         }
 
         public async ValueTask RestoreAsync()

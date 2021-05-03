@@ -5,6 +5,6 @@ namespace Newbe.BookmarkManager.Services
     public record BkTag
     {
         public string Tag { get; set; }
-        public Dictionary<BkAliasType, string> TagAlias { get; set; } = new();
+        public Dictionary<TextAliasType, TextAlias> TagAlias { get; set; } = new();
     }
 }

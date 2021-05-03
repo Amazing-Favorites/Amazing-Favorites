@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -17,6 +18,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public IBkDataHolder BkDataHolder { get; set; }
         [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
+        [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -45,6 +47,7 @@ namespace Newbe.BookmarkManager.Pages
             await BkDataHolder.InitAsync();
             BkDataHolder.OnDataReload += BkDataHolderOnOnDataReload;
             await SyncBookmarkJob.StartAsync();
+            await SyncAliasJob.StartAsync();
             _searchSubject
                 .Throttle(TimeSpan.FromMilliseconds(1000))
                 .Select(x => x?.Trim())
@@ -233,6 +236,13 @@ namespace Newbe.BookmarkManager.Pages
             await BkManager.RestoreAsync();
             _searchSubject.OnNext(_searchValue);
             ClockControlPanel();
+        }
+
+        private Task OnClickDumpDataAsync()
+        {
+            var json = JsonSerializer.Serialize(BkDataHolder.Collection);
+            Logger.LogInformation(json);
+            return Task.CompletedTask;
         }
 
         private void ClockControlPanel()

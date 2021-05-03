@@ -2,7 +2,7 @@
 
 namespace Newbe.BookmarkManager.Services
 {
-    public interface ISyncBookmarkJob
+    public interface ISyncAliasJob
     {
         ValueTask StartAsync();
     }

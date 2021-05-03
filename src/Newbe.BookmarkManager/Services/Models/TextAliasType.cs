@@ -1,6 +1,6 @@
 ﻿namespace Newbe.BookmarkManager.Services
 {
-    public enum BkAliasType
+    public enum TextAliasType
     {
         Pinyin
     }

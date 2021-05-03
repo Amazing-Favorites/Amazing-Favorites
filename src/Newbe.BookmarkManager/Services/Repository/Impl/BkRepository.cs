@@ -70,6 +70,7 @@ namespace Newbe.BookmarkManager.Services
         {
             var local = await _storageApi.GetLocal();
             var json = Encoding.UTF8.GetString(JsonSerializer.SerializeToUtf8Bytes(collection));
+            _logger.LogDebug("Data save: {Json}", json);
             await local.Set(new Dictionary<string, object>
             {
                 {BookmarkStorageKeyName, json},

@@ -31,7 +31,7 @@ namespace Newbe.BookmarkManager.Services
 
         public async ValueTask StartAsync()
         {
-            _bookmarkDataHolder.StartAsync();
+            await _bookmarkDataHolder.StartAsync();
             _loadHandler = _jobSubject
                 .Merge(Observable.Interval(TimeSpan.FromSeconds(10)))
                 .Select(_ => Observable.FromAsync(async () =>
@@ -48,12 +48,6 @@ namespace Newbe.BookmarkManager.Services
                 }))
                 .Concat()
                 .Subscribe(_ => { });
-        }
-
-        public ValueTask LoadNowAsync()
-        {
-            _jobSubject.OnNext(_clock.UtcNow);
-            return ValueTask.CompletedTask;
         }
     }
 }
