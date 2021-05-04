@@ -127,17 +127,24 @@ namespace Newbe.BookmarkManager.Services
 
         private async ValueTask LoadFromStorageAsync()
         {
-            var bkEntityCollection = await _bkRepository.GetLatestDataAsync();
             if (Collection == null)
             {
-                Collection = bkEntityCollection;
+                await LoadCoreAsync();
+                _logger.LogInformation("first time load from storage");
+                return;
             }
 
-            if (bkEntityCollection.LastUpdateTime > Collection.LastUpdateTime)
+            var lastUpdateTime = await _bkRepository.GetLateUpdateTimeAsync();
+            if (lastUpdateTime > Collection.LastUpdateTime)
             {
-                Collection = bkEntityCollection;
-                OnDataReload?.Invoke(this, new EventArgs());
+                await LoadCoreAsync();
                 _logger.LogInformation("data modified from storage, load it");
+            }
+
+            async Task LoadCoreAsync()
+            {
+                Collection = await _bkRepository.GetLatestDataAsync();
+                OnDataReload?.Invoke(this, new EventArgs());
             }
         }
 

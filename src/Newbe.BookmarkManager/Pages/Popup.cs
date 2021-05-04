@@ -104,25 +104,7 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task OpenManager()
         {
-            var tabs = await WebExtension.Tabs.Query(new
-            {
-                title = "Amazing Favorites"
-            });
-            var managerTab = tabs.FirstOrDefault();
-            if (managerTab is {Id: { }})
-            {
-                await WebExtension.Tabs.Update(managerTab.Id.Value, new
-                {
-                    active = true
-                });
-            }
-            else
-            {
-                await WebExtension.Tabs.Create(new
-                {
-                    url = "/index.html?path=/Manager/index.html"
-                });
-            }
+            await WebExtension.Tabs.ActiveOrOpenManagerAsync();
         }
 
         private async Task RemoveBookmarkAsync()

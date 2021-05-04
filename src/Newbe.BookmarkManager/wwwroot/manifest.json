@@ -16,10 +16,21 @@
   "permissions": [
     "tabs",
     "bookmarks",
-    "storage"
+    "storage",
+    "commands"
   ],
+  "commands": {
+    "open-manager-ui": {
+      "suggested_key": {
+        "default": "Alt+S",
+        "windows": "Alt+S",
+        "mac": "Alt+S"
+      },
+      "description": "open-manager-ui"
+    }
+  },
+  "options_page": "/manager/index.html",
   "browser_action": {
-    "default_popup": "index.html?path=popup",
-    "options_page": "index.html?path=options"
+    "default_popup": "index.html?path=popup"
   }
 }
