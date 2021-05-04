@@ -53,6 +53,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: "newbe36524"
           repository: "Amazing-Favorites"
-          tagName: "v0.2"
+          tagName: "v${{ steps.gitversion.outputs.MajorMinorPatch }}"
           assets: |
             src/Newbe.BookmarkManager/bin/Release/net5.0/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}.zip
