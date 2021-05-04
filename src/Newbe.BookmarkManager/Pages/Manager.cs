@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Services;
 
 namespace Newbe.BookmarkManager.Pages
@@ -19,6 +20,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IBkDataHolder BkDataHolder { get; set; }
         [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
         [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
+        [Inject] public IJSRuntime JsRuntime { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -40,10 +42,26 @@ namespace Newbe.BookmarkManager.Pages
         private IDisposable _searchPlaceHolderHandler;
         private IDisposable _updateFaviconHandler;
         private readonly int _resultLimit = 10;
+        
+        [JSInvokable]
+        public void OnReceivedCommand(string command)
+        {
+            Logger.LogInformation("received command: {Command}", command);
+            if (command == Consts.Commands.OpenManager)
+            {
+                _searchValue = string.Empty;
+                _searchSubject.OnNext(_searchValue);
+                StateHasChanged();
+            }
+        }
+
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
+            var lDotNetReference = DotNetObjectReference.Create(this);
+            await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
+            
             await BkDataHolder.InitAsync();
             BkDataHolder.OnDataReload += BkDataHolderOnOnDataReload;
             await SyncBookmarkJob.StartAsync();
