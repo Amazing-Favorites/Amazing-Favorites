@@ -1,4 +1,4 @@
-name: Claptrap build
+name: Amazing Favorites build
 
 on:
   push:
@@ -16,13 +16,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-    container: mcr.microsoft.com/dotnet/sdk:5.0
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
@@ -55,10 +56,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
         run: |
-          # ~/.sonar/scanner/dotnet-sonarscanner begin /k:"newbe36524_Newbe.Claptrap" /o:"newbe36524" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths='"src/*.Tests/TestResults/*/coverage.opencover.xml"'
+          # .\.sonar\scanner\dotnet-sonarscanner begin /k:"newbe36524_Amazing-Favorites" /o:"newbe36524" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build $GITHUB_WORKSPACE/src --configuration Release
           dotnet test $GITHUB_WORKSPACE/src --configuration Release -l "console;verbosity=detailed" --collect:"XPlat Code Coverage" --settings $GITHUB_WORKSPACE/src/coverlet.runsettings --logger:nunit -- NUnit.Where="namespace =~ ^Newbe"
-          # ~/.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          # .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
       - uses: MirrorNG/nunit-reporter@v1.0.11
         if: always()
         with:

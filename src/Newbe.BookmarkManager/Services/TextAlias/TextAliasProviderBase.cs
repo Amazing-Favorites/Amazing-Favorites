@@ -94,7 +94,7 @@ namespace Newbe.BookmarkManager.Services
                 }
                 else
                 {
-                    _logger.LogInformation("There is not found alias from provider for {Title}", bk.Title);
+                    _logger.LogDebug("There is not found alias from provider for {Title}", bk.Title);
                 }
             }
 

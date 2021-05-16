@@ -21,6 +21,13 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
         [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
+        [Inject] public IUserOptionsRepository UserOptionsRepository { get; set; }
+
+        public class ModalModel
+        {
+            public bool Visible { get; set; }
+            public PinyinFeature PinyinFeature { get; set; }
+        }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -38,10 +45,10 @@ namespace Newbe.BookmarkManager.Pages
         private readonly Subject<string> _searchSubject = new();
         private readonly Subject<bool> _altKeySubject = new();
         private readonly Subject<string> _updateFaviconSubject = new();
-        private bool _controlPanelVisible;
         private IDisposable _searchPlaceHolderHandler;
         private IDisposable _updateFaviconHandler;
         private readonly int _resultLimit = 10;
+        private ModalModel _modal = new();
         
         [JSInvokable]
         public void OnReceivedCommand(string command)
@@ -54,7 +61,6 @@ namespace Newbe.BookmarkManager.Pages
                 StateHasChanged();
             }
         }
-
 
         protected override async Task OnInitializedAsync()
         {
@@ -214,7 +220,6 @@ namespace Newbe.BookmarkManager.Pages
             _searchSubject.OnNext(null);
         }
 
-
         private async Task OnRemovingTag(Bk bk, string tag)
         {
             await BkManager.RemoveTagAsync(bk.Url, tag);
@@ -253,7 +258,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             await BkManager.RestoreAsync();
             _searchSubject.OnNext(_searchValue);
-            ClockControlPanel();
+            CloseControlPanel();
         }
 
         private Task OnClickDumpDataAsync()
@@ -263,9 +268,35 @@ namespace Newbe.BookmarkManager.Pages
             return Task.CompletedTask;
         }
 
-        private void ClockControlPanel()
+        private void CloseControlPanel()
         {
-            _controlPanelVisible = false;
+            _modal.Visible = false;
+        }
+
+        private async Task HandleUserOptionsOk(MouseEventArgs e)
+        {
+            await UserOptionsRepository.SaveAsync(new UserOptions
+            {
+                PinyinFeature = _modal.PinyinFeature
+            });
+            CloseControlPanel();
+        }
+        
+        private async Task HandleUserOptionsCancel(MouseEventArgs e)
+        {
+            CloseControlPanel();
+        }
+
+        private async Task OpenControlPanel()
+        {
+            await LoadUserOptions();
+            _modal.Visible = true;
+        }
+
+        private async Task LoadUserOptions()
+        {
+            var options = await UserOptionsRepository.GetOptionsAsync();
+            _modal.PinyinFeature = options.PinyinFeature;
         }
     }
 }

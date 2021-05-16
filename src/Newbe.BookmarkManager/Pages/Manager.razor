@@ -11,7 +11,7 @@
             <Col Style="text-align: right" Span="4">
                 <Space>
                     <SpaceItem>
-                        <Button OnClick="_ => _controlPanelVisible = true">
+                        <Button OnClick="OpenControlPanel">
                             <Icon Type="setting" Theme="twotone"/>
                         </Button>
                     </SpaceItem>
@@ -55,17 +55,20 @@
                                         OnClick="e => OnClickUrl(bk)">
                                     <Space>
                                         <SpaceItem>
-                                            <Badge Count="bk.Bk.ClickedCount"
-                                                   Size="small"
-                                                   Style="background-color: #52c41a; ">
-                                                <ChildContent>
-                                                    <Image Width="16px"
-                                                           Height="16px"
-                                                           Preview="false"
-                                                           Src="@bk.Bk.FavIconUrl"
-                                                           Fallback="@WebHelper.DefaultImagePlaceHolder"/>
-                                                </ChildContent>
-                                            </Badge>
+                                            @if (string.IsNullOrEmpty(bk.Bk.FavIconUrl))
+                                            {
+                                                <Badge Count="bk.Bk.ClickedCount"
+                                                       Size="small"
+                                                       Style="background-color: #52c41a; ">
+                                                    <ChildContent>
+                                                        <Image Width="16px"
+                                                               Height="16px"
+                                                               Preview="false"
+                                                               Src="@bk.Bk.FavIconUrl"
+                                                               Fallback="@WebHelper.DefaultImagePlaceHolder"/>
+                                                    </ChildContent>
+                                                </Badge>
+                                            }
                                         </SpaceItem>
                                         <SpaceItem Style="width: 100%">@bk.Bk.Title</SpaceItem>
                                     </Space>
@@ -109,12 +112,35 @@
         Welcome to submit you suggestion at <a href="https://github.com/newbe36524/Amazing-Favorites" target="_blank">github.com</a>
     </Footer>
 </Layout>
-<Drawer Closable="true" Visible="_controlPanelVisible" Placement="right" Title='("Control Panel")' OnClose="_ => _controlPanelVisible = false">
-    <Row>
-        <Col Span="24">
+<Modal Title="@("Control Panel")"
+       Visible="@_modal.Visible"
+       OnOk="@HandleUserOptionsOk"
+       OnCancel="@HandleUserOptionsCancel"
+       Width="1000">
+    <Form Model="@_modal"
+          LabelColSpan="4"
+          WrapperColSpan="20"
+          Size="Default">
+        <FormItem Label="Enable Pinyin">
+            <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
+        </FormItem>
+        @if (context.PinyinFeature.Enabled)
+        {
+            <FormItem Label="Access Token">
+                <TextArea @bind-Value="@context.PinyinFeature.AccessToken" />
+                <p>
+                    <Icon Type="question" Theme="outline"/>
+                    You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                </p>
+
+            </FormItem>
+            <FormItem Label="Pinyin Api BaseUrl">
+                <Input @bind-Value="@context.PinyinFeature.BaseUrl" />
+            </FormItem>
+        }
+        <FormItem Label="System Actions">
             <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
             <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting</Button>
-        </Col>
-    </Row>
-
-</Drawer>
+        </FormItem>
+    </Form>
+</Modal>
