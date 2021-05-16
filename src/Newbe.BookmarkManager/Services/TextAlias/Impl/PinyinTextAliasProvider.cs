@@ -20,11 +20,17 @@ namespace Newbe.BookmarkManager.Services
 
         protected override async Task<Dictionary<string, string>> GetAliasCoreAsync(IEnumerable<string> title)
         {
-            var pinyinOutput = await _pinyinApi.GetPinyinAsync(new PinyinInput
+            var repo = await _pinyinApi.GetPinyinAsync(new PinyinInput
             {
                 Text = title.ToArray()
             });
-            return pinyinOutput.IsOk ? pinyinOutput.Pinyin : new();
+            if (repo.IsSuccessStatusCode && repo.Content != null)
+            {
+                var pinyinOutput = repo.Content;
+                return pinyinOutput.IsOk ? pinyinOutput.Pinyin : new();
+            }
+
+            return new Dictionary<string, string>();
         }
     }
 }

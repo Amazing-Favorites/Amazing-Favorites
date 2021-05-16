@@ -24,7 +24,6 @@ namespace Newbe.BookmarkManager
             builder.Services.AddScoped(
                     sp => new HttpClient {BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)})
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
-                .Configure<AliasJobOptions>(builder.Configuration.GetSection(nameof(AliasJobOptions)))
                 ;
             builder.Services
                 .AddAntDesign()
@@ -38,17 +37,22 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IBkSearcher, BkSearcher>()
                 .AddSingleton<IBookmarkDataHolder, BookmarkDataHolder>()
                 .AddTransient<IBkRepository, BkRepository>()
+                .AddTransient<IUserOptionsRepository, UserOptionsRepository>()
                 .AddSingleton<IBkDataHolder, BkDataHolder>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>();
             builder.Services
+                .AddTransient<AuthHeaderHandler>()
                 .AddRefitClient<IPinyinApi>()
                 .ConfigureHttpClient((sp, client) =>
                 {
-                    client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<BaseUriOptions>>().Value.PinyinApi);
+                    var service = sp.GetRequiredService<IOptions<UserOptions>>().Value;
+                    client.BaseAddress = new Uri(service?.PinyinFeature?.BaseUrl ??
+                                                 sp.GetRequiredService<IOptions<BaseUriOptions>>().Value.PinyinApi);
                 })
-                ;
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                ;   
 
             await builder.Build().RunAsync();
         }

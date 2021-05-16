@@ -6,16 +6,15 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newbe.BookmarkManager.Services.Configuration;
 
 namespace Newbe.BookmarkManager.Services
 {
     public class SyncAliasJob : ISyncAliasJob
     {
         private readonly ILogger<SyncAliasJob> _logger;
-        private readonly IOptions<AliasJobOptions> _options;
         private readonly IBkDataHolder _bkDataHolder;
         private readonly IClock _clock;
+        private readonly IUserOptionsRepository _userOptionsRepository;
         private readonly IEnumerable<ITextAliasProvider> _fillers;
         private readonly Subject<long> _jobSubject = new();
 
@@ -24,27 +23,33 @@ namespace Newbe.BookmarkManager.Services
 
         public SyncAliasJob(
             ILogger<SyncAliasJob> logger,
-            IOptions<AliasJobOptions> options,
             IBkDataHolder bkDataHolder,
             IClock clock,
+            IUserOptionsRepository userOptionsRepository,
             IEnumerable<ITextAliasProvider> fillers)
         {
             _logger = logger;
-            _options = options;
             _bkDataHolder = bkDataHolder;
             _clock = clock;
+            _userOptionsRepository = userOptionsRepository;
             _fillers = fillers;
         }
 
         public ValueTask StartAsync()
         {
-            if (_options.Value.EnablePinyinAlias)
-            {
-                _loadHandler = _jobSubject
-                    .Merge(Observable.Interval(TimeSpan.FromSeconds(60)))
-                    .Select(_ => Observable.FromAsync(async () =>
+            _loadHandler = _jobSubject
+                .Merge(Observable.Interval(TimeSpan.FromSeconds(60)))
+                .Select(_ => Observable.FromAsync(async () =>
+                {
+                    try
                     {
-                        try
+                        var options = await _userOptionsRepository.GetOptionsAsync();
+                        if (options?.PinyinFeature is
+                        {
+                            Enabled: true,
+                            AccessToken: not null,
+                            BaseUrl: not null
+                        })
                         {
                             foreach (var textAliasFiller in _fillers)
                             {
@@ -93,15 +98,15 @@ namespace Newbe.BookmarkManager.Services
                                 }
                             }
                         }
-                        catch (Exception e)
-                        {
-                            _logger.LogError(e, "Failed to fill alias");
-                        }
-                    }))
-                    .Concat()
-                    .Subscribe(_ => { });
-                _jobSubject.OnNext(_clock.UtcNow);
-            }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Failed to fill alias");
+                    }
+                }))
+                .Concat()
+                .Subscribe(_ => { });
+            _jobSubject.OnNext(_clock.UtcNow);
 
             return ValueTask.CompletedTask;
         }
