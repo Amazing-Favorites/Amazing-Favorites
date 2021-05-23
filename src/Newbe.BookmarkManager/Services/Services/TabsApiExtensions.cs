@@ -8,23 +8,23 @@ namespace Newbe.BookmarkManager.Services
     {
         public static async Task ActiveOrOpenManagerAsync(this ITabsApi tabsApi)
         {
-            var tabs = await tabsApi.Query(new
+            var tabs = await tabsApi.Query(new QueryInfo
             {
-                title = Consts.ManagerTabTitle
+                Title = Consts.ManagerTabTitle
             });
             var managerTab = tabs.FirstOrDefault();
             if (managerTab is {Id: { }})
             {
-                await tabsApi.Update(managerTab.Id.Value, new
+                await tabsApi.Update(managerTab.Id.Value, new UpdateProperties
                 {
-                    active = true
+                    Active = true
                 });
             }
             else
             {
-                await tabsApi.Create(new
+                await tabsApi.Create(new CreateProperties
                 {
-                    url = "/Manager/index.html"
+                    Url = "/Manager/index.html"
                 });
             }
         }

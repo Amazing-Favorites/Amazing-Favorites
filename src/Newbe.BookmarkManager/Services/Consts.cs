@@ -15,5 +15,6 @@
         }
 
         public const string ManagerTabTitle = "Amazing Favorites";
+        public const string AmazingFavoriteFolderName = "Amazing Favorites";
     }
 }

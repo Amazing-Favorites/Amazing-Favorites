@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services;
 using WebExtension.Net.Bookmarks;
+using WebExtension.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
 {
@@ -17,87 +18,89 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IBkDataHolder BkDataHolder { get; set; }
         [Inject] private IBookmarksApi BookmarksApi { get; set; }
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await base.OnInitializedAsync();
-            await BkDataHolder.InitAsync();
-            var tabs = await WebExtension.Tabs.Query(new
+            await base.OnAfterRenderAsync(firstRender);
+            if (firstRender)
             {
-                active = true,
-                currentWindow = true
-            });
-            var tab = tabs.FirstOrDefault();
-            if (tab != null &&
-                !string.IsNullOrWhiteSpace(tab.Url) &&
-                !string.IsNullOrWhiteSpace(tab.Title))
-            {
-                _formModel.Url = tab.Url;
-                _formModel.Title = tab.Title;
-                var bookmarkTreeNodes = await BookmarksApi.Search(new
+                await BkDataHolder.InitAsync();
+
+                var tabs = await WebExtension.Tabs.Query(new QueryInfo
                 {
-                    url = tab.Url
+                    Active = true,
+                    CurrentWindow = true
                 });
-                var bookmarkTreeNode = bookmarkTreeNodes.FirstOrDefault();
-                if (bookmarkTreeNode == null)
+                var tab = tabs.FirstOrDefault();
+                if (tab != null &&
+                    !string.IsNullOrWhiteSpace(tab.Url) &&
+                    !string.IsNullOrWhiteSpace(tab.Title))
                 {
-                    _formModel.IsFirstAdded = true;
-                    var folderNode = await CreateAmazingFavoriteFolderAsync();
-                    var treeNode = await BookmarksApi.Create(new CreateDetails
+                    _formModel.Url = tab.Url;
+                    _formModel.Title = tab.Title;
+                    var bookmarkTreeNodes = await BookmarksApi.Search(new
                     {
-                        Title = tab.Title,
-                        Url = tab.Url,
-                        ParentId = folderNode.Id,
+                        url = tab.Url
                     });
-                    _formModel.BookmarkTreeNode = treeNode;
-                    Logger.LogInformation("New bk added");
+                    var bookmarkTreeNode = bookmarkTreeNodes.FirstOrDefault();
+                    if (bookmarkTreeNode == null)
+                    {
+                        _formModel.IsFirstAdded = true;
+                        var folderNode = await CreateAmazingFavoriteFolderAsync();
+                        var treeNode = await BookmarksApi.Create(new CreateDetails
+                        {
+                            Title = tab.Title,
+                            Url = tab.Url,
+                            ParentId = folderNode.Id,
+                        });
+                        _formModel.BookmarkTreeNode = treeNode;
+                        Logger.LogInformation("New bk added");
+                    }
+                    else
+                    {
+                        _formModel.BookmarkTreeNode = bookmarkTreeNode;
+                    }
+
+                    var bk = BkManager.Get(tab.Url);
+                    if (bk != null)
+                    {
+                        _formModel.Tags = bk.Tags?.ToHashSet() ?? new HashSet<string>();
+                    }
+
+                    Logger.LogInformation("Bk found");
+
+                    _formModel.IsLoading = false;
+                    _formModel.IsShowEditor = true;
                 }
                 else
                 {
-                    _formModel.BookmarkTreeNode = bookmarkTreeNode;
+                    Logger.LogInformation("this tab is missing url or title, can not be add to bookmarks");
+                    _formModel.IsAvailable = false;
+                    _formModel.IsShowEditor = false;
                 }
 
-                var bk = BkManager.Get(tab.Url);
-                if (bk != null)
-                {
-                    _formModel.Tags = bk.Tags?.ToHashSet() ?? new HashSet<string>();
-                }
-
-                Logger.LogInformation("Bk found");
-
-                _formModel.IsLoading = false;
-                _formModel.IsShowEditor = true;
+                StateHasChanged();
             }
-            else
-            {
-                Logger.LogInformation("this tab is missing url or title, can not be add to bookmarks");
-                _formModel.IsAvailable = false;
-                _formModel.IsShowEditor = false;
-            }
-
-            StateHasChanged();
         }
-
-        private const string AmazingFavoriteFolderName = "Amazing Favorites";
 
         private async Task<BookmarkTreeNode> CreateAmazingFavoriteFolderAsync()
         {
             var bookmarkTreeNodes = await BookmarksApi.Search(new
             {
-                title = AmazingFavoriteFolderName
+                title = Consts.AmazingFavoriteFolderName
             });
             var oldNode = bookmarkTreeNodes.FirstOrDefault();
             if (oldNode is not {Type: BookmarkTreeNodeType.Folder})
             {
                 var newNode = await BookmarksApi.Create(new CreateDetails
                 {
-                    Title = AmazingFavoriteFolderName,
+                    Title = Consts.AmazingFavoriteFolderName,
                 });
 
-                Logger.LogInformation("{FolderName} not found, created", AmazingFavoriteFolderName);
+                Logger.LogInformation("{FolderName} not found, created", Consts.AmazingFavoriteFolderName);
                 return newNode;
             }
 
-            Logger.LogInformation("{FolderName} found", AmazingFavoriteFolderName);
+            Logger.LogInformation("{FolderName} found", Consts.AmazingFavoriteFolderName);
 
             return oldNode;
         }
@@ -126,6 +129,7 @@ namespace Newbe.BookmarkManager.Pages
                     title = _formModel.Title
                 });
                 _formModel.BookmarkTreeNode = newNode;
+                await BkDataHolder.AppendBookmarksAsync(new[] {newNode});
             }
 
             await BkManager.UpdateTagsAsync(_formModel.Url, _formModel.Tags);
