@@ -51,8 +51,6 @@ namespace Newbe.BookmarkManager.Services
             });
             var bookmarksKeys = bkDic.Select(x => x.Key).ToHashSet();
             _logger.LogDebug("Found {Count} bookmark", bookmarksKeys.Count);
-            Collection = await _bkRepository.GetLatestDataAsync();
-            Collection.Bks ??= new();
 
             foreach (var grouping in bkDic)
             {
@@ -98,7 +96,7 @@ namespace Newbe.BookmarkManager.Services
 
         public async ValueTask SaveNowAsync()
         {
-            await SaveToStorageAsync();
+            await SaveToStorageAsync(true);
         }
 
         public async ValueTask RestoreAsync()
@@ -111,11 +109,11 @@ namespace Newbe.BookmarkManager.Services
             _logger.LogInformation("Data has been restore!");
         }
 
-        private async ValueTask SaveToStorageAsync()
+        private async ValueTask SaveToStorageAsync(bool force = false)
         {
             var lastUpdatedTime = await _bkRepository.GetLateUpdateTimeAsync();
             Collection.LastUpdateTime = _clock.UtcNow;
-            if (lastUpdatedTime < Collection.LastUpdateTime)
+            if (force || lastUpdatedTime < Collection.LastUpdateTime)
             {
                 await _bkRepository.SaveAsync(Collection);
                 _logger.LogInformation(

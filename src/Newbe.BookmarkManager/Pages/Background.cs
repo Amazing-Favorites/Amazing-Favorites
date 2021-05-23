@@ -21,6 +21,7 @@ namespace Newbe.BookmarkManager.Pages
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
+            await ImportAsync("content/background_keyboard.js");
             var lDotNetReference = DotNetObjectReference.Create(this);
             await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
         }

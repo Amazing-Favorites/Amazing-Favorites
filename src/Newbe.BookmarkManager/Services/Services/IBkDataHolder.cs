@@ -18,15 +18,6 @@ namespace Newbe.BookmarkManager.Services
 
     public static class BkDataHolderExtensions
     {
-        public static Task PushDataChangeActionAsync(this IBkDataHolder holder, Func<Task> action)
-        {
-            return holder.PushDataChangeActionAsync(async () =>
-            {
-                await action.Invoke();
-                return true;
-            });
-        }
-
         public static Task PushDataChangeActionAsync(this IBkDataHolder holder, Action action)
         {
             return holder.PushDataChangeActionAsync(() =>
