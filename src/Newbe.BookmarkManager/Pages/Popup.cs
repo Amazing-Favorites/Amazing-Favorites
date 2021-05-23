@@ -124,9 +124,9 @@ namespace Newbe.BookmarkManager.Pages
             var node = _formModel.BookmarkTreeNode;
             if (_formModel.Title != node.Title)
             {
-                var newNode = await BookmarksApi.Update(node.Id, new
+                var newNode = await BookmarksApi.Update(node.Id, new Changes
                 {
-                    title = _formModel.Title
+                    Title = _formModel.Title
                 });
                 _formModel.BookmarkTreeNode = newNode;
                 await BkDataHolder.AppendBookmarksAsync(new[] {newNode});

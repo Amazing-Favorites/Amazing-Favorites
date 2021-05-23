@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using WebExtension.Net.Bookmarks;
@@ -31,7 +33,7 @@ namespace Newbe.BookmarkManager.Services
         {
             await LoadAllBookmarkAsync();
             _logger.LogInformation("bookmarks load from user storage, count: {Count}", Nodes.Count);
-            var observable = _loadSubject.Merge(Observable.Interval(TimeSpan.FromSeconds(5)))
+            var observable = _loadSubject.Merge(Observable.Interval(TimeSpan.FromSeconds(30)))
                 .Select(_ => Observable.FromAsync(LoadAllBookmarkAsync))
                 .Concat()
                 .Subscribe(_ => { });
@@ -64,7 +66,7 @@ namespace Newbe.BookmarkManager.Services
             {
                 if (!string.IsNullOrWhiteSpace(node.Url) &&
                     !string.IsNullOrWhiteSpace(node.Title) &&
-                    node.Unmodifiable == BookmarkTreeNodeUnmodifiable.Managed)
+                    node.Unmodifiable != BookmarkTreeNodeUnmodifiable.Managed)
                 {
                     result.Add(node);
                 }
