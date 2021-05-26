@@ -3,14 +3,16 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <BuildBlazorToBrowserExtension>true</BuildBlazorToBrowserExtension>
+        <RunAOTCompilation>true</RunAOTCompilation>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="AntDesign" Version="0.8.1" />
         <PackageReference Include="Blazor.BrowserExtension" Version="0.1.12" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.3.21201.13" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.3.21201.13" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.3.21201.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.4.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.4.*" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.4.*" />
         <PackageReference Include="Refit" Version="6.0.38" />
         <PackageReference Include="Refit.HttpClientFactory" Version="6.0.38" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.3.21201.4" />
@@ -20,6 +22,10 @@
 
     <ItemGroup>
         <None Include="wwwroot\**\*" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj" />
     </ItemGroup>
 
 </Project>

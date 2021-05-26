@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -35,8 +34,9 @@ namespace Newbe.BookmarkManager.Services
             _fillers = fillers;
         }
 
-        public ValueTask StartAsync()
+        public async ValueTask StartAsync()
         {
+            await _bkDataHolder.StartAsync();
             _loadHandler = _jobSubject
                 .Merge(Observable.Interval(TimeSpan.FromSeconds(60)))
                 .Select(_ => Observable.FromAsync(async () =>
@@ -107,8 +107,6 @@ namespace Newbe.BookmarkManager.Services
                 .Concat()
                 .Subscribe(_ => { });
             _jobSubject.OnNext(_clock.UtcNow);
-
-            return ValueTask.CompletedTask;
         }
     }
 }

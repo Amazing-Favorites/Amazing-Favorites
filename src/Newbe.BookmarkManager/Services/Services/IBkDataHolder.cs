@@ -11,8 +11,9 @@ namespace Newbe.BookmarkManager.Services
         ValueTask AppendBookmarksAsync(IEnumerable<BookmarkTreeNode> nodes);
         ValueTask SaveNowAsync();
         ValueTask RestoreAsync();
-        ValueTask InitAsync();
+        ValueTask StartAsync();
         Task PushDataChangeActionAsync(Func<Task<bool>> action);
+        void UpdateEtagVersion(long etagVersion);
         event EventHandler<EventArgs> OnDataReload;
     }
 

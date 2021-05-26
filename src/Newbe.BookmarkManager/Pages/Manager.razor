@@ -136,7 +136,24 @@
 
             </FormItem>
             <FormItem Label="Pinyin Api BaseUrl">
-                <Input @bind-Value="@context.PinyinFeature.BaseUrl" />
+                <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
+            </FormItem>
+        }
+        <FormItem Label="Enable Cloud Sync">
+            <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
+        </FormItem>
+        @if (context.CloudBkFeature.Enabled)
+        {
+            <FormItem Label="Access Token">
+                <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" />
+                <p>
+                    <Icon Type="question" Theme="outline"/>
+                    You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                </p>
+
+            </FormItem>
+            <FormItem Label="Cloud Sync Api BaseUrl">
+                <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
             </FormItem>
         }
         <FormItem Label="System Actions">

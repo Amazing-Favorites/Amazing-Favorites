@@ -20,8 +20,6 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IBkSearcher BkSearcher { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public IBkDataHolder BkDataHolder { get; set; }
-        [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
-        [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
         [Inject] public IUserOptionsRepository UserOptionsRepository { get; set; }
 
@@ -29,6 +27,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             public bool Visible { get; set; }
             public PinyinFeature PinyinFeature { get; set; }
+            public CloudBkFeature CloudBkFeature { get; set; }
         }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
@@ -81,12 +80,14 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                await BkDataHolder.InitAsync();
+                await BkDataHolder.StartAsync();
                 BkDataHolder.OnDataReload += BkDataHolderOnOnDataReload;
-                await SyncBookmarkJob.StartAsync();
-                await SyncAliasJob.StartAsync();
+                
+                await BkManager.InitAsync();
+                await BkSearcher.InitAsync();
+
                 _searchSubject
-                    .Throttle(TimeSpan.FromMilliseconds(1000))
+                    .Throttle(TimeSpan.FromMilliseconds(500))
                     .Select(x => x?.Trim())
                     .Subscribe(args =>
                     {
@@ -291,7 +292,8 @@ namespace Newbe.BookmarkManager.Pages
         {
             await UserOptionsRepository.SaveAsync(new UserOptions
             {
-                PinyinFeature = _modal.PinyinFeature
+                PinyinFeature = _modal.PinyinFeature,
+                CloudBkFeature = _modal.CloudBkFeature
             });
             CloseControlPanel();
         }
@@ -311,6 +313,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             var options = await UserOptionsRepository.GetOptionsAsync();
             _modal.PinyinFeature = options.PinyinFeature;
+            _modal.CloudBkFeature = options.CloudBkFeature;
         }
     }
 }

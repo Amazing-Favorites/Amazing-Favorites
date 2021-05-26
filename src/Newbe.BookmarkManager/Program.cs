@@ -35,15 +35,20 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<IBkManager, BkManager>()
                 .AddTransient<IBkSearcher, BkSearcher>()
+                .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddSingleton<IBookmarkDataHolder, BookmarkDataHolder>()
                 .AddTransient<IBkRepository, BkRepository>()
                 .AddTransient<IUserOptionsRepository, UserOptionsRepository>()
                 .AddSingleton<IBkDataHolder, BkDataHolder>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()
-                .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>();
+                .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
+                .AddTransient<ICloudService, CloudService>()
+                .AddSingleton<ISyncCloudJob, SyncCloudJob>();
             builder.Services
                 .AddTransient<AuthHeaderHandler>()
+                ;
+            builder.Services
                 .AddRefitClient<IPinyinApi>()
                 .ConfigureHttpClient((sp, client) =>
                 {
@@ -52,7 +57,18 @@ namespace Newbe.BookmarkManager
                                                  sp.GetRequiredService<IOptions<BaseUriOptions>>().Value.PinyinApi);
                 })
                 .AddHttpMessageHandler<AuthHeaderHandler>()
-                ;   
+                ;
+
+            builder.Services
+                .AddRefitClient<ICloudBkApi>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    var service = sp.GetRequiredService<IOptions<UserOptions>>().Value;
+                    client.BaseAddress = new Uri(service?.CloudBkFeature?.BaseUrl ??
+                                                 sp.GetRequiredService<IOptions<BaseUriOptions>>().Value.CloudBkApi);
+                })
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                ;
 
             await builder.Build().RunAsync();
         }
