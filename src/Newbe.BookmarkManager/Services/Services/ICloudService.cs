@@ -5,7 +5,7 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface ICloudService
     {
-        Task<GetCloudOutput> GetCloudAsync(long etagVersion);
+        Task<CloudBkStatus> GetCloudAsync(long etagVersion);
         Task<SaveToCloudOutput> SaveToCloudAsync(CloudBkCollection cloudBkCollection);
     }
 }

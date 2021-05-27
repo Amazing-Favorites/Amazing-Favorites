@@ -32,48 +32,67 @@ namespace Newbe.BookmarkManager.Services
         {
             await _bkManager.InitAsync();
 
-            _jobHandler = Observable.Interval(TimeSpan.FromSeconds(1))
+            _jobHandler = Observable.Interval(TimeSpan.FromMinutes(10))
                 .Buffer(TimeSpan.FromSeconds(5), 50)
                 .Where(x => x.Count > 0)
                 .Select(x => x.First())
                 .Select(_ => Observable.FromAsync(async () =>
                 {
-                    var options = await _userOptionsRepository.GetOptionsAsync();
-                    if (options.CloudBkFeature?.Enabled == true)
+                    try
                     {
-                        var etagVersion = _bkManager.GetEtagVersion();
-                        var output = await _cloudService.GetCloudAsync(etagVersion);
-                        if (output.EtagVersion > etagVersion)
-                        {
-                            // sync to local
-                            await _bkManager.LoadCloudCollectionAsync(output.CloudBkCollection!);
-                            LogSyncToLocal(_logger, output.EtagVersion, output.LastUpdateTime);
-                        }
-                        else if (output.EtagVersion < etagVersion)
-                        {
-                            // sync to cloud
-                            var cloudBkCollection = _bkManager.GetCloudBkCollection();
-                            if (cloudBkCollection.Bks.Count > 0)
-                            {
-                                await _cloudService.SaveToCloudAsync(cloudBkCollection);
-                                LogSyncToCloud(_logger, 
-                                    cloudBkCollection.EtagVersion,
-                                    cloudBkCollection.LastUpdateTime);
-                            }
-                            else
-                            {
-                                LogNoBkFoundToSync(_logger);
-                            }
-                        }
-                        else
-                        {
-                            LogSameToCloud(_logger, output.EtagVersion);
-                        }
+                        await RunSyncAsync();
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Faile");
                     }
                 }))
                 .Concat()
                 .Subscribe();
         }
+
+        private async Task RunSyncAsync()
+        {
+            var options = await _userOptionsRepository.GetOptionsAsync();
+            if (options.CloudBkFeature?.Enabled == true)
+            {
+                var etagVersion = _bkManager.GetEtagVersion();
+                var (hasChanged, output) = await _cloudService.GetCloudAsync(etagVersion);
+                if (hasChanged)
+                {
+                    if (output!.EtagVersion > etagVersion)
+                    {
+                        // sync to local
+                        await _bkManager.LoadCloudCollectionAsync(output.CloudBkCollection!);
+                        LogSyncToLocal(_logger, output.EtagVersion, output.LastUpdateTime);
+                    }
+                    else if (output.EtagVersion < etagVersion)
+                    {
+                        // sync to cloud
+                        var cloudBkCollection = _bkManager.GetCloudBkCollection();
+                        if (cloudBkCollection.Bks.Count > 0)
+                        {
+                            await _cloudService.SaveToCloudAsync(cloudBkCollection);
+                            LogSyncToCloud(_logger,
+                                cloudBkCollection.EtagVersion,
+                                cloudBkCollection.LastUpdateTime);
+                        }
+                        else
+                        {
+                            LogNoBkFoundToSync(_logger);
+                        }
+                    }
+                }
+                else
+                {
+                    LogSameToCloud(_logger, etagVersion);
+                }
+            }
+        }
+
+        [LoggerMessage(Level = LogLevel.Error,
+            Message = "Failed to sync log")]
+        partial void LogErrorSync(ILogger logger, Exception ex);
 
         [LoggerMessage(Level = LogLevel.Information,
             Message = "It is the same to cloud. etagVersion: {etagVersion}")]

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.WebApi;
 
@@ -17,11 +18,16 @@ namespace Newbe.BookmarkManager.Services
             _cloudBkApi = cloudBkApi;
         }
 
-        public async Task<GetCloudOutput> GetCloudAsync(long etagVersion)
+        public async Task<CloudBkStatus> GetCloudAsync(long etagVersion)
         {
             var response = await _cloudBkApi.GetCloudBkAsync(etagVersion);
+            if (response.StatusCode == HttpStatusCode.NotModified)
+            {
+                return new CloudBkStatus(false, default);
+            }
+
             await response.EnsureSuccessStatusCodeAsync();
-            return response.Content!;
+            return new CloudBkStatus(true, response.Content);
         }
 
         public async Task<SaveToCloudOutput> SaveToCloudAsync(CloudBkCollection cloudBkCollection)
