@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Newbe.BookmarkManager.Services
@@ -18,6 +19,12 @@ namespace Newbe.BookmarkManager.Services
             _logger = logger;
             _bkDataHolder = bkDataHolder;
             _bookmarkDataHolder = bookmarkDataHolder;
+        }
+
+        public async Task InitAsync()
+        {
+            await _bkDataHolder.StartAsync();
+            await _bookmarkDataHolder.StartAsync();
         }
 
         public SearchResultItem[] Search(string searchText, int limit)

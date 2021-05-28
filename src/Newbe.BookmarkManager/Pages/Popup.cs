@@ -15,7 +15,6 @@ namespace Newbe.BookmarkManager.Pages
     {
         private FormModel _formModel = new();
         [Inject] private IBkManager BkManager { get; set; }
-        [Inject] public IBkDataHolder BkDataHolder { get; set; }
         [Inject] private IBookmarksApi BookmarksApi { get; set; }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -23,7 +22,7 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                await BkDataHolder.InitAsync();
+                await BkManager.InitAsync();
 
                 var tabs = await WebExtension.Tabs.Query(new QueryInfo
                 {
@@ -124,12 +123,12 @@ namespace Newbe.BookmarkManager.Pages
             var node = _formModel.BookmarkTreeNode;
             if (_formModel.Title != node.Title)
             {
-                var newNode = await BookmarksApi.Update(node.Id, new
+                var newNode = await BookmarksApi.Update(node.Id, new Changes
                 {
-                    title = _formModel.Title
+                    Title = _formModel.Title
                 });
                 _formModel.BookmarkTreeNode = newNode;
-                await BkDataHolder.AppendBookmarksAsync(new[] {newNode});
+                await BkManager.AppendBookmarksAsync(new[] {newNode});
             }
 
             await BkManager.UpdateTagsAsync(_formModel.Url, _formModel.Tags);

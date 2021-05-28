@@ -8,7 +8,10 @@ namespace Newbe.BookmarkManager.Pages
     public partial class Background
     {
         [Inject] public IJSRuntime JsRuntime { get; set; }
-
+        [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
+        [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
+        [Inject] public ISyncCloudJob SyncCloudJob { get; set; }
+        
         [JSInvokable]
         public void OnReceivedCommand(string command)
         {
@@ -24,6 +27,17 @@ namespace Newbe.BookmarkManager.Pages
             await ImportAsync("content/background_keyboard.js");
             var lDotNetReference = DotNetObjectReference.Create(this);
             await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await base.OnAfterRenderAsync(firstRender);
+            if (firstRender)
+            {
+                await SyncBookmarkJob.StartAsync();
+                await SyncAliasJob.StartAsync();
+                await SyncCloudJob.StartAsync();
+            }
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newbe.BookmarkManager.WebApi;
+using WebExtension.Net.Bookmarks;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -116,10 +118,56 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
-        public Bk Get(string url)
+        public async ValueTask AppendBookmarksAsync(IEnumerable<BookmarkTreeNode> nodes)
+        {
+            await _bkDataHolder.AppendBookmarksAsync(nodes);
+        }
+
+        public async Task LoadCloudCollectionAsync(CloudBkCollection cloudBkCollection)
+        {
+            var dictByUrlHash = _bkDataHolder.Collection.Bks.Values.ToDictionary(x => x.UrlHash);
+            foreach (var (urlHash, cloudBk) in cloudBkCollection.Bks)
+            {
+                if (dictByUrlHash.TryGetValue(urlHash, out var localBk))
+                {
+                    await _bkDataHolder.PushDataChangeActionAsync(() => { localBk.Tags = cloudBk.Tags; });
+                }
+            }
+
+            _bkDataHolder.UpdateEtagVersion(cloudBkCollection.EtagVersion);
+        }
+
+        public CloudBkCollection GetCloudBkCollection()
+        {
+            var local = _bkDataHolder.Collection;
+            var re = new CloudBkCollection
+            {
+                Bks = local.Bks.Values
+                    .Where(x => x.Tags.Count > 0)
+                    .ToDictionary(x => x.UrlHash, x => new CloudBk
+                    {
+                        Tags = x.Tags,
+                    }),
+                LastUpdateTime = local.LastUpdateTime,
+                EtagVersion = local.EtagVersion
+            };
+            return re;
+        }
+
+        public long GetEtagVersion()
+        {
+            return _bkDataHolder.Collection.EtagVersion;
+        }
+
+        public Bk? Get(string url)
         {
             var bkEntityCollection = _bkDataHolder.Collection;
             return bkEntityCollection.Bks.TryGetValue(url, out var bk) ? bk : null;
+        }
+
+        public async Task InitAsync()
+        {
+            await _bkDataHolder.StartAsync();
         }
 
         public async ValueTask AddClickAsync(string url, int moreCount)

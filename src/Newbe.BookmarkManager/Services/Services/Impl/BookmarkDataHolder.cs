@@ -16,8 +16,9 @@ namespace Newbe.BookmarkManager.Services
         private readonly Subject<long> _loadSubject = new();
         private IDisposable _loadHandler;
 
-        public IReadOnlyDictionary<string, BookmarkTreeNode> Nodes { get; private set; } =
-            new Dictionary<string, BookmarkTreeNode>();
+        public IReadOnlyDictionary<string, BookmarkTreeNode> Nodes => _nodes;
+
+        private Dictionary<string, BookmarkTreeNode> _nodes = new();
 
         public BookmarkDataHolder(
             ILogger<BookmarkDataHolder> logger,
@@ -27,15 +28,52 @@ namespace Newbe.BookmarkManager.Services
             _bookmarksApi = bookmarksApi;
         }
 
+        private bool _initialized;
+
         public async ValueTask StartAsync()
         {
-            await LoadAllBookmarkAsync();
-            _logger.LogInformation("bookmarks load from user storage, count: {Count}", Nodes.Count);
-            var observable = _loadSubject.Merge(Observable.Interval(TimeSpan.FromSeconds(5)))
-                .Select(_ => Observable.FromAsync(LoadAllBookmarkAsync))
-                .Concat()
-                .Subscribe(_ => { });
-            _loadHandler = observable;
+            if (!_initialized)
+            {
+                await LoadAllBookmarkAsync();
+                _logger.LogInformation("bookmarks load from user storage, count: {Count}", Nodes.Count);
+
+                await _bookmarksApi.OnRemoved.AddListener(async (s, info) =>
+                {
+                    await LoadAllBookmarkAsync();
+                    _logger.LogInformation("Bookmark data reload since item removed");
+                });
+                await _bookmarksApi.OnChanged.AddListener(async (s, info) =>
+                {
+                    await LoadAllBookmarkAsync();
+                    _logger.LogInformation("Bookmark data reload since item changed");
+                });
+                await _bookmarksApi.OnCreated.AddListener((s, node) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(node.Url) &&
+                        !string.IsNullOrWhiteSpace(node.Title) &&
+                        !Nodes.ContainsKey(node.Url))
+                    {
+                        _nodes[node.Url] = node;
+                    }
+
+                    _logger.LogInformation("Bookmark data reload since item added");
+                });
+
+                var observable = _loadSubject.Merge(Observable.Interval(TimeSpan.FromMinutes(10)))
+                    .Select(_ => Observable.FromAsync(async () =>
+                    {
+                        await LoadAllBookmarkAsync();
+                        _logger.LogInformation("Bookmark data reload since time matched");
+                    }))
+                    .Concat()
+                    .Subscribe(_ => { });
+                _loadHandler = observable;
+                _initialized = true;
+            }
+            else
+            {
+                _logger.LogInformation("{Name} has been initialized, skip to StartAsync", nameof(BookmarkDataHolder));
+            }
         }
 
         private async Task LoadAllBookmarkAsync()
@@ -45,7 +83,7 @@ namespace Newbe.BookmarkManager.Services
                 var items = await GetAllBookmarkAsync();
                 if (items != null)
                 {
-                    Nodes = items.ToLookup(x => x.Url)
+                    _nodes = items.ToLookup(x => x.Url)
                         .ToDictionary(x => x.Key, x => x.First());
                 }
             }
@@ -64,7 +102,7 @@ namespace Newbe.BookmarkManager.Services
             {
                 if (!string.IsNullOrWhiteSpace(node.Url) &&
                     !string.IsNullOrWhiteSpace(node.Title) &&
-                    node.Unmodifiable == BookmarkTreeNodeUnmodifiable.Managed)
+                    node.Unmodifiable != BookmarkTreeNodeUnmodifiable.Managed)
                 {
                     result.Add(node);
                 }

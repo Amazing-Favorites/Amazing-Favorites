@@ -16,6 +16,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - uses: actions/checkout@v2
         with:
@@ -52,6 +54,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd $GITHUB_WORKSPACE/src
+          # dotnet workload install microsoft-net-sdk-blazorwebassembly-aot
           dotnet restore
       - name: build and test
         env:

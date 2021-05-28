@@ -42,7 +42,8 @@ namespace Newbe.BookmarkManager.Services
             if (string.IsNullOrEmpty(json))
             {
                 _logger.LogInformation("There is no data found from repo, try to create a new one");
-                re = CreateDefault();
+                re = new UserOptions();
+                re = ApplyDefaultValue(re);
                 await SaveAsync(re);
             }
             else
@@ -50,6 +51,7 @@ namespace Newbe.BookmarkManager.Services
                 re = JsonSerializer.Deserialize<UserOptions>(json);
             }
 
+            re = ApplyDefaultValue(re);
             return re;
         }
 
@@ -64,17 +66,27 @@ namespace Newbe.BookmarkManager.Services
             });
         }
 
-        private UserOptions CreateDefault()
+        private UserOptions ApplyDefaultValue(UserOptions options)
         {
             var baseUriOptions = _baseUriOptions.Value;
-            return new UserOptions
+            if (options.PinyinFeature == null)
             {
-                PinyinFeature = new PinyinFeature
+                options.PinyinFeature = new PinyinFeature
                 {
                     Enabled = false,
                     BaseUrl = baseUriOptions.PinyinApi
-                }
-            };
+                };
+            }
+
+            if (options.CloudBkFeature == null)
+            {
+                options.CloudBkFeature = new CloudBkFeature
+                {
+                    Enabled = false,
+                    BaseUrl = baseUriOptions.CloudBkApi
+                };
+            }
+            return options;
         }
     }
 }
