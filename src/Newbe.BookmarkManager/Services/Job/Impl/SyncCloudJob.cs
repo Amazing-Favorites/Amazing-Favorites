@@ -32,7 +32,8 @@ namespace Newbe.BookmarkManager.Services
         {
             await _bkManager.InitAsync();
 
-            _jobHandler = Observable.Interval(TimeSpan.FromMinutes(10))
+            _jobHandler = new[] {1L}.ToObservable()
+                .Concat(Observable.Interval(TimeSpan.FromMinutes(10)))
                 .Buffer(TimeSpan.FromSeconds(5), 50)
                 .Where(x => x.Count > 0)
                 .Select(x => x.First())
