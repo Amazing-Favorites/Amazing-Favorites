@@ -1,11 +1,16 @@
 ﻿{
   "manifest_version": 2,
   "name": "Amazing Favorites",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Amazing Favorites help you to manage you bookmarks efficiently",
   "background": {
     "page": "index.html?path=background",
     "persistent": true
+  },
+  "icons": {
+    "16": "icons/16icon.png",
+    "48": "icons/48icon.png",
+    "128": "icons/128icon.png"
   },
   "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-eval' 'sha256-v8v3RKRPmN4odZ1CWM5gw80QKPCCWMcpNeOmimNL2AA='; object-src 'self'",
   "web_accessible_resources": [
