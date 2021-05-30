@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public record Bk
+    [Table(Consts.StoreNames.Bks)]
+    public record Bk : IEntity<string>
     {
+        public string Id => Url;
         public string Title { get; set; }
         public Dictionary<TextAliasType, TextAlias> TitleAlias { get; set; }
         public string Url { get; init; }
         public string UrlHash { get; init; }
         public string FavIconUrl { get; set; }
-        public List<string> Tags { get; set; } = new();
+        public List<string>? Tags { get; set; } = new();
         public int ClickedCount { get; set; }
         public long LastClickTime { get; set; }
         public long TitleLastUpdateTime { get; set; }

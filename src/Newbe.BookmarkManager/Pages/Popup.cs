@@ -22,7 +22,6 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                await BkManager.InitAsync();
 
                 var tabs = await WebExtension.Tabs.Query(new QueryInfo
                 {
@@ -59,7 +58,7 @@ namespace Newbe.BookmarkManager.Pages
                         _formModel.BookmarkTreeNode = bookmarkTreeNode;
                     }
 
-                    var bk = BkManager.Get(tab.Url);
+                    var bk = await BkManager.Get(tab.Url);
                     if (bk != null)
                     {
                         _formModel.Tags = bk.Tags?.ToHashSet() ?? new HashSet<string>();

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Refit;
+using TG.Blazor.IndexedDB;
 using WebExtension.Net.Bookmarks;
 using WebExtension.Net.Storage;
 using WebExtension.Net.Tabs;
@@ -26,6 +27,9 @@ namespace Newbe.BookmarkManager
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
                 ;
             builder.Services
+                .AddTransient(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>))
+                ;
+            builder.Services
                 .AddAntDesign()
                 .AddBrowserExtensionServices(options => { options.ProjectNamespace = typeof(Program).Namespace; })
                 .AddTransient<IBookmarksApi, BookmarksApi>()
@@ -33,13 +37,10 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IWindowsApi, WindowsApi>()
                 .AddTransient<IStorageApi, StorageApi>()
                 .AddTransient<IClock, SystemClock>()
-                .AddTransient<IBkManager, BkManager>()
-                .AddTransient<IBkSearcher, BkSearcher>()
+                .AddTransient<IBkManager, IndexedBkManager>()
+                .AddTransient<IBkSearcher, IndexedBkSearcher>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
-                .AddSingleton<IBookmarkDataHolder, BookmarkDataHolder>()
-                .AddTransient<IBkRepository, BkRepository>()
-                .AddTransient<IUserOptionsRepository, UserOptionsRepository>()
-                .AddSingleton<IBkDataHolder, BkDataHolder>()
+                .AddTransient<IUserOptionsService, UserOptionsService>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
@@ -69,6 +70,33 @@ namespace Newbe.BookmarkManager
                 })
                 .AddHttpMessageHandler<AuthHeaderHandler>()
                 ;
+
+            builder.Services.AddIndexedDB(dbStore =>
+            {
+                dbStore.DbName = Consts.DbName;
+                dbStore.Version = 1;
+
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.Bks,
+                    PrimaryKey = new IndexSpec {Name = "url", KeyPath = "url", Auto = false, Unique = true},
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.Tags,
+                    PrimaryKey = new IndexSpec {Name = "tag", KeyPath = "tag", Auto = false, Unique = true},
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.BkMetadata,
+                    PrimaryKey = new IndexSpec {Name = "id", KeyPath = "id", Auto = false, Unique = true},
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.UserOptions,
+                    PrimaryKey = new IndexSpec {Name = "id", KeyPath = "id", Auto = false, Unique = true},
+                });
+            });
 
             await builder.Build().RunAsync();
         }

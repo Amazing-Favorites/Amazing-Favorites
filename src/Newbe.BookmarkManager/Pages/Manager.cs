@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text.Json;
 using System.Threading.Tasks;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
@@ -19,9 +18,8 @@ namespace Newbe.BookmarkManager.Pages
     {
         [Inject] public IBkSearcher BkSearcher { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
-        [Inject] public IBkDataHolder BkDataHolder { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
-        [Inject] public IUserOptionsRepository UserOptionsRepository { get; set; }
+        [Inject] public IUserOptionsService UserOptionsService { get; set; }
 
         public class ModalModel
         {
@@ -45,7 +43,7 @@ namespace Newbe.BookmarkManager.Pages
 
         private string _searchValue;
         private bool _searchInputLoading;
-        private readonly Subject<string> _searchSubject = new();
+        private readonly Subject<string?> _searchSubject = new();
         private readonly Subject<bool> _altKeySubject = new();
         private readonly Subject<string> _updateFaviconSubject = new();
         private IDisposable _searchPlaceHolderHandler;
@@ -80,23 +78,17 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                await BkDataHolder.StartAsync();
-                BkDataHolder.OnDataReload += BkDataHolderOnOnDataReload;
-                
-                await BkManager.InitAsync();
-                await BkSearcher.InitAsync();
-
                 _searchSubject
                     .Throttle(TimeSpan.FromMilliseconds(500))
                     .Select(x => x?.Trim())
-                    .Subscribe(args =>
+                    .Subscribe(async args =>
                     {
                         _searchInputLoading = true;
                         StateHasChanged();
                         try
                         {
                             Logger.LogInformation("Search: {Args}", args);
-                            var target = BkSearcher.Search(args, _resultLimit);
+                            var target = await BkSearcher.Search(args, _resultLimit);
                             _targetBks = Map(target);
                         }
                         catch (Exception e)
@@ -160,11 +152,6 @@ namespace Newbe.BookmarkManager.Pages
                         }
                     });
             }
-        }
-
-        private void BkDataHolderOnOnDataReload(object sender, EventArgs e)
-        {
-            _searchSubject.OnNext(_searchValue);
         }
 
         private BkViewItem[] Map(SearchResultItem[] items)
@@ -238,7 +225,6 @@ namespace Newbe.BookmarkManager.Pages
         private async Task OnRemovingTag(Bk bk, string tag)
         {
             await BkManager.RemoveTagAsync(bk.Url, tag);
-            StateHasChanged();
             _searchSubject.OnNext(_searchValue);
         }
 
@@ -262,11 +248,10 @@ namespace Newbe.BookmarkManager.Pages
         {
             var bkNewTag = bk.NewTag;
             await BkManager.AddTagAsync(bk.Bk.Url, bkNewTag);
-            StateHasChanged();
+            _searchSubject.OnNext(_searchValue);
 
             bk.NewTagInputVisible = false;
             bk.NewTag = string.Empty;
-            _searchSubject.OnNext(_searchValue);
         }
 
         private async Task OnClickResumeFactorySetting()
@@ -278,8 +263,9 @@ namespace Newbe.BookmarkManager.Pages
 
         private Task OnClickDumpDataAsync()
         {
-            var json = JsonSerializer.Serialize(BkDataHolder.Collection);
-            Logger.LogInformation(json);
+            // TODO
+            // var json = JsonSerializer.Serialize(BkDataHolder.Collection);
+            // Logger.LogInformation(json);
             return Task.CompletedTask;
         }
 
@@ -290,7 +276,7 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task HandleUserOptionsOk(MouseEventArgs e)
         {
-            await UserOptionsRepository.SaveAsync(new UserOptions
+            await UserOptionsService.SaveAsync(new UserOptions
             {
                 PinyinFeature = _modal.PinyinFeature,
                 CloudBkFeature = _modal.CloudBkFeature
@@ -311,7 +297,7 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task LoadUserOptions()
         {
-            var options = await UserOptionsRepository.GetOptionsAsync();
+            var options = await UserOptionsService.GetOptionsAsync();
             _modal.PinyinFeature = options.PinyinFeature;
             _modal.CloudBkFeature = options.CloudBkFeature;
         }

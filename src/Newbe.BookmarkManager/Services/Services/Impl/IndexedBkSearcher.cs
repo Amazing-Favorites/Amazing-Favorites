@@ -5,35 +5,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class BkSearcher : IBkSearcher
+    public class IndexedBkSearcher : IBkSearcher
     {
-        private readonly ILogger<BkSearcher> _logger;
-        private readonly IBkDataHolder _bkDataHolder;
-        private readonly IBookmarkDataHolder _bookmarkDataHolder;
+        private readonly IIndexedDbRepo<Bk, string> _bkRepo;
+        private readonly ILogger<IndexedBkSearcher> _logger;
+        private readonly IIndexedDbRepo<BkTag, string> _tagRepo;
 
-        public BkSearcher(
-            ILogger<BkSearcher> logger,
-            IBkDataHolder bkDataHolder,
-            IBookmarkDataHolder bookmarkDataHolder)
+        public IndexedBkSearcher(
+            IIndexedDbRepo<Bk, string> bkRepo,
+            ILogger<IndexedBkSearcher> logger,
+            IIndexedDbRepo<BkTag, string> tagRepo)
         {
+            _bkRepo = bkRepo;
             _logger = logger;
-            _bkDataHolder = bkDataHolder;
-            _bookmarkDataHolder = bookmarkDataHolder;
+            _tagRepo = tagRepo;
         }
 
-        public async Task InitAsync()
+        public async Task<SearchResultItem[]> Search(string searchText, int limit)
         {
-            await _bkDataHolder.StartAsync();
-            await _bookmarkDataHolder.StartAsync();
-        }
-
-        public SearchResultItem[] Search(string searchText, int limit)
-        {
-            var source = _bkDataHolder.Collection.Bks.Values;
+            var source = await _bkRepo.GetAllAsync();
             if (string.IsNullOrWhiteSpace(searchText))
             {
                 return source
-                    .Where(FilterByNode())
                     .OrderByDescending(x => x.LastClickTime)
                     .ThenByDescending(x => x.ClickedCount)
                     .Take(limit)
@@ -53,20 +46,21 @@ namespace Newbe.BookmarkManager.Services
                 input.Keywords,
                 input.Tags);
 
-            var matchTags = _bkDataHolder.Collection.Tags
+            var tags = await _tagRepo.GetAllAsync();
+            var tagDict = tags.ToDictionary(x => x.Tag);
+            var matchTags = tagDict
                 .Where(tag =>
                     input.Tags.Contains(tag.Key) || input.Keywords.Any(keyword => StringContains(tag.Key, keyword)))
                 .Select(x => x.Key)
                 .ToHashSet();
 
-            var matchTagAlias = _bkDataHolder.Collection.Tags
+            var matchTagAlias = tagDict
                 .Where(tag => input.Keywords.Any(keyword =>
                     tag.Value.TagAlias.Values.Any(tagAlias => StringContains(tagAlias.Alias, keyword))))
                 .Select(x => x.Key)
                 .ToHashSet();
 
             var re = source
-                .Where(FilterByNode())
                 .Select(MatchBk)
                 .Where(x => x.Matched)
                 .OrderByDescending(x => x.Score)
@@ -109,42 +103,5 @@ namespace Newbe.BookmarkManager.Services
                 return !string.IsNullOrWhiteSpace(a) && a.Contains(target, StringComparison.OrdinalIgnoreCase);
             }
         }
-
-        private Func<Bk, bool> FilterByNode()
-        {
-            return bks => _bookmarkDataHolder.Nodes.ContainsKey(bks.Url);
-        }
-    }
-
-    public record SearchInput
-    {
-        public static SearchInput Parse(string searchText)
-        {
-            var searchInput = new SearchInput
-            {
-                SourceText = searchText
-            };
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                return searchInput;
-            }
-
-            var keywords = searchText
-                .Split(" ")
-                .Select(x => x.Trim())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToArray();
-
-            var tags = keywords.Where(x => x.StartsWith("t:")).ToArray();
-            var tagSearchValues = tags.Select(x => x[2..]).ToArray();
-            keywords = keywords.Except(tags).ToArray();
-            searchInput.Keywords = keywords;
-            searchInput.Tags = tagSearchValues;
-            return searchInput;
-        }
-
-        public string SourceText { get; set; }
-        public string[] Keywords { get; set; }
-        public string[] Tags { get; set; }
     }
 }

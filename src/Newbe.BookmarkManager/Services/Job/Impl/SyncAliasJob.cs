@@ -11,9 +11,10 @@ namespace Newbe.BookmarkManager.Services
     public class SyncAliasJob : ISyncAliasJob
     {
         private readonly ILogger<SyncAliasJob> _logger;
-        private readonly IBkDataHolder _bkDataHolder;
         private readonly IClock _clock;
-        private readonly IUserOptionsRepository _userOptionsRepository;
+        private readonly IIndexedDbRepo<BkTag, string> _tagsRepo;
+        private readonly IIndexedDbRepo<Bk, string> _bkRepo;
+        private readonly IUserOptionsService _userOptionsService;
         private readonly IEnumerable<ITextAliasProvider> _fillers;
         private readonly Subject<long> _jobSubject = new();
 
@@ -22,28 +23,29 @@ namespace Newbe.BookmarkManager.Services
 
         public SyncAliasJob(
             ILogger<SyncAliasJob> logger,
-            IBkDataHolder bkDataHolder,
             IClock clock,
-            IUserOptionsRepository userOptionsRepository,
+            IIndexedDbRepo<BkTag, string> tagsRepo,
+            IIndexedDbRepo<Bk, string> bkRepo,
+            IUserOptionsService userOptionsService,
             IEnumerable<ITextAliasProvider> fillers)
         {
             _logger = logger;
-            _bkDataHolder = bkDataHolder;
             _clock = clock;
-            _userOptionsRepository = userOptionsRepository;
+            _tagsRepo = tagsRepo;
+            _bkRepo = bkRepo;
+            _userOptionsService = userOptionsService;
             _fillers = fillers;
         }
 
         public async ValueTask StartAsync()
         {
-            await _bkDataHolder.StartAsync();
             _loadHandler = _jobSubject
                 .Merge(Observable.Interval(TimeSpan.FromSeconds(60)))
                 .Select(_ => Observable.FromAsync(async () =>
                 {
                     try
                     {
-                        var options = await _userOptionsRepository.GetOptionsAsync();
+                        var options = await _userOptionsService.GetOptionsAsync();
                         if (options?.PinyinFeature is
                         {
                             Enabled: true,
@@ -53,27 +55,29 @@ namespace Newbe.BookmarkManager.Services
                         {
                             foreach (var textAliasFiller in _fillers)
                             {
-                                var bkTags = _bkDataHolder.Collection.Tags.Values
+                                var tags = await _tagsRepo.GetAllAsync();
+                                var bkTags = tags
                                     .Where(tag => textAliasFiller.NeedFill(tag))
                                     .ToArray();
                                 if (bkTags.Length > 0)
                                 {
-                                    await _bkDataHolder.PushDataChangeActionAsync(async () =>
+                                    var updateResult = await textAliasFiller.FillAsync(bkTags);
+                                    if (updateResult.IsOk)
                                     {
-                                        var updateResult = await textAliasFiller.FillAsync(bkTags);
-                                        if (updateResult.IsOk)
+                                        foreach (var bkTag in bkTags)
                                         {
-                                            _logger.LogInformation("New alias add for tag");
+                                            await _tagsRepo.UpsertAsync(bkTag);
                                         }
 
-                                        return updateResult.IsOk;
-                                    });
+                                        _logger.LogInformation("New alias add for tag");
+                                    }
                                 }
                             }
 
                             foreach (var textAliasFiller in _fillers)
                             {
-                                var bks = _bkDataHolder.Collection.Bks.Values
+                                var bkCollection = await _bkRepo.GetAllAsync();
+                                var bks = bkCollection
                                     .Where(x => textAliasFiller.NeedFill(x))
                                     .ToArray();
                                 if (bks.Length > 0)
@@ -83,18 +87,18 @@ namespace Newbe.BookmarkManager.Services
                                         textAliasFiller.TextAliasType);
                                     const int pageSize = 100;
                                     var pageCount = (int) Math.Ceiling(1.0 * bks.Length / pageSize);
-                                    await _bkDataHolder.PushDataChangeActionAsync(async () =>
+                                    for (var i = 0; i < pageCount; i++)
                                     {
-                                        var updated = false;
-                                        for (var i = 0; i < pageCount; i++)
+                                        var items = bks.Skip(i * pageSize).Take(pageSize).ToArray();
+                                        var updateResult = await textAliasFiller.FillAsync(items);
+                                        if (updateResult.IsOk)
                                         {
-                                            var items = bks.Skip(i * pageSize).Take(pageSize).ToArray();
-                                            var updateResult = await textAliasFiller.FillAsync(items);
-                                            updated = updated || updateResult.IsOk;
+                                            foreach (var item in items)
+                                            {
+                                                await _bkRepo.UpsertAsync(item);
+                                            }
                                         }
-
-                                        return updated;
-                                    });
+                                    }
                                 }
                             }
                         }

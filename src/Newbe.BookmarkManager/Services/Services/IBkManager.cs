@@ -7,7 +7,6 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface IBkManager
     {
-        Task InitAsync();
         ValueTask AddClickAsync(string url, int moreCount);
         ValueTask RestoreAsync();
 
@@ -17,8 +16,10 @@ namespace Newbe.BookmarkManager.Services
         ValueTask UpdateFavIconUrlAsync(Dictionary<string, string> urls);
         ValueTask AppendBookmarksAsync(IEnumerable<BookmarkTreeNode> nodes);
         Task LoadCloudCollectionAsync(CloudBkCollection cloudBkCollection);
-        CloudBkCollection GetCloudBkCollection();
-        long GetEtagVersion();
-        Bk? Get(string url);
+        Task<CloudBkCollection> GetCloudBkCollectionAsync();
+        Task DeleteAsync(string url);
+        Task UpdateTitleAsync(string url, string title);
+        Task<long> GetEtagVersionAsync();
+        Task<Bk?> Get(string url);
     }
 }

@@ -1,15 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public interface IUserOptionsRepository
+    [Table(Consts.StoreNames.UserOptions)]
+    public record UserOptions : IEntity<string>
     {
-        ValueTask<UserOptions> GetOptionsAsync();
-        ValueTask SaveAsync(UserOptions options);
-    }
-
-    public record UserOptions
-    {
+        public string Id => Consts.SingleOneDataId;
         public PinyinFeature? PinyinFeature { get; set; }
         public CloudBkFeature? CloudBkFeature { get; set; }
     }

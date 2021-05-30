@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services
 {
     public interface IClock
     {
