@@ -7,17 +7,17 @@ namespace Newbe.BookmarkManager.Services
 {
     internal class AuthHeaderHandler : DelegatingHandler
     {
-        private readonly IUserOptionsRepository _userOptionsRepository;
+        private readonly IUserOptionsService _userOptionsService;
 
         public AuthHeaderHandler(
-            IUserOptionsRepository userOptionsRepository)
+            IUserOptionsService userOptionsService)
         {
-            _userOptionsRepository = userOptionsRepository;
+            _userOptionsService = userOptionsService;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var options = await _userOptionsRepository.GetOptionsAsync();
+            var options = await _userOptionsService.GetOptionsAsync();
             var token = options?.PinyinFeature?.AccessToken;
             if (!string.IsNullOrEmpty(token))
             {

@@ -10,7 +10,7 @@ namespace Newbe.BookmarkManager.Services
     {
         private readonly ILogger<SyncCloudJob> _logger;
         private readonly IBkManager _bkManager;
-        private readonly IUserOptionsRepository _userOptionsRepository;
+        private readonly IUserOptionsService _userOptionsService;
         private readonly ICloudService _cloudService;
 
         // ReSharper disable once NotAccessedField.Local
@@ -19,20 +19,19 @@ namespace Newbe.BookmarkManager.Services
         public SyncCloudJob(
             ILogger<SyncCloudJob> logger,
             IBkManager bkManager,
-            IUserOptionsRepository userOptionsRepository,
+            IUserOptionsService userOptionsService,
             ICloudService cloudService)
         {
             _logger = logger;
             _bkManager = bkManager;
-            _userOptionsRepository = userOptionsRepository;
+            _userOptionsService = userOptionsService;
             _cloudService = cloudService;
         }
 
         public async ValueTask StartAsync()
         {
-            await _bkManager.InitAsync();
-
-            _jobHandler = new[] {1L}.ToObservable()
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            _jobHandler =  new[] {1L}.ToObservable()
                 .Concat(Observable.Interval(TimeSpan.FromMinutes(10)))
                 .Buffer(TimeSpan.FromSeconds(5), 50)
                 .Where(x => x.Count > 0)
@@ -54,10 +53,10 @@ namespace Newbe.BookmarkManager.Services
 
         private async Task RunSyncAsync()
         {
-            var options = await _userOptionsRepository.GetOptionsAsync();
+            var options = await _userOptionsService.GetOptionsAsync();
             if (options.CloudBkFeature?.Enabled == true)
             {
-                var etagVersion = _bkManager.GetEtagVersion();
+                var etagVersion = await _bkManager.GetEtagVersionAsync();
                 var (hasChanged, output) = await _cloudService.GetCloudAsync(etagVersion);
                 if (hasChanged)
                 {
@@ -70,7 +69,7 @@ namespace Newbe.BookmarkManager.Services
                     else if (output.EtagVersion < etagVersion)
                     {
                         // sync to cloud
-                        var cloudBkCollection = _bkManager.GetCloudBkCollection();
+                        var cloudBkCollection = await _bkManager.GetCloudBkCollectionAsync();
                         if (cloudBkCollection.Bks.Count > 0)
                         {
                             await _cloudService.SaveToCloudAsync(cloudBkCollection);

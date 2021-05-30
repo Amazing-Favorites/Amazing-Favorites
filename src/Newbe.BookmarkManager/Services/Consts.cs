@@ -7,14 +7,19 @@
             public const string OpenManager = "open-manager-ui";
         }
 
-        public static class StorageKeys
-        {
-            public const string BookmarksData = "Newbe.BookmarkManager.Data.V1";
-            public const string BookmarksDataLastUpdatedTime = "Newbe.BookmarkManager.Data.V1.LastUpdatedTime";
-            public const string UserOptionsName = "Newbe.BookmarkManager.UserOptions.V1";
-        }
-
         public const string ManagerTabTitle = "Amazing Favorites";
         public const string AmazingFavoriteFolderName = "Amazing Favorites";
+
+        public const string DbName = "Amazing Favorites";
+
+        public const string SingleOneDataId = "Amazing Favorites";
+
+        public static class StoreNames
+        {
+            public const string Bks = "Bks";
+            public const string BkMetadata = "BkMetadata";
+            public const string Tags = "Tags";
+            public const string UserOptions = "UserOptions";
+        }
     }
 }
