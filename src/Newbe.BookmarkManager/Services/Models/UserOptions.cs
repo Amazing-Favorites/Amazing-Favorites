@@ -6,6 +6,7 @@ namespace Newbe.BookmarkManager.Services
     public record UserOptions : IEntity<string>
     {
         public string Id => Consts.SingleOneDataId;
+        public bool? AcceptPrivacyAgreement { get; set; }
         public PinyinFeature? PinyinFeature { get; set; }
         public CloudBkFeature? CloudBkFeature { get; set; }
     }
