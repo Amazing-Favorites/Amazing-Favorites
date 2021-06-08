@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Services;
-using WebExtension.Net.Tabs;
+using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
 {
@@ -132,7 +132,7 @@ namespace Newbe.BookmarkManager.Pages
                         try
                         {
                             await Task.Delay(TimeSpan.FromSeconds(5));
-                            var tabs = await WebExtension.Tabs.Query(new QueryInfo
+                            var tabs = await WebExtensions.Tabs.Query(new QueryInfo
                             {
                                 Url = url
                             });
@@ -213,7 +213,7 @@ namespace Newbe.BookmarkManager.Pages
         private async Task OnClickUrl(BkViewItem bk)
         {
             var url = bk.Bk.Url;
-            await WebExtension.Tabs.Create(new CreateProperties
+            await WebExtensions.Tabs.Create(new CreateProperties
             {
                 Url = url
             });
@@ -310,7 +310,7 @@ namespace Newbe.BookmarkManager.Pages
         
         private async Task OpenHelp()
         {
-            await WebExtension.Tabs.OpenAsync("https://af.newbe.pro/");
+            await WebExtensions.Tabs.OpenAsync("https://af.newbe.pro/");
         }
 
         private async Task LoadUserOptions()

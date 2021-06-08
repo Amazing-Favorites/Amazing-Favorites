@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newbe.BookmarkManager.WebApi;
-using WebExtension.Net.Bookmarks;
+using WebExtensions.Net.Bookmarks;
 
 namespace Newbe.BookmarkManager.Services
 {

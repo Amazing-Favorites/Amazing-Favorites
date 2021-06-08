@@ -6,8 +6,8 @@ using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services;
-using WebExtension.Net.Bookmarks;
-using WebExtension.Net.Tabs;
+using WebExtensions.Net.Bookmarks;
+using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
 {
@@ -23,7 +23,7 @@ namespace Newbe.BookmarkManager.Pages
             if (firstRender)
             {
 
-                var tabs = await WebExtension.Tabs.Query(new QueryInfo
+                var tabs = await WebExtensions.Tabs.Query(new QueryInfo
                 {
                     Active = true,
                     CurrentWindow = true
@@ -105,7 +105,7 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task OpenManager()
         {
-            await WebExtension.Tabs.ActiveOrOpenManagerAsync();
+            await WebExtensions.Tabs.ActiveOrOpenManagerAsync();
         }
 
         private async Task RemoveBookmarkAsync()
