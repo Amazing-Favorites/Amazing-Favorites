@@ -8,10 +8,10 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Refit;
 using TG.Blazor.IndexedDB;
-using WebExtension.Net.Bookmarks;
-using WebExtension.Net.Storage;
-using WebExtension.Net.Tabs;
-using WebExtension.Net.Windows;
+using WebExtensions.Net.Bookmarks;
+using WebExtensions.Net.Storage;
+using WebExtensions.Net.Tabs;
+using WebExtensions.Net.Windows;
 
 namespace Newbe.BookmarkManager
 {
