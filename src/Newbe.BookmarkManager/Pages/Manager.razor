@@ -14,6 +14,11 @@
             <Col Style="text-align: right" Span="4">
                 <Space>
                     <SpaceItem>
+                        <Button OnClick="OpenHelp">
+                            <Icon Type="question-circle" Theme="twotone"/>
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
                         <Button OnClick="OpenControlPanel">
                             <Icon Type="setting" Theme="twotone"/>
                         </Button>
@@ -125,38 +130,53 @@
           LabelColSpan="4"
           WrapperColSpan="20"
           Size="Default">
-        <FormItem Label="Enable Pinyin">
-            <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
-        </FormItem>
-        @if (context.PinyinFeature.Enabled)
+        @if (context.AcceptPrivacyAgreement)
         {
-            <FormItem Label="Access Token">
-                <TextArea @bind-Value="@context.PinyinFeature.AccessToken" />
-                <p>
-                    <Icon Type="question" Theme="outline"/>
-                    You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
-                </p>
+            <FormItem Label="Enable Pinyin">
+                <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
+            </FormItem>
+            @if (context.PinyinFeature.Enabled)
+            {
+                <FormItem Label="Access Token">
+                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken" />
+                    <p>
+                        <Icon Type="question" Theme="outline"/>
+                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                    </p>
 
+                </FormItem>
+                <FormItem Label="Pinyin Api BaseUrl">
+                    <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
+                </FormItem>
+            }
+            <FormItem Label="Enable Cloud Sync">
+                <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
             </FormItem>
-            <FormItem Label="Pinyin Api BaseUrl">
-                <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
-            </FormItem>
+            @if (context.CloudBkFeature.Enabled)
+            {
+                <FormItem Label="Access Token">
+                    <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" />
+                    <p>
+                        <Icon Type="question" Theme="outline"/>
+                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                    </p>
+
+                </FormItem>
+                <FormItem Label="Cloud Sync Api BaseUrl">
+                    <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
+                </FormItem>
+            }
         }
-        <FormItem Label="Enable Cloud Sync">
-            <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
-        </FormItem>
-        @if (context.CloudBkFeature.Enabled)
+        else
         {
-            <FormItem Label="Access Token">
-                <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" />
-                <p>
-                    <Icon Type="question" Theme="outline"/>
-                    You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
-                </p>
-
-            </FormItem>
-            <FormItem Label="Cloud Sync Api BaseUrl">
-                <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
+            <FormItem Label="User Privacy Agreement">
+                <p>The following features may transfer some data to cloud servers, so please <a href="https://af.newbe.pro/docs/00-1-Privacy" target="_blank">click here</a>, read and understand our User Privacy Agreement. After you confirm and agree to the content of the agreement click the button below to enable the advanced features.</p>
+                <p>Feature shows as below:</p>
+                <ul>
+                    <li>Pinyin Support. You could search your bookmark title and your tags by PinYin</li>
+                    <li>Tags Cloud Sync. You could sync your bookmark tags in multiple device</li>
+                </ul>
+                <Button OnClick="OnClickAgreeUserPrivacyAgreement" Type="primary">I agree to the User Privacy Agreement</Button>
             </FormItem>
         }
         <FormItem Label="System Actions">

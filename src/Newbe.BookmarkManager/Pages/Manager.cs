@@ -24,6 +24,7 @@ namespace Newbe.BookmarkManager.Pages
         public class ModalModel
         {
             public bool Visible { get; set; }
+            public bool AcceptPrivacyAgreement { get; set; }
             public PinyinFeature PinyinFeature { get; set; }
             public CloudBkFeature CloudBkFeature { get; set; }
         }
@@ -218,7 +219,7 @@ namespace Newbe.BookmarkManager.Pages
             });
             _updateFaviconSubject.OnNext(url);
             await BkManager.AddClickAsync(url, 1);
-            _searchValue = null;
+            _searchValue = string.Empty;
             _searchSubject.OnNext(null);
         }
 
@@ -268,6 +269,17 @@ namespace Newbe.BookmarkManager.Pages
             // Logger.LogInformation(json);
             return Task.CompletedTask;
         }
+        
+        private async Task OnClickAgreeUserPrivacyAgreement()
+        {
+            _modal.AcceptPrivacyAgreement = true;
+            await UserOptionsService.SaveAsync(new UserOptions
+            {
+                AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
+                PinyinFeature = _modal.PinyinFeature,
+                CloudBkFeature = _modal.CloudBkFeature
+            });
+        }
 
         private void CloseControlPanel()
         {
@@ -278,6 +290,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             await UserOptionsService.SaveAsync(new UserOptions
             {
+                AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
                 PinyinFeature = _modal.PinyinFeature,
                 CloudBkFeature = _modal.CloudBkFeature
             });
@@ -294,12 +307,18 @@ namespace Newbe.BookmarkManager.Pages
             await LoadUserOptions();
             _modal.Visible = true;
         }
+        
+        private async Task OpenHelp()
+        {
+            await WebExtension.Tabs.OpenAsync("https://af.newbe.pro/");
+        }
 
         private async Task LoadUserOptions()
         {
             var options = await UserOptionsService.GetOptionsAsync();
             _modal.PinyinFeature = options.PinyinFeature;
             _modal.CloudBkFeature = options.CloudBkFeature;
+            _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement == true;
         }
     }
 }

@@ -28,5 +28,13 @@ namespace Newbe.BookmarkManager.Services
                 });
             }
         }
+
+        public static async Task OpenAsync(this ITabsApi tabsApi, string url)
+        {
+            await tabsApi.Create(new CreateProperties
+            {
+                Url = url
+            });
+        }
     }
 }
