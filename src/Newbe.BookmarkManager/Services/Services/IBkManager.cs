@@ -11,7 +11,7 @@ namespace Newbe.BookmarkManager.Services
         ValueTask RestoreAsync();
 
         ValueTask RemoveTagAsync(string url, string tag);
-        ValueTask<bool> AddTagAsync(string url, string tag);
+        ValueTask<bool> AppendTagAsync(string url, params string[]? tags);
         ValueTask UpdateTagsAsync(string url, IEnumerable<string> tags);
         ValueTask UpdateFavIconUrlAsync(Dictionary<string, string> urls);
         ValueTask AppendBookmarksAsync(IEnumerable<BookmarkTreeNode> nodes);
@@ -21,5 +21,7 @@ namespace Newbe.BookmarkManager.Services
         Task UpdateTitleAsync(string url, string title);
         Task<long> GetEtagVersionAsync();
         Task<Bk?> Get(string url);
+
+        Task<string[]> GetAllTagsAsync();
     }
 }

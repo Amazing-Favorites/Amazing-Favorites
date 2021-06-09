@@ -70,29 +70,52 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
-        public async ValueTask<bool> AddTagAsync(string url, string tag)
+        public async ValueTask<bool> AppendTagAsync(string url, params string[]? tags)
         {
-            if (string.IsNullOrWhiteSpace(tag))
+            if (tags == null)
             {
                 return false;
             }
 
-            _logger.LogInformation("New tag {Tag} add to {Url}", tag, url);
+            foreach (var tag in tags)
+            {
+                if (string.IsNullOrWhiteSpace(tag))
+                {
+                    return false;
+                }
+            }
+
+            _logger.LogInformation("New tags {Tag} add to {Url}", tags, url);
             var bk = await _bkRepo.GetAsync(url);
             if (bk != null)
             {
-                var key = tag.Trim();
-                if (bk.Tags != null && bk.Tags.Contains(key))
+                var newTagList = tags.Select(x => x.Trim())
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToArray();
+                var tagList = bk.Tags ?? new List<string>();
+                var set = new HashSet<string>(tagList);
+                var oldTagCount = tagList.Count;
+                foreach (var tag in newTagList)
+                {
+                    set.Add(tag);
+                }
+
+                tagList = set.ToList();
+                tagList.Sort();
+                bk.Tags = tagList;
+                if (oldTagCount == tagList.Count)
                 {
                     return false;
                 }
 
-                bk.Tags ??= new List<string>();
-                bk.Tags.Add(key);
-                await AppendTagsAsync(key);
+                foreach (var tag in newTagList)
+                {
+                    await AppendTagsAsync(tag);
+                }
+
                 await _bkRepo.UpsertAsync(bk);
                 await UpdateMetadataAsync();
-                _logger.LogInformation("Tag {Tag} added for {Url}", key, url);
+                _logger.LogInformation("Tags {Tag} added for {Url}", newTagList, url);
             }
 
             return true;
@@ -212,7 +235,7 @@ namespace Newbe.BookmarkManager.Services
                 }
             }
 
-            var cloudTags = cloudBkCollection.Bks.SelectMany(x=>x.Value.Tags).ToHashSet();
+            var cloudTags = cloudBkCollection.Bks.SelectMany(x => x.Value.Tags).ToHashSet();
             foreach (var cloudBkTag in cloudTags)
             {
                 await AppendTagsAsync(cloudBkTag);
@@ -268,6 +291,13 @@ namespace Newbe.BookmarkManager.Services
         public async Task<Bk?> Get(string url)
         {
             var re = await _bkRepo.GetAsync(url);
+            return re;
+        }
+
+        public async Task<string[]> GetAllTagsAsync()
+        {
+            var tags = await _tagsRepo.GetAllAsync();
+            var re = tags.Select(x => x.Tag).OrderBy(x => x).ToArray();
             return re;
         }
 

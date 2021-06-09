@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using WebExtensions.Net.Bookmarks;
 using WebExtensions.Net.Tabs;
@@ -148,18 +149,12 @@ namespace Newbe.BookmarkManager.Pages
             StateHasChanged();
         }
 
-        private void OnCreatingTag()
+        private void OnNewTagsAddAsync(TagInput.NewTagArgs args)
         {
-            var newTag = _formModel.NewTag?.Trim();
-            if (!string.IsNullOrEmpty(newTag))
+            foreach (var tag in args.Tags)
             {
-                _formModel.Tags.Add(newTag);
+                _formModel.Tags.Add(tag);
             }
-
-            StateHasChanged();
-
-            _formModel.NewTagInputVisible = false;
-            _formModel.NewTag = string.Empty;
         }
     }
 
@@ -175,9 +170,6 @@ namespace Newbe.BookmarkManager.Pages
         public bool IsLoading { get; set; } = true;
         public bool IsAvailable { get; set; } = true;
 
-        public bool NewTagInputVisible { get; set; }
-        public string NewTag { get; set; }
-        public Input<string> NewTagRef { get; set; }
         public bool IsUpdateSuccess { get; set; }
         public bool IsUpdateButtonLoading { get; set; }
     }
