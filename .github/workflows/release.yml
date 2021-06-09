@@ -60,4 +60,4 @@ jobs:
           repository: "Amazing-Favorites"
           tagName: "v${{ steps.gitversion.outputs.MajorMinorPatch }}"
           assets: |
-            src/Newbe.BookmarkManager/bin/Release/net6.0/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}.zip
+            src/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}.zip
