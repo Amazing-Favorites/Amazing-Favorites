@@ -1,0 +1,68 @@
+﻿<span style="display: @(_isAdding ? "inline-block" : "none")">
+    <Input OnPressEnter="e => OnCreatingTag()"
+           OnBlur="e => OnCreatingTag()"
+           @ref="_newTagRef"
+           @bind-Value="_newTag"
+           Placeholder="enter to add tag"
+           AutoFocus/>
+</span>
+<span style="display: @(!_isAdding ? "inline-block" : "none")">
+    <Tag Class="site-tag-plus" OnClick="e => OnClickAddTagAsync()">
+        <Icon Type="plus"/>New Tag
+    </Tag>
+</span>
+
+@code {
+
+    public record NewTagArgs(string[] Tags);
+
+    private Input<string> _newTagRef = null!;
+    private string? _newTag;
+    private bool _isAdding;
+
+    [Parameter]
+    public EventCallback<NewTagArgs> OnNewTagsCreated { get; set; }
+
+    [Parameter]
+    public string Separator { get; set; } = ",";
+
+    private void OnClickAddTagAsync()
+    {
+        _isAdding = true;
+        Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+            await _newTagRef.Ref.FocusAsync();
+        });
+    }
+    
+    private async Task OnCreatingTag()
+    {
+        try
+        {
+            string[] newTags = Array.Empty<string>();
+            if (!string.IsNullOrWhiteSpace(_newTag))
+            {
+                newTags = _newTag.Split(Separator)
+                    .Select(x => x.Trim())
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToArray();
+            }
+            if (newTags.Any())
+            {
+                await OnNewTagsCreated.InvokeAsync(new NewTagArgs(newTags));
+                _newTag = null;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            _isAdding = false;
+        }
+    }
+
+}

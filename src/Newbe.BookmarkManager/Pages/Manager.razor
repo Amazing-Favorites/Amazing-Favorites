@@ -94,19 +94,7 @@
                                         </Tag>
                                     }
                                 }
-                                <span style="display: @(bk.NewTagInputVisible ? "inline-block" : "none")">
-                                    <Input OnPressEnter="e => OnCreatingTag(bk)"
-                                           OnBlur="e => OnCreatingTag(bk)"
-                                           @ref="@bk.NewTagRef"
-                                           @bind-Value="@bk.NewTag"
-                                           Placeholder="enter to add tag"
-                                           AutoFocus/>
-                                </span>
-                                <span style="display: @(!bk.NewTagInputVisible ? "inline-block" : "none")">
-                                    <Tag Class="site-tag-plus" OnClick="e => bk.NewTagInputVisible = true">
-                                        <Icon Type="plus"/>New Tag
-                                    </Tag>
-                                </span>
+                                <TagInput OnNewTagsCreated="e => OnNewTagsAddAsync(bk, e.Tags)"></TagInput>
                             </Col>
                         </ListItem>
                     </ChildContent>

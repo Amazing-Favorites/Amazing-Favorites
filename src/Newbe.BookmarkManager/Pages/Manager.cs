@@ -245,14 +245,10 @@ namespace Newbe.BookmarkManager.Pages
             _searchSubject.OnNext(_searchValue);
         }
 
-        private async Task OnCreatingTag(BkViewItem bk)
+        private async Task OnNewTagsAddAsync(BkViewItem bk, string[] newTags)
         {
-            var bkNewTag = bk.NewTag;
-            await BkManager.AddTagAsync(bk.Bk.Url, bkNewTag);
+            await BkManager.AppendTagAsync(bk.Bk.Url, newTags);
             _searchSubject.OnNext(_searchValue);
-
-            bk.NewTagInputVisible = false;
-            bk.NewTag = string.Empty;
         }
 
         private async Task OnClickResumeFactorySetting()
