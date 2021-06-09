@@ -94,7 +94,9 @@
                                         </Tag>
                                     }
                                 }
-                                <TagInput OnNewTagsCreated="e => OnNewTagsAddAsync(bk, e.Tags)"></TagInput>
+                                <TagInput OnNewTagsCreated="e => OnNewTagsAddAsync(bk, e.Tags)"
+                                          Options="_allTags">
+                                </TagInput>
                             </Col>
                         </ListItem>
                     </ChildContent>

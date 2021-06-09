@@ -1,10 +1,14 @@
 ﻿<span style="display: @(_isAdding ? "inline-block" : "none")">
-    <Input OnPressEnter="e => OnCreatingTag()"
-           OnBlur="e => OnCreatingTag()"
-           @ref="_newTagRef"
-           @bind-Value="_newTag"
-           Placeholder="enter to add tag"
-           AutoFocus/>
+    <AutoComplete Options="Options" OnSelectionChange="OnCreatingTag">
+        <ChildContent>
+            <AutoCompleteSearch OnPressEnter="e => OnCreatingTag()"
+                                OnBlur="e => OnCreatingTag()"
+                                Placeholder="enter to add tag"
+                                @ref="_newTagRef"
+                                @bind-Value="_newTag">
+            </AutoCompleteSearch>
+        </ChildContent>
+    </AutoComplete>
 </span>
 <span style="display: @(!_isAdding ? "inline-block" : "none")">
     <Tag Class="site-tag-plus" OnClick="e => OnClickAddTagAsync()">
@@ -16,7 +20,7 @@
 
     public record NewTagArgs(string[] Tags);
 
-    private Input<string> _newTagRef = null!;
+    private AutoCompleteSearch _newTagRef = null!;
     private string? _newTag;
     private bool _isAdding;
 
@@ -25,6 +29,9 @@
 
     [Parameter]
     public string Separator { get; set; } = ",";
+
+    [Parameter]
+    public string[] Options { get; set; } = Array.Empty<string>();
 
     private void OnClickAddTagAsync()
     {
@@ -35,7 +42,7 @@
             await _newTagRef.Ref.FocusAsync();
         });
     }
-    
+
     private async Task OnCreatingTag()
     {
         try
@@ -64,5 +71,4 @@
             _isAdding = false;
         }
     }
-
 }

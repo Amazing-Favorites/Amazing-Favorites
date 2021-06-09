@@ -52,6 +52,7 @@ namespace Newbe.BookmarkManager.Pages
         private readonly int _resultLimit = 10;
         private ModalModel _modal = new();
         private Search _search;
+        private string[] _allTags = Array.Empty<string>();
 
         [JSInvokable]
         public async Task OnReceivedCommand(string command)
@@ -152,6 +153,7 @@ namespace Newbe.BookmarkManager.Pages
                             // ignored
                         }
                     });
+                _allTags = await BkManager.GetAllTagsAsync();
             }
         }
 
@@ -226,6 +228,7 @@ namespace Newbe.BookmarkManager.Pages
         private async Task OnRemovingTag(Bk bk, string tag)
         {
             await BkManager.RemoveTagAsync(bk.Url, tag);
+            _allTags = await BkManager.GetAllTagsAsync();
             _searchSubject.OnNext(_searchValue);
         }
 
@@ -247,6 +250,7 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task OnNewTagsAddAsync(BkViewItem bk, string[] newTags)
         {
+            _allTags = await BkManager.GetAllTagsAsync();
             await BkManager.AppendTagAsync(bk.Bk.Url, newTags);
             _searchSubject.OnNext(_searchValue);
         }

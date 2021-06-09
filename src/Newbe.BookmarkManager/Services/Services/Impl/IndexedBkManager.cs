@@ -294,6 +294,13 @@ namespace Newbe.BookmarkManager.Services
             return re;
         }
 
+        public async Task<string[]> GetAllTagsAsync()
+        {
+            var tags = await _tagsRepo.GetAllAsync();
+            var re = tags.Select(x => x.Tag).OrderBy(x => x).ToArray();
+            return re;
+        }
+
         private async Task<BkMetadata> GetMetadataAsync()
         {
             var meta = await _bkMetadataRepo.GetSingleOneAsync() ?? new BkMetadata();
