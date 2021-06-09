@@ -4,6 +4,10 @@ Amazing Favorites help you to manage you bookmarks efficiently.
 
 Please feel free to add your idea to issues.
 
+You can find the user manual at [af.newbe.pro](https://af.newbe.pro/docs/)
+
+[![CodeFactor](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites/badge)](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites)
+
 ## Screenshots
 
 ### Add a new page as bookmark
@@ -16,8 +20,8 @@ Please feel free to add your idea to issues.
 
 ## Install from source
 
-1. [download and install .net 5 sdk](https://dotnet.microsoft.com/download/dotnet/5.0)
-2. run `dotnet build` `src` folder to build extensions
+1. [download and install .net 6 sdk](https://dotnet.microsoft.com/download/dotnet/6.0)
+2. run `dotnet build` in `src` folder to build extensions
 3. open your browser (Chrome / Microsoft Edge / 360 browser / Vivaldi or else) to enable `extension developer mode`
 4. load extension from folder `src/Newbe.BookmarkManager/bin/Debug/net5.0/wwwroot`
 5. enjoy now!

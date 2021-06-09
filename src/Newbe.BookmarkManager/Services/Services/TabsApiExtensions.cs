@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using WebExtension.Net.Tabs;
+using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Services
 {

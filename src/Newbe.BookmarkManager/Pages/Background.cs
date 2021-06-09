@@ -17,7 +17,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             if (command == Consts.Commands.OpenManager)
             {
-                WebExtension.Tabs.ActiveOrOpenManagerAsync();
+                WebExtensions.Tabs.ActiveOrOpenManagerAsync();
             }
         }
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.WebApi;
-using WebExtension.Net.Bookmarks;
+using WebExtensions.Net.Bookmarks;
 
 namespace Newbe.BookmarkManager.Services
 {
