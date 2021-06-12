@@ -10,7 +10,7 @@ namespace Newbe.BookmarkManager.Services
         {
             var tabs = await tabsApi.Query(new QueryInfo
             {
-                Title = Consts.ManagerTabTitle
+                Title = Consts.ManagerTabTitle,
             });
             var managerTab = tabs.FirstOrDefault();
             if (managerTab is {Id: { }})
@@ -22,10 +22,28 @@ namespace Newbe.BookmarkManager.Services
             }
             else
             {
-                await tabsApi.Create(new CreateProperties
+                await tabsApi.OpenAsync("/Manager/index.html");
+            }
+        }
+        
+        public static async Task ActiveOrOpenAsync(this ITabsApi tabsApi,
+            string url)
+        {
+            var tabs = await tabsApi.Query(new QueryInfo
+            {
+                Url = url
+            });
+            var managerTab = tabs.FirstOrDefault();
+            if (managerTab is {Id: { }})
+            {
+                await tabsApi.Update(managerTab.Id.Value, new UpdateProperties
                 {
-                    Url = "/Manager/index.html"
+                    Active = true
                 });
+            }
+            else
+            {
+                await tabsApi.OpenAsync(url);
             }
         }
 

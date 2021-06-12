@@ -194,7 +194,7 @@ namespace Newbe.BookmarkManager.Pages
                     {
                         var arrayIndex = selectIndex - 1;
                         Logger.LogInformation("Click keyboard to select {ArrayIndex} item", arrayIndex);
-                        await OnClickUrl(_targetBks[arrayIndex]);
+                        await OnClickUrl(_targetBks[arrayIndex], default);
                     }
                 }
             }
@@ -212,13 +212,18 @@ namespace Newbe.BookmarkManager.Pages
             }
         }
 
-        private async Task OnClickUrl(BkViewItem bk)
+        private async Task OnClickUrl(BkViewItem bk, MouseEventArgs? e)
         {
             var url = bk.Bk.Url;
-            await WebExtensions.Tabs.Create(new CreateProperties
+            if (e?.CtrlKey == true)
             {
-                Url = url
-            });
+                await WebExtensions.Tabs.OpenAsync(url);
+            }
+            else
+            {
+                await WebExtensions.Tabs.ActiveOrOpenAsync(url);
+            }
+
             _updateFaviconSubject.OnNext(url);
             await BkManager.AddClickAsync(url, 1);
             _searchValue = string.Empty;
@@ -269,7 +274,7 @@ namespace Newbe.BookmarkManager.Pages
             // Logger.LogInformation(json);
             return Task.CompletedTask;
         }
-        
+
         private async Task OnClickAgreeUserPrivacyAgreement()
         {
             _modal.AcceptPrivacyAgreement = true;
@@ -307,7 +312,7 @@ namespace Newbe.BookmarkManager.Pages
             await LoadUserOptions();
             _modal.Visible = true;
         }
-        
+
         private async Task OpenHelp()
         {
             await WebExtensions.Tabs.OpenAsync("https://af.newbe.pro/");
