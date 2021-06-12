@@ -23,7 +23,8 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-
+                var allTags = await BkManager.GetAllTagsAsync();
+                _formModel.AllTags = allTags;
                 var tabs = await WebExtensions.Tabs.Query(new QueryInfo
                 {
                     Active = true,
@@ -163,12 +164,14 @@ namespace Newbe.BookmarkManager.Pages
         public string Title { get; set; } = string.Empty;
         public HashSet<string> Tags { get; set; } = new();
         public string Url { get; set; } = string.Empty;
-        public BookmarkTreeNode BookmarkTreeNode { get; set; }
+        public BookmarkTreeNode BookmarkTreeNode { get; set; } = null!;
         public bool IsFirstAdded { get; set; }
         public bool IsRemoved { get; set; } = false;
         public bool IsShowEditor { get; set; }
         public bool IsLoading { get; set; } = true;
         public bool IsAvailable { get; set; } = true;
+        public string NewTag { get; set; }
+        public string[] AllTags { get; set; } = Array.Empty<string>();
 
         public bool IsUpdateSuccess { get; set; }
         public bool IsUpdateButtonLoading { get; set; }

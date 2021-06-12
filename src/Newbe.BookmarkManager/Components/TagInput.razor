@@ -1,16 +1,17 @@
-﻿<span style="display: @(_isAdding ? "inline-block" : "none")">
+﻿@using Microsoft.Extensions.Logging
+<span style="display: @(IsAdding ? "inline-block" : "none")">
     <AutoComplete Options="Options" OnSelectionChange="OnCreatingTag">
         <ChildContent>
             <AutoCompleteSearch OnPressEnter="e => OnCreatingTag()"
                                 OnBlur="e => OnCreatingTag()"
                                 Placeholder="enter to add tag"
-                                @ref="_newTagRef"
-                                @bind-Value="_newTag">
+                                @ref="ValueRef"
+                                @bind-Value="_value">
             </AutoCompleteSearch>
         </ChildContent>
     </AutoComplete>
 </span>
-<span style="display: @(!_isAdding ? "inline-block" : "none")">
+<span style="display: @(!IsAdding ? "inline-block" : "none")">
     <Tag Class="site-tag-plus" OnClick="e => OnClickAddTagAsync()">
         <Icon Type="plus"/>New Tag
     </Tag>
@@ -20,9 +21,15 @@
 
     public record NewTagArgs(string[] Tags);
 
-    private AutoCompleteSearch _newTagRef = null!;
-    private string? _newTag;
-    private bool _isAdding;
+    [Inject]
+    public ILogger<TagInput> Logger { get; set; }
+
+    private AutoCompleteSearch ValueRef = null!;
+
+    [Parameter]
+    public bool IsAdding { get; set; }
+
+    private string _value = null!;
 
     [Parameter]
     public EventCallback<NewTagArgs> OnNewTagsCreated { get; set; }
@@ -35,11 +42,11 @@
 
     private void OnClickAddTagAsync()
     {
-        _isAdding = true;
+        IsAdding = true;
         Task.Run(async () =>
         {
             await Task.Delay(TimeSpan.FromMilliseconds(100));
-            await _newTagRef.Ref.FocusAsync();
+            await ValueRef.Ref.FocusAsync();
         });
     }
 
@@ -47,19 +54,7 @@
     {
         try
         {
-            string[] newTags = Array.Empty<string>();
-            if (!string.IsNullOrWhiteSpace(_newTag))
-            {
-                newTags = _newTag.Split(Separator)
-                    .Select(x => x.Trim())
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .ToArray();
-            }
-            if (newTags.Any())
-            {
-                await OnNewTagsCreated.InvokeAsync(new NewTagArgs(newTags));
-                _newTag = null;
-            }
+            await FireCreateTagAsync();
         }
         catch (Exception e)
         {
@@ -68,7 +63,34 @@
         }
         finally
         {
-            _isAdding = false;
+            IsAdding = false;
+        }
+    }
+
+    private async Task FireCreateTagAsync()
+    {
+        string[] newTags = Array.Empty<string>();
+        if (!string.IsNullOrWhiteSpace(_value))
+        {
+            newTags = _value.Split(Separator)
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToArray();
+        }
+
+        if (newTags.Any())
+        {
+            await OnNewTagsCreated.InvokeAsync(new NewTagArgs(newTags));
+            _value = string.Empty;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (IsAdding)
+        {
+            await ValueRef.Ref.FocusAsync();
         }
     }
 }

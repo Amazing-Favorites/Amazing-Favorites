@@ -45,52 +45,57 @@
                         </Button>
                     }
                     <Divider/>
-                    <Form Layout="Vertical" Model="_formModel">
+                    <Card Size="small" Title="Title" Bordered="false">
 
-                        <FormItem Label="Title">
-                            <Input @bind-Value="@context.Title"/>
-                        </FormItem>
+                        <Body>
+                        <Input @bind-Value="@_formModel.Title"/>
+                        </Body>
+                    </Card>
+                    <Card Size="small" Title="Tags" Bordered="false">
 
-                        <FormItem Label="Tags">
-                            @foreach (var tag in context.Tags)
-                            {
-                                <Tag Closable="true"
-                                     OnClosing="e => OnRemovingTag(tag)"
-                                     Color="@WebHelper.GetTagColor(tag)">
-                                    @tag
-                                </Tag>
-                            }
-                            <TagInput OnNewTagsCreated="OnNewTagsAddAsync"></TagInput>
-                        </FormItem>
+                        <Body>
+                        @foreach (var tag in _formModel.Tags)
+                        {
+                            <Tag Closable="true"
+                                 OnClosing="e => OnRemovingTag(tag)"
+                                 Color="@WebHelper.GetTagColor(tag)">
+                                @tag
+                            </Tag>
+                        }
+                        <TagInput OnNewTagsCreated="OnNewTagsAddAsync"
+                                  Options="@_formModel.AllTags"
+                                  IsAdding="true">
+                        </TagInput>
+                        </Body>
+                    </Card>
+                    <Card Size="small" Title="Url" Bordered="false">
+                        <Body>
+                        <Input @bind-Value="@_formModel.Url" Disabled/>
+                        </Body>
+                    </Card>
 
-                        <FormItem Label="Url">
-                            <Input @bind-Value="@context.Url" Disabled/>
-                        </FormItem>
-
-                        <FormItem >
-                            @if (!_formModel.IsUpdateSuccess)
-                            {
-                                <Button Type="@ButtonType.Primary"
-                                        Style="width: 100%"
-                                        OnClick="UpdateAsync"
-                                        Loading="@_formModel.IsUpdateButtonLoading">
-                                    Update
-                                </Button>
-                            }
-                            else
-                            {
-                                <Alert Type="@AlertType.Success"
-                                       Message="Update success"
-                                       ShowIcon="true"/>
-                            }
-
-
-                        </FormItem>
-                    </Form>
+                    @if (!_formModel.IsUpdateSuccess)
+                    {
+                        <Button Type="@ButtonType.Primary"
+                                Style="width: 100%"
+                                OnClick="UpdateAsync"
+                                Loading="@_formModel.IsUpdateButtonLoading">
+                            Update
+                        </Button>
+                    }
+                    else
+                    {
+                        <Alert Type="@AlertType.Success"
+                               Message="Update success"
+                               ShowIcon="true"/>
+                    }
                 }
             }
+        </Col>
+    </Row>
 
-
+    <Row>
+        <Col Span="24">
             <Divider/>
             <Button OnClick="OpenManager" Style="width: 100%">Open Manager</Button>
         </Col>
