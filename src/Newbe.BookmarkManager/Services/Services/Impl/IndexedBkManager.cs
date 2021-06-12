@@ -168,7 +168,7 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
-        public async ValueTask AppendBookmarksAsync(IEnumerable<BookmarkTreeNode> nodes)
+        public async ValueTask AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes)
         {
             var updated = false;
             var bkDic = nodes.ToLookup(x => x.Url, x => new Bk
@@ -179,7 +179,8 @@ namespace Newbe.BookmarkManager.Services
                 UrlHash = _urlHashService.GetHash(x.Url),
                 LastCreateTime = x.DateAdded.HasValue
                     ? DateTimeOffset.FromUnixTimeMilliseconds((long) x.DateAdded.Value).ToUnixTimeSeconds()
-                    : 0L
+                    : 0L,
+                Tags = x.Tags
             });
             var bookmarksKeys = bkDic.Select(x => x.Key).ToHashSet();
             _logger.LogDebug("Found {Count} bookmark", bookmarksKeys.Count);
@@ -210,6 +211,14 @@ namespace Newbe.BookmarkManager.Services
                 {
                     var bk = bkDic[key].First();
                     await _bkRepo.UpsertAsync(bk);
+                    if (bk.Tags?.Any() == true)
+                    {
+                        foreach (var tag in bk.Tags)
+                        {
+                            await AppendTagsAsync(tag);
+                        }
+                    }
+
                     updated = true;
                 }
 

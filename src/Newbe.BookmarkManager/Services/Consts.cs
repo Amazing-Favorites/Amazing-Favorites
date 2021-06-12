@@ -1,4 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿using System.Collections.Generic;
+
+namespace Newbe.BookmarkManager.Services
 {
     public static class Consts
     {
@@ -20,6 +22,18 @@
             public const string BkMetadata = "BkMetadata";
             public const string Tags = "Tags";
             public const string UserOptions = "UserOptions";
+        }
+
+        private static readonly HashSet<string> ReservedBookmarkFolder = new()
+        {
+            AmazingFavoriteFolderName,
+            "Favorites bar",
+            "Other favorites"
+        };
+
+        public static bool IsReservedBookmarkFolder(string title)
+        {
+            return ReservedBookmarkFolder.Contains(title);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Newbe.BookmarkManager.Services
                 await tabsApi.OpenAsync("/Manager/index.html");
             }
         }
-        
+
         public static async Task ActiveOrOpenAsync(this ITabsApi tabsApi,
             string url)
         {

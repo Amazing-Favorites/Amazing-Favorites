@@ -14,7 +14,7 @@ namespace Newbe.BookmarkManager.Services
         ValueTask<bool> AppendTagAsync(string url, params string[]? tags);
         ValueTask UpdateTagsAsync(string url, IEnumerable<string> tags);
         ValueTask UpdateFavIconUrlAsync(Dictionary<string, string> urls);
-        ValueTask AppendBookmarksAsync(IEnumerable<BookmarkTreeNode> nodes);
+        ValueTask AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes);
         Task LoadCloudCollectionAsync(CloudBkCollection cloudBkCollection);
         Task<CloudBkCollection> GetCloudBkCollectionAsync();
         Task DeleteAsync(string url);
@@ -23,5 +23,24 @@ namespace Newbe.BookmarkManager.Services
         Task<Bk?> Get(string url);
 
         Task<string[]> GetAllTagsAsync();
+    }
+
+    public class BookmarkNode
+    {
+        public BookmarkNode()
+        {
+        }
+
+        public BookmarkNode(BookmarkTreeNode node)
+        {
+            Title = node.Title;
+            Url = node.Url;
+            DateAdded = node.DateAdded;
+        }
+
+        public double? DateAdded { get; set; }
+        public string Title { get; set; }
+        public string Url { get; set; }
+        public List<string> Tags { get; set; }
     }
 }

@@ -129,7 +129,7 @@ namespace Newbe.BookmarkManager.Pages
                     Title = _formModel.Title
                 });
                 _formModel.BookmarkTreeNode = newNode;
-                await BkManager.AppendBookmarksAsync(new[] {newNode});
+                await BkManager.AppendBookmarksAsync(new[] {new BookmarkNode(newNode)});
             }
 
             await BkManager.UpdateTagsAsync(_formModel.Url, _formModel.Tags);
