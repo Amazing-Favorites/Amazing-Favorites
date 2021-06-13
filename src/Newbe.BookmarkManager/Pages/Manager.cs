@@ -30,18 +30,6 @@ namespace Newbe.BookmarkManager.Pages
         }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
-
-        private int _searchTipIndex = 0;
-
-        private readonly string[] _searchTips =
-        {
-            "Welcome to visit https://af.newbe.pro to find full doc about this extensions",
-            "Press alt + number in search box to select from search result",
-            "Click tag to search with the specified tag",
-            "Search a keyword with t: mean that you want to search a tag. e.g. t:book matches url with book tag",
-            "You can enable pinyin search support in control panel",
-        };
-
         private string _searchValue;
         private bool _searchInputLoading;
         private readonly Subject<string?> _searchSubject = new();
@@ -119,14 +107,6 @@ namespace Newbe.BookmarkManager.Pages
                         StateHasChanged();
                     });
 
-                _searchPlaceHolderHandler =
-                    Observable.Interval(TimeSpan.FromSeconds(5))
-                        .Subscribe(x =>
-                        {
-                            _searchTipIndex += 1;
-                            _searchTipIndex %= _searchTips.Length;
-                            StateHasChanged();
-                        });
                 _updateFaviconHandler = _updateFaviconSubject
                     .Subscribe(async url =>
                     {
