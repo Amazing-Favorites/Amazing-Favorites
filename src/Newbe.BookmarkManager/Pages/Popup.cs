@@ -147,7 +147,6 @@ namespace Newbe.BookmarkManager.Pages
         private void OnRemovingTag(string tag)
         {
             _formModel.Tags.Remove(tag);
-            StateHasChanged();
         }
 
         private void OnNewTagsAddAsync(TagInput.NewTagArgs args)
@@ -170,7 +169,6 @@ namespace Newbe.BookmarkManager.Pages
         public bool IsShowEditor { get; set; }
         public bool IsLoading { get; set; } = true;
         public bool IsAvailable { get; set; } = true;
-        public string NewTag { get; set; }
         public string[] AllTags { get; set; } = Array.Empty<string>();
 
         public bool IsUpdateSuccess { get; set; }
