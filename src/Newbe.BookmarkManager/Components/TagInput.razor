@@ -1,9 +1,11 @@
 ﻿@using Microsoft.Extensions.Logging
+@using System.Reactive.Subjects
+@using System.Reactive.Linq
 <span style="display: @(IsAdding ? "inline-block" : "none")">
     <AutoComplete Options="Options" OnSelectionChange="OnCreatingTag">
         <ChildContent>
-            <AutoCompleteSearch OnPressEnter="e => OnCreatingTag()"
-                                OnBlur="e => OnCreatingTag()"
+            <AutoCompleteSearch OnPressEnter="e => OnCreatingTag(default)"
+                                OnBlur="e => OnCreatingTag(default)"
                                 Placeholder="enter to add tag"
                                 @ref="ValueRef"
                                 @bind-Value="_value">
@@ -40,6 +42,32 @@
     [Parameter]
     public string[] Options { get; set; } = Array.Empty<string>();
 
+    private readonly Subject<string> _newValueSubject = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _newValueSubject
+            .DistinctUntilChanged()
+            .Buffer(TimeSpan.FromMilliseconds(10), 10)
+            .Where(x => x.Count > 0)
+            .Select(x => x.FirstOrDefault(s => !string.IsNullOrWhiteSpace(s)))
+            .Subscribe(async value =>
+            {
+                var created = await FireCreateTagAsync(value);
+                if (created)
+                {
+                    IsAdding = true;
+                    _value = string.Empty;
+                    await ValueRef.Ref.FocusAsync();
+                }
+                else
+                {
+                    IsAdding = false;
+                }
+            });
+    }
+
     private void OnClickAddTagAsync()
     {
         IsAdding = true;
@@ -50,29 +78,17 @@
         });
     }
 
-    private async Task OnCreatingTag()
+    private void OnCreatingTag(AutoCompleteOption? option)
     {
-        try
-        {
-            await FireCreateTagAsync();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-        finally
-        {
-            IsAdding = false;
-        }
+        _newValueSubject.OnNext(option?.Value?.ToString() ?? _value);
     }
 
-    private async Task FireCreateTagAsync()
+    private async Task<bool> FireCreateTagAsync(string? value)
     {
         string[] newTags = Array.Empty<string>();
-        if (!string.IsNullOrWhiteSpace(_value))
+        if (!string.IsNullOrWhiteSpace(value))
         {
-            newTags = _value.Split(Separator)
+            newTags = value.Split(Separator)
                 .Select(x => x.Trim())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToArray();
@@ -81,16 +97,19 @@
         if (newTags.Any())
         {
             await OnNewTagsCreated.InvokeAsync(new NewTagArgs(newTags));
-            _value = string.Empty;
+            return true;
         }
+
+        return false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (IsAdding)
+        if (firstRender && IsAdding)
         {
             await ValueRef.Ref.FocusAsync();
         }
     }
+
 }
