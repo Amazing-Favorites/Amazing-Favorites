@@ -7,12 +7,15 @@
         <Row>
             <Col Span="20">
                 <Title Style="color: white">
-                    <Image Src="/icons/32icon.png" Height="32"></Image>
+                    <Image Src="/icons/32icon.png" Height="32" Preview="false"></Image>
                     Amazing Favorites
                 </Title>
             </Col>
             <Col Style="text-align: right" Span="4">
                 <Space>
+                    <SpaceItem>
+                        <LikeProject />
+                    </SpaceItem>
                     <SpaceItem>
                         <Button OnClick="OpenHelp">
                             <Icon Type="question-circle" Theme="twotone"/>
@@ -34,7 +37,7 @@
                     <Header>
                         <Row>
                             <Col Span="24">
-                                <Alert Type="@AlertType.Success" Message="@_searchTips[_searchTipIndex]"/>
+                                <TipsAlert />
                             </Col>
                         </Row>
                         <Row>

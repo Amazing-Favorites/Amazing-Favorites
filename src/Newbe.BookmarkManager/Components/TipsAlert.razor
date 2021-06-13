@@ -1,0 +1,34 @@
+﻿@using System.Reactive.Linq
+<Alert Type="@AlertType.Success" Message="@_searchTips[_searchTipIndex]"/>
+
+@code {
+
+    private readonly string[] _searchTips =
+    {
+        "Welcome to visit https://af.newbe.pro to find full doc about this extensions",
+        "Press alt + number in search box to select from search result",
+        "Click tag to search with the specified tag",
+        "Search a keyword with t: mean that you want to search a tag. e.g. t:book matches url with book tag",
+        "You can enable pinyin search support in control panel",
+        "You can insert multiple tags with comma split string. e.g. 'github, dotnet' for adding github and dotnet"
+    };
+
+    private int _searchTipIndex = 0;
+    private IDisposable _searchPlaceHolderHandler;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _searchPlaceHolderHandler =
+                Observable.Interval(TimeSpan.FromSeconds(5))
+                    .Subscribe(x =>
+                    {
+                        _searchTipIndex += 1;
+                        _searchTipIndex %= _searchTips.Length;
+                        StateHasChanged();
+                    });
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+}
