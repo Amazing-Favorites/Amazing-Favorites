@@ -6,6 +6,8 @@ Please feel free to add your idea to issues.
 
 You can find the user manual at [af.newbe.pro](https://af.newbe.pro/docs/)
 
+<a href="https://creatorsdaily.com/ceec4f2d-994d-4f6f-aa83-4a2286317e84?utm_source=vote" target="_blank"><img src="https://creatorsdaily.com/api/ceec4f2d-994d-4f6f-aa83-4a2286317e84/vote.svg?theme=light" /></a>
+
 [![CodeFactor](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites/badge)](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites)
 
 ## Screenshots
