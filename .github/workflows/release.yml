@@ -3,6 +3,9 @@ name: Release
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - feature/aot
 
 jobs:
   release:
@@ -39,7 +42,7 @@ jobs:
       - name: Restore dependencies
         run: |
           cd $GITHUB_WORKSPACE/src
-          # dotnet workload install microsoft-net-sdk-blazorwebassembly-aot
+          dotnet workload install microsoft-net-sdk-blazorwebassembly-aot
           dotnet restore
       - name: Build
         run: |

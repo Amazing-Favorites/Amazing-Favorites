@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <BuildBlazorToBrowserExtension>true</BuildBlazorToBrowserExtension>
-        <!-- <RunAOTCompilation>true</RunAOTCompilation> -->
+        <RunAOTCompilation>true</RunAOTCompilation>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
