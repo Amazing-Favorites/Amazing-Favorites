@@ -10,10 +10,10 @@
     <ItemGroup>
         <PackageReference Include="AntDesign" Version="0.8.1" />
         <PackageReference Include="Blazor.BrowserExtension" Version="0.3.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.4.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.4.*" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.4.*" />
-        <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.4.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.5.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.5.*" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.5.*" />
+        <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.5.*" />
         <PackageReference Include="Refit" Version="6.0.38" />
         <PackageReference Include="Refit.HttpClientFactory" Version="6.0.38" />
         <PackageReference Include="System.Reactive" Version="5.0.0" />
