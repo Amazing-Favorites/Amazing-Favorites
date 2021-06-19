@@ -1,0 +1,47 @@
+﻿@using Newbe.BookmarkManager.Services
+<Space Direction="DirectionVHType.Horizontal">
+    <SpaceItem>
+        Hot Tags:
+    </SpaceItem>
+    @foreach (var tag in _tags)
+    {
+        <SpaceItem>
+            <Tag Closable="false"
+                 OnClick="e => OnClickTag(tag)"
+                 Color="@WebHelper.GetTagColor(tag.Tag)">
+                @tag.Tag
+            </Tag>
+        </SpaceItem>
+    }
+</Space>
+
+@code {
+
+    private List<BkTag> _tags = new();
+
+    [Parameter]
+    public EventCallback<TagClickEventArgs> OnTagClick { get; set; }
+
+    [Inject]
+    public ITagsManager TagsManager { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        Task.Run(async () =>
+        {
+            var tags = await TagsManager.GetHotAsync();
+            _tags = tags;
+            StateHasChanged();
+        });
+    }
+    
+
+    public record TagClickEventArgs(BkTag Tag);
+
+    private async Task OnClickTag(BkTag tag)
+    {
+        await OnTagClick.InvokeAsync(new TagClickEventArgs(tag));
+    }
+
+}

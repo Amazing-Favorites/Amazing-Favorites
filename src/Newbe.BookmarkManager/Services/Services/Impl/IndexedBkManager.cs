@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.WebApi;
-using WebExtensions.Net.Bookmarks;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -303,10 +302,13 @@ namespace Newbe.BookmarkManager.Services
             return re;
         }
 
-        public async Task<string[]> GetAllTagsAsync()
+        public async Task<Dictionary<string, int>> GetTagRelatedCountAsync()
         {
-            var tags = await _tagsRepo.GetAllAsync();
-            var re = tags.Select(x => x.Tag).OrderBy(x => x).ToArray();
+            var bks = await _bkRepo.GetAllAsync();
+            var re = bks.Where(x => x.Tags != null)
+                .SelectMany(x => x.Tags!)
+                .GroupBy(x => x)
+                .ToDictionary(x => x.Key, x => x.Count());
             return re;
         }
 

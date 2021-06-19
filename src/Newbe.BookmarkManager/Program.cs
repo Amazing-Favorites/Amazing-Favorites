@@ -38,11 +38,13 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IStorageApi, StorageApi>()
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<IBkManager, IndexedBkManager>()
+                .AddTransient<ITagsManager, TagsManager>()
                 .AddTransient<IBkSearcher, IndexedBkSearcher>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddTransient<IUserOptionsService, UserOptionsService>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()
+                .AddSingleton<ISyncTagRelatedBkCountJob, SyncTagRelatedBkCountJob>()
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddTransient<ICloudService, CloudService>()
                 .AddSingleton<ISyncCloudJob, SyncCloudJob>();

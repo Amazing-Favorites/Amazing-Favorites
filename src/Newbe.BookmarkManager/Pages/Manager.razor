@@ -14,7 +14,7 @@
             <Col Style="text-align: right" Span="4">
                 <Space>
                     <SpaceItem>
-                        <LikeProject />
+                        <LikeProject/>
                     </SpaceItem>
                     <SpaceItem>
                         <Button OnClick="OpenHelp">
@@ -35,12 +35,10 @@
             <Col Span="24">
                 <AntList Bordered DataSource="@_targetBks">
                     <Header>
-                        <Row>
+                        <Row Gutter="(16,24)">
                             <Col Span="24">
-                                <TipsAlert />
+                                <TipsAlert/>
                             </Col>
-                        </Row>
-                        <Row>
                             <Col Span="24">
                                 <Spin Spinning="@_searchInputLoading">
                                     <Search Placeholder="input keyword to search"
@@ -53,6 +51,12 @@
                                             @bind-Value="@_searchValue"/>
                                 </Spin>
                             </Col>
+                            @if (_userOptions?.HotTagsFeature?.Enabled == true)
+                            {
+                                <antdesign.Col Span="10">
+                                    <HotTags OnTagClick="e => OnClickTag(e.Tag.Tag)"/>
+                                </antdesign.Col>
+                            }
                         </Row>
                     </Header>
                     <ChildContent Context="bk">
@@ -91,7 +95,7 @@
                                     {
                                         <Tag Closable="true"
                                              OnClosing="e => OnRemovingTag(bk.Bk, tag)"
-                                             OnClick="e => OnClickTag(bk.Bk, tag)"
+                                             OnClick="e => OnClickTag(tag)"
                                              Color="@WebHelper.GetTagColor(tag)">
                                             @tag
                                         </Tag>
@@ -114,67 +118,6 @@
         Welcome to submit you suggestion at <a href="https://github.com/newbe36524/Amazing-Favorites" target="_blank">github.com</a>
     </Footer>
 </Layout>
-<Modal Title="@("Control Panel")"
-       Visible="@_modal.Visible"
-       OnOk="@HandleUserOptionsOk"
-       OnCancel="@HandleUserOptionsCancel"
-       Width="1000">
-    <Form Model="@_modal"
-          LabelColSpan="4"
-          WrapperColSpan="20"
-          Size="Default">
-        @if (context.AcceptPrivacyAgreement)
-        {
-            <FormItem Label="Enable Pinyin">
-                <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
-            </FormItem>
-            @if (context.PinyinFeature.Enabled)
-            {
-                <FormItem Label="Access Token">
-                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken" />
-                    <p>
-                        <Icon Type="question" Theme="outline"/>
-                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
-                    </p>
-
-                </FormItem>
-                <FormItem Label="Pinyin Api BaseUrl">
-                    <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
-                </FormItem>
-            }
-            <FormItem Label="Enable Cloud Sync">
-                <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
-            </FormItem>
-            @if (context.CloudBkFeature.Enabled)
-            {
-                <FormItem Label="Access Token">
-                    <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" />
-                    <p>
-                        <Icon Type="question" Theme="outline"/>
-                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
-                    </p>
-
-                </FormItem>
-                <FormItem Label="Cloud Sync Api BaseUrl">
-                    <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
-                </FormItem>
-            }
-        }
-        else
-        {
-            <FormItem Label="User Privacy Agreement">
-                <p>The following features may transfer some data to cloud servers, so please <a href="https://af.newbe.pro/docs/00-1-Privacy" target="_blank">click here</a>, read and understand our User Privacy Agreement. After you confirm and agree to the content of the agreement click the button below to enable the advanced features.</p>
-                <p>Feature shows as below:</p>
-                <ul>
-                    <li>Pinyin Support. You could search your bookmark title and your tags by PinYin</li>
-                    <li>Tags Cloud Sync. You could sync your bookmark tags in multiple device</li>
-                </ul>
-                <Button OnClick="OnClickAgreeUserPrivacyAgreement" Type="primary">I agree to the User Privacy Agreement</Button>
-            </FormItem>
-        }
-        <FormItem Label="System Actions">
-            <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
-            <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting</Button>
-        </FormItem>
-    </Form>
-</Modal>
+<ControlPanel OnClickResumeFactorySetting="OnClickResumeFactorySetting"
+              OnUserOptionSave="OnUserOptionSave"
+              @bind-Visible="_controlPanelVisible"/>

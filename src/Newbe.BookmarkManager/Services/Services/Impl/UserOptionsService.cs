@@ -67,6 +67,15 @@ namespace Newbe.BookmarkManager.Services
                 };
             }
 
+            if (options.HotTagsFeature == null)
+            {
+                options.HotTagsFeature = new HotTagsFeature
+                {
+                    Enabled = true,
+                    ListCount = 10
+                };
+            }
+
             return options;
         }
     }
