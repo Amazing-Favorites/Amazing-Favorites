@@ -91,23 +91,28 @@ namespace Newbe.BookmarkManager.Services
         }
 
         [LoggerMessage(Level = LogLevel.Error,
-            Message = "Failed to sync log")]
+            Message = "Failed to sync log",
+            EventId = 1)]
         partial void LogErrorSync(ILogger logger, Exception ex);
 
         [LoggerMessage(Level = LogLevel.Information,
-            Message = "It is the same to cloud. etagVersion: {etagVersion}")]
+            Message = "It is the same to cloud. etagVersion: {etagVersion}",
+            EventId = 2)]
         partial void LogSameToCloud(ILogger logger, long etagVersion);
 
         [LoggerMessage(Level = LogLevel.Information,
-            Message = "There is no BK need sync to cloud")]
+            Message = "There is no BK need sync to cloud",
+            EventId = 3)]
         partial void LogNoBkFoundToSync(ILogger logger);
 
         [LoggerMessage(Level = LogLevel.Information,
-            Message = "Bk collection sync to local, etagVersion: {etagVersion}, lastUpdateTime: {lastUpdateTime}")]
+            Message = "Bk collection sync to local, etagVersion: {etagVersion}, lastUpdateTime: {lastUpdateTime}",
+            EventId = 4)]
         partial void LogSyncToLocal(ILogger logger, long etagVersion, long lastUpdateTime);
 
         [LoggerMessage(Level = LogLevel.Information,
-            Message = "Bk collection sync to cloud, etagVersion: {etagVersion}, lastUpdateTime: {lastUpdateTime}")]
+            Message = "Bk collection sync to cloud, etagVersion: {etagVersion}, lastUpdateTime: {lastUpdateTime}",
+            EventId = 5)]
         partial void LogSyncToCloud(ILogger logger, long etagVersion, long lastUpdateTime);
     }
 }

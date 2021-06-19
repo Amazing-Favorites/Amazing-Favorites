@@ -11,8 +11,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AntDesign" Version="0.8.1" />
-        <PackageReference Include="Blazor.BrowserExtension" Version="0.3.5" />
+        <PackageReference Include="AntDesign" Version="0.8.2" />
+        <PackageReference Include="Blazor.BrowserExtension" Version="0.4.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.5.*" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.5.*" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.5.*" />
@@ -29,6 +29,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\popup\index.html" />
     </ItemGroup>
 
 </Project>

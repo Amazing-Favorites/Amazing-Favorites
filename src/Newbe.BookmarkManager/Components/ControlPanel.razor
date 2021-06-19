@@ -1,0 +1,174 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Newbe.BookmarkManager.Services
+<Modal Title="@("Control Panel")"
+       Visible="@Visible"
+       OnOk="@HandleUserOptionsOk"
+       OnCancel="@HandleUserOptionsCancel"
+       AfterClose="OnAfterClose"
+       MaskClosable="false"
+       Width="1000">
+    <Form Model="@_modal"
+          LabelColSpan="4"
+          WrapperColSpan="20"
+          Size="Default">
+        @if (context.AcceptPrivacyAgreement)
+        {
+            <FormItem Label="Enable Pinyin">
+                <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
+            </FormItem>
+            @if (context.PinyinFeature.Enabled)
+            {
+                <FormItem Label="Access Token">
+                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken" />
+                    <p>
+                        <Icon Type="question" Theme="outline"/>
+                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                    </p>
+
+                </FormItem>
+                <FormItem Label="Pinyin Api BaseUrl">
+                    <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
+                </FormItem>
+            }
+            <FormItem Label="Enable Cloud Sync">
+                <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
+            </FormItem>
+            @if (context.CloudBkFeature.Enabled)
+            {
+                <FormItem Label="Access Token">
+                    <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" />
+                    <p>
+                        <Icon Type="question" Theme="outline"/>
+                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                    </p>
+
+                </FormItem>
+                <FormItem Label="Cloud Sync Api BaseUrl">
+                    <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
+                </FormItem>
+            }
+        }
+        else
+        {
+            <FormItem Label="User Privacy Agreement">
+                <p>The following features may transfer some data to cloud servers, so please <a href="https://af.newbe.pro/docs/00-1-Privacy" target="_blank">click here</a>, read and understand our User Privacy Agreement. After you confirm and agree to the content of the agreement click the button below to enable the advanced features.</p>
+                <p>Feature shows as below:</p>
+                <ul>
+                    <li>Pinyin Support. You could search your bookmark title and your tags by PinYin</li>
+                    <li>Tags Cloud Sync. You could sync your bookmark tags in multiple device</li>
+                </ul>
+                <Button OnClick="OnClickAgreeUserPrivacyAgreement" Type="primary">I agree to the User Privacy Agreement</Button>
+            </FormItem>
+        }
+        <FormItem Label="Enable Hot Tags">
+            <Switch @bind-Value="@context.HotTagsFeature.Enabled"/>
+        </FormItem>
+        @if (context.HotTagsFeature.Enabled)
+        {
+            <FormItem Label="List Count">
+                <AntDesign.InputNumber  @bind-Value="@context.HotTagsFeature.ListCount"
+                              Min="1" 
+                              Max="100" 
+                              DefaultValue="10" />
+            </FormItem>
+        }
+        <FormItem Label="System Actions">
+            <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
+            <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting</Button>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+
+    [Inject]
+    public IUserOptionsService UserOptionsService { get; set; }
+
+    private ModalModel _modal = new();
+
+    [Parameter]
+    public bool Visible { get; set; }
+    
+    [Parameter]
+    public virtual EventCallback<bool> VisibleChanged { get; set; }
+    
+    [Parameter]
+    public EventCallback OnClickResumeFactorySetting { get; set; }
+
+    [Parameter]
+    public EventCallback<OnUserOptionSaveArgs> OnUserOptionSave { get; set; }
+    
+    public record OnUserOptionSaveArgs(UserOptions Options);
+
+    public class ModalModel
+    {
+        public bool AcceptPrivacyAgreement { get; set; }
+        public PinyinFeature PinyinFeature { get; set; }
+        public CloudBkFeature CloudBkFeature { get; set; }
+        public HotTagsFeature HotTagsFeature { get; set; }
+    }
+
+    private Task OnClickDumpDataAsync()
+    {
+    // TODO
+    // var json = JsonSerializer.Serialize(BkDataHolder.Collection);
+    // Logger.LogInformation(json);
+        return Task.CompletedTask;
+    }
+
+    private async Task OnClickAgreeUserPrivacyAgreement()
+    {
+        _modal.AcceptPrivacyAgreement = true;
+        await UserOptionsService.SaveAsync(new UserOptions
+        {
+            AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
+            PinyinFeature = _modal.PinyinFeature,
+            CloudBkFeature = _modal.CloudBkFeature
+        });
+    }
+
+    private async Task CloseControlPanel()
+    {
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task HandleUserOptionsOk(MouseEventArgs e)
+    {
+        var userOptions = new UserOptions
+        {
+            AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
+            PinyinFeature = _modal.PinyinFeature,
+            CloudBkFeature = _modal.CloudBkFeature,
+            HotTagsFeature = _modal.HotTagsFeature
+        };
+        await UserOptionsService.SaveAsync(userOptions);
+        await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
+        await CloseControlPanel();
+    }
+
+    private async Task HandleUserOptionsCancel(MouseEventArgs e)
+    {
+        await CloseControlPanel();
+    }
+
+    private async Task OnAfterClose()
+    {
+        await CloseControlPanel();
+    }
+
+    private async Task LoadUserOptions()
+    {
+        var options = await UserOptionsService.GetOptionsAsync();
+        _modal.PinyinFeature = options.PinyinFeature;
+        _modal.CloudBkFeature = options.CloudBkFeature;
+        _modal.HotTagsFeature = options.HotTagsFeature;
+        _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement == true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadUserOptions();
+    }
+
+}

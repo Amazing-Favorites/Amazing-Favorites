@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using WebExtensions.Net.Tabs;
 
@@ -18,19 +19,13 @@ namespace Newbe.BookmarkManager.Pages
     {
         [Inject] public IBkSearcher BkSearcher { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
+        [Inject] public ITagsManager TagsManager { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
         [Inject] public IUserOptionsService UserOptionsService { get; set; }
 
-        public class ModalModel
-        {
-            public bool Visible { get; set; }
-            public bool AcceptPrivacyAgreement { get; set; }
-            public PinyinFeature PinyinFeature { get; set; }
-            public CloudBkFeature CloudBkFeature { get; set; }
-        }
-
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
         private string _searchValue;
+        private UserOptions _userOptions;
         private bool _searchInputLoading;
         private readonly Subject<string?> _searchSubject = new();
         private readonly Subject<bool> _altKeySubject = new();
@@ -38,7 +33,7 @@ namespace Newbe.BookmarkManager.Pages
         private IDisposable _searchPlaceHolderHandler;
         private IDisposable _updateFaviconHandler;
         private readonly int _resultLimit = 10;
-        private ModalModel _modal = new();
+        private bool _controlPanelVisible;
         private Search _search;
         private string[] _allTags = Array.Empty<string>();
 
@@ -133,7 +128,8 @@ namespace Newbe.BookmarkManager.Pages
                             // ignored
                         }
                     });
-                _allTags = await BkManager.GetAllTagsAsync();
+                _allTags = await TagsManager.GetAllTagsAsync();
+                _userOptions = await UserOptionsService.GetOptionsAsync();
             }
         }
 
@@ -213,12 +209,13 @@ namespace Newbe.BookmarkManager.Pages
         private async Task OnRemovingTag(Bk bk, string tag)
         {
             await BkManager.RemoveTagAsync(bk.Url, tag);
-            _allTags = await BkManager.GetAllTagsAsync();
+            _allTags = await TagsManager.GetAllTagsAsync();
             _searchSubject.OnNext(_searchValue);
         }
 
-        private void OnClickTag(Bk bk, string tagKey)
+        private void OnClickTag(string tagKey)
         {
+            TagsManager.AddCountAsync(tagKey, 1);
             if (string.IsNullOrWhiteSpace(_searchValue))
             {
                 _searchValue = string.Empty;
@@ -235,62 +232,9 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task OnNewTagsAddAsync(BkViewItem bk, string[] newTags)
         {
-            _allTags = await BkManager.GetAllTagsAsync();
+            _allTags = await TagsManager.GetAllTagsAsync();
             await BkManager.AppendTagAsync(bk.Bk.Url, newTags);
             _searchSubject.OnNext(_searchValue);
-        }
-
-        private async Task OnClickResumeFactorySetting()
-        {
-            await BkManager.RestoreAsync();
-            _searchSubject.OnNext(_searchValue);
-            CloseControlPanel();
-        }
-
-        private Task OnClickDumpDataAsync()
-        {
-            // TODO
-            // var json = JsonSerializer.Serialize(BkDataHolder.Collection);
-            // Logger.LogInformation(json);
-            return Task.CompletedTask;
-        }
-
-        private async Task OnClickAgreeUserPrivacyAgreement()
-        {
-            _modal.AcceptPrivacyAgreement = true;
-            await UserOptionsService.SaveAsync(new UserOptions
-            {
-                AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
-                PinyinFeature = _modal.PinyinFeature,
-                CloudBkFeature = _modal.CloudBkFeature
-            });
-        }
-
-        private void CloseControlPanel()
-        {
-            _modal.Visible = false;
-        }
-
-        private async Task HandleUserOptionsOk(MouseEventArgs e)
-        {
-            await UserOptionsService.SaveAsync(new UserOptions
-            {
-                AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
-                PinyinFeature = _modal.PinyinFeature,
-                CloudBkFeature = _modal.CloudBkFeature
-            });
-            CloseControlPanel();
-        }
-
-        private async Task HandleUserOptionsCancel(MouseEventArgs e)
-        {
-            CloseControlPanel();
-        }
-
-        private async Task OpenControlPanel()
-        {
-            await LoadUserOptions();
-            _modal.Visible = true;
         }
 
         private async Task OpenHelp()
@@ -298,12 +242,21 @@ namespace Newbe.BookmarkManager.Pages
             await WebExtensions.Tabs.OpenAsync("https://af.newbe.pro/");
         }
 
-        private async Task LoadUserOptions()
+        private async Task OpenControlPanel()
         {
-            var options = await UserOptionsService.GetOptionsAsync();
-            _modal.PinyinFeature = options.PinyinFeature;
-            _modal.CloudBkFeature = options.CloudBkFeature;
-            _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement == true;
+            _controlPanelVisible = true;
+        }
+
+        private async Task OnClickResumeFactorySetting()
+        {
+            await BkManager.RestoreAsync();
+            _searchSubject.OnNext(_searchValue);
+            _controlPanelVisible = false;
+        }
+
+        private void OnUserOptionSave(ControlPanel.OnUserOptionSaveArgs args)
+        {
+            _userOptions = args.Options;
         }
     }
 }

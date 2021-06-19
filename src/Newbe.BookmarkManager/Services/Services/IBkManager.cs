@@ -21,8 +21,7 @@ namespace Newbe.BookmarkManager.Services
         Task UpdateTitleAsync(string url, string title);
         Task<long> GetEtagVersionAsync();
         Task<Bk?> Get(string url);
-
-        Task<string[]> GetAllTagsAsync();
+        Task<Dictionary<string, int>> GetTagRelatedCountAsync();
     }
 
     public class BookmarkNode

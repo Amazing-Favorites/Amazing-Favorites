@@ -16,6 +16,7 @@ namespace Newbe.BookmarkManager.Pages
     {
         private FormModel _formModel = new();
         [Inject] private IBkManager BkManager { get; set; }
+        [Inject] private ITagsManager TagsManager { get; set; }
         [Inject] private IBookmarksApi BookmarksApi { get; set; }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -23,7 +24,7 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                var allTags = await BkManager.GetAllTagsAsync();
+                var allTags = await TagsManager.GetAllTagsAsync();
                 _formModel.AllTags = allTags;
                 var tabs = await WebExtensions.Tabs.Query(new QueryInfo
                 {

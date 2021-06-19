@@ -9,6 +9,7 @@ namespace Newbe.BookmarkManager.Services
         public bool? AcceptPrivacyAgreement { get; set; }
         public PinyinFeature? PinyinFeature { get; set; }
         public CloudBkFeature? CloudBkFeature { get; set; }
+        public HotTagsFeature? HotTagsFeature { get; set; }
     }
 
     public record PinyinFeature
@@ -23,5 +24,11 @@ namespace Newbe.BookmarkManager.Services
         public bool Enabled { get; set; }
         public string? BaseUrl { get; set; }
         public string? AccessToken { get; set; }
+    }
+
+    public record HotTagsFeature
+    {
+        public bool Enabled { get; set; }
+        public int ListCount { get; set; }
     }
 }
