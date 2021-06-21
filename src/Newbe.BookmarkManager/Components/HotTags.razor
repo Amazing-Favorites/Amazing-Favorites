@@ -6,11 +6,17 @@
     @foreach (var tag in _tags)
     {
         <SpaceItem>
-            <Tag Closable="false"
-                 OnClick="e => OnClickTag(tag)"
-                 Color="@WebHelper.GetTagColor(tag.Tag)">
-                @tag.Tag
-            </Tag>
+            <Badge Count="tag.ClickedCount"
+                   Size="small"
+                   Style="background-color: #52c41a; ">
+                <ChildContent>
+                    <Tag Closable="false"
+                         OnClick="e => OnClickTag(tag)"
+                         Color="@WebHelper.GetTagColor(tag.Tag)">
+                        @tag.Tag
+                    </Tag>
+                </ChildContent>
+            </Badge>
         </SpaceItem>
     }
 </Space>
@@ -25,9 +31,9 @@
     [Inject]
     public ITagsManager TagsManager { get; set; }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        await base.OnAfterRenderAsync(firstRender);
+        await base.OnInitializedAsync();
         Task.Run(async () =>
         {
             var tags = await TagsManager.GetHotAsync();
@@ -35,13 +41,17 @@
             StateHasChanged();
         });
     }
-    
 
     public record TagClickEventArgs(BkTag Tag);
 
     private async Task OnClickTag(BkTag tag)
     {
         await OnTagClick.InvokeAsync(new TagClickEventArgs(tag));
+        Task.Run(async () =>
+        {
+            var tags = await TagsManager.GetHotAsync();
+            _tags = tags;
+            StateHasChanged();
+        });
     }
-
 }
