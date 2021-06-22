@@ -24,7 +24,20 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IUserOptionsService UserOptionsService { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
-        private string _searchValue;
+
+        private string SearchValue
+        {
+            get => _searchValue;
+            set
+            {
+                _searchValue = value;
+                Task.Run(() =>
+                {
+                    _searchSubject?.OnNext(value);
+                });
+            }
+        }
+
         private UserOptions _userOptions;
         private bool _searchInputLoading;
         private readonly Subject<string?> _searchSubject = new();
@@ -36,6 +49,7 @@ namespace Newbe.BookmarkManager.Pages
         private bool _controlPanelVisible;
         private Search _search;
         private string[] _allTags = Array.Empty<string>();
+        private string _searchValue;
 
         [JSInvokable]
         public async Task OnReceivedCommand(string command)
@@ -43,9 +57,8 @@ namespace Newbe.BookmarkManager.Pages
             Logger.LogInformation("received command: {Command}", command);
             if (command == Consts.Commands.OpenManager)
             {
-                _searchValue = string.Empty;
-                _searchSubject.OnNext(_searchValue);
-                await _search.Ref.FocusAsync();
+                SearchValue = string.Empty;
+                await _search.Focus();
                 StateHasChanged();
             }
         }
@@ -87,7 +100,7 @@ namespace Newbe.BookmarkManager.Pages
 
                         StateHasChanged();
                     });
-                _searchSubject.OnNext(_searchValue);
+                SearchValue = SearchValue;
 
                 _altKeySubject.DistinctUntilChanged()
                     .Subscribe(show =>
@@ -151,19 +164,15 @@ namespace Newbe.BookmarkManager.Pages
             }
         }
 
-        private void OnSearchInput(ChangeEventArgs item)
+        [JSInvokable]
+        public async Task OnSearchInputKeydown(string code, bool altKey)
         {
-            _searchSubject.OnNext(item.Value?.ToString());
-        }
-
-        private async Task OnSearchInputKeydown(KeyboardEventArgs obj)
-        {
-            if (obj.AltKey)
+            if (altKey)
             {
                 _altKeySubject.OnNext(true);
-                if (obj.Code.StartsWith("Numpad") || obj.Code.StartsWith("Digit"))
+                if (code.StartsWith("Numpad") || code.StartsWith("Digit"))
                 {
-                    var number = obj.Code[^1..];
+                    var number = code[^1..];
                     if (int.TryParse(number, out var selectIndex) &&
                         selectIndex > 0 &&
                         selectIndex < _targetBks.Length)
@@ -180,12 +189,15 @@ namespace Newbe.BookmarkManager.Pages
             }
         }
 
-        private void OnSearchInputKeyup(KeyboardEventArgs obj)
+        [JSInvokable]
+        public Task OnSearchInputKeyup(string code, bool altKey)
         {
-            if (obj.Code == "AltLeft")
+            if (code == "AltLeft")
             {
                 _altKeySubject.OnNext(false);
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task OnClickUrl(BkViewItem bk, MouseEventArgs? e)
@@ -202,7 +214,7 @@ namespace Newbe.BookmarkManager.Pages
 
             _updateFaviconSubject.OnNext(url);
             await BkManager.AddClickAsync(url, 1);
-            _searchValue = string.Empty;
+            SearchValue = string.Empty;
             _searchSubject.OnNext(null);
         }
 
@@ -210,31 +222,29 @@ namespace Newbe.BookmarkManager.Pages
         {
             await BkManager.RemoveTagAsync(bk.Url, tag);
             _allTags = await TagsManager.GetAllTagsAsync();
-            _searchSubject.OnNext(_searchValue);
+            SearchValue = SearchValue;
         }
 
         private void OnClickTag(string tagKey)
         {
             TagsManager.AddCountAsync(tagKey, 1);
-            if (string.IsNullOrWhiteSpace(_searchValue))
+            if (string.IsNullOrWhiteSpace(SearchValue))
             {
-                _searchValue = string.Empty;
+                SearchValue = string.Empty;
             }
 
             var tagSearchValue = $"t:{tagKey}";
-            if (!_searchValue.Contains(tagSearchValue))
+            if (!SearchValue.Contains(tagSearchValue))
             {
-                _searchValue = $"{_searchValue} {tagSearchValue}";
+                SearchValue = $"{SearchValue} {tagSearchValue}";
             }
-
-            _searchSubject.OnNext(_searchValue);
         }
 
         private async Task OnNewTagsAddAsync(BkViewItem bk, string[] newTags)
         {
             _allTags = await TagsManager.GetAllTagsAsync();
             await BkManager.AppendTagAsync(bk.Bk.Url, newTags);
-            _searchSubject.OnNext(_searchValue);
+            SearchValue = SearchValue;
         }
 
         private async Task OpenHelp()
@@ -250,7 +260,7 @@ namespace Newbe.BookmarkManager.Pages
         private async Task OnClickResumeFactorySetting()
         {
             await BkManager.RestoreAsync();
-            _searchSubject.OnNext(_searchValue);
+            SearchValue = SearchValue;
             _controlPanelVisible = false;
         }
 
