@@ -74,7 +74,7 @@ namespace Newbe.BookmarkManager.Pages
             if (firstRender)
             {
                 _searchSubject
-                    .Throttle(TimeSpan.FromMilliseconds(500))
+                    .Throttle(TimeSpan.FromMilliseconds(100))
                     .Select(x => x?.Trim())
                     .Subscribe(async args =>
                     {

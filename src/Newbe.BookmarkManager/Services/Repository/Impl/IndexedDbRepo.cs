@@ -24,10 +24,18 @@ namespace Newbe.BookmarkManager.Services
             _storeName = TableNameCache.StoreName;
         }
 
+        private bool _cacheInvalid = true;
+        private List<T> _cache = new();
+
         public virtual async Task<List<T>> GetAllAsync()
         {
-            var re = await _indexedDbManager.GetRecords<T>(_storeName);
-            return re;
+            if (_cacheInvalid)
+            {
+                _cache = await _indexedDbManager.GetRecords<T>(_storeName);
+                _cacheInvalid = false;
+            }
+
+            return _cache;
         }
 
         public virtual async Task UpsertAsync(T entity)
@@ -56,6 +64,10 @@ namespace Newbe.BookmarkManager.Services
             {
                 _logger.LogError(e, "error when upsert");
             }
+            finally
+            {
+                _cacheInvalid = true;
+            }
         }
 
         public virtual async Task<T?> GetAsync(TKey id)
@@ -66,22 +78,36 @@ namespace Newbe.BookmarkManager.Services
 
         public virtual async Task DeleteAsync(TKey id)
         {
-            var re = await _indexedDbManager.GetRecordById<TKey, T>(_storeName, id);
-            if (re != null)
+            try
             {
-                await _indexedDbManager.DeleteRecord(_storeName, id);
+                var re = await _indexedDbManager.GetRecordById<TKey, T>(_storeName, id);
+                if (re != null)
+                {
+                    await _indexedDbManager.DeleteRecord(_storeName, id);
+                }
+            }
+            finally
+            {
+                _cacheInvalid = true;
             }
         }
 
         public async Task DeleteAllAsync()
         {
-            var list = await _indexedDbManager.GetRecords<T>(_storeName);
-            if (list?.Any() == true)
+            try
             {
-                foreach (var item in list)
+                var list = await _indexedDbManager.GetRecords<T>(_storeName);
+                if (list?.Any() == true)
                 {
-                    await _indexedDbManager.DeleteRecord(_storeName, item.Id);
+                    foreach (var item in list)
+                    {
+                        await _indexedDbManager.DeleteRecord(_storeName, item.Id);
+                    }
                 }
+            }
+            finally
+            {
+                _cacheInvalid = true;
             }
         }
 
