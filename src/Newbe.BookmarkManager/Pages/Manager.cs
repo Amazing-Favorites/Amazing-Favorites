@@ -31,10 +31,7 @@ namespace Newbe.BookmarkManager.Pages
             set
             {
                 _searchValue = value;
-                Task.Run(() =>
-                {
-                    _searchSubject?.OnNext(value);
-                });
+                _searchSubject?.OnNext(value);
             }
         }
 
