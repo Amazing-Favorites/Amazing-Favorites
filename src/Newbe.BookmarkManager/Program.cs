@@ -27,7 +27,7 @@ namespace Newbe.BookmarkManager
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
                 ;
             builder.Services
-                .AddTransient(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>))
+                .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>))
                 ;
             builder.Services
                 .AddAntDesign()
