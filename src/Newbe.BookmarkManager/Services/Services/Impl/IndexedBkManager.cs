@@ -125,7 +125,7 @@ namespace Newbe.BookmarkManager.Services
             var bk = await _bkRepo.GetAsync(url);
             if (bk != null)
             {
-                var tagList = tags.ToList();
+                var tagList = tags.Distinct().OrderBy(x => x).ToList();
                 foreach (var tag in tagList)
                 {
                     await AppendTagsAsync(tag);
@@ -143,7 +143,7 @@ namespace Newbe.BookmarkManager.Services
             var oldTag = await _tagsRepo.GetAsync(tag);
             if (oldTag == null)
             {
-                _logger.LogInformation("A new tag {Tag} added to all collection", oldTag);
+                _logger.LogInformation("A new tag {Tag} added to all collection", tag);
                 oldTag = new BkTag
                 {
                     Tag = tag,

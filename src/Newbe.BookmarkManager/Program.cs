@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newbe.BookmarkManager.Pages;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Refit;
@@ -48,6 +49,11 @@ namespace Newbe.BookmarkManager
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddTransient<ICloudService, CloudService>()
                 .AddSingleton<ISyncCloudJob, SyncCloudJob>();
+
+            builder.Services
+                .AddTransient<IBkEditFormData, BkEditFormData>()
+                ;
+
             builder.Services
                 .AddTransient<AuthHeaderHandler>()
                 ;
