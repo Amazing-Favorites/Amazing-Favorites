@@ -59,48 +59,63 @@
                     <ChildContent Context="bk">
                         <ListItem>
                             <Col Span="24">
-                                @if (bk.ShowIndex && bk.LineIndex < 10)
-                                {
-                                    <code>alt + </code>
-                                }
-                                @bk.LineIndex
-                                <Button Type="link"
-                                        OnClick="e => OnClickUrl(bk, e)">
-                                    <Space>
-                                        <SpaceItem>
-                                            @if (!string.IsNullOrEmpty(bk.Bk.FavIconUrl))
+                                <Space>
+                                    <SpaceItem>
+                                        @if (bk.ShowIndex && bk.LineIndex < 10)
+                                        {
+                                            <code>alt + </code>
+                                        }
+                                        @bk.LineIndex
+                                    </SpaceItem>
+                                    <SpaceItem>
+                                        <Button Shape="circle"
+                                                Icon="edit"
+                                                OnClick="e => OnClickEdit(bk.Bk.Url, bk.Bk.Title)"/>
+                                    </SpaceItem>
+                                    <SpaceItem>
+                                        <Button Type="link"
+                                                OnClick="e => OnClickUrl(bk, e)">
+                                            <Space>
+                                                <SpaceItem>
+                                                    @if (!string.IsNullOrEmpty(bk.Bk.FavIconUrl))
+                                                    {
+                                                        <Badge Count="bk.Bk.ClickedCount"
+                                                               Size="small"
+                                                               Style="background-color: #52c41a; ">
+                                                            <ChildContent>
+                                                                <Image Width="16px"
+                                                                       Height="16px"
+                                                                       Preview="false"
+                                                                       Src="@bk.Bk.FavIconUrl"
+                                                                       Fallback="@WebHelper.DefaultImagePlaceHolder"/>
+                                                            </ChildContent>
+                                                        </Badge>
+                                                    }
+                                                </SpaceItem>
+                                                <SpaceItem>@bk.Bk.Title</SpaceItem>
+                                            </Space>
+                                        </Button>
+                                    </SpaceItem>
+                                    <SpaceItem>
+                                        @if (bk.Bk.Tags != null)
+                                        {
+                                            @foreach (var tag in bk.Bk.Tags)
                                             {
-                                                <Badge Count="bk.Bk.ClickedCount"
-                                                       Size="small"
-                                                       Style="background-color: #52c41a; ">
-                                                    <ChildContent>
-                                                        <Image Width="16px"
-                                                               Height="16px"
-                                                               Preview="false"
-                                                               Src="@bk.Bk.FavIconUrl"
-                                                               Fallback="@WebHelper.DefaultImagePlaceHolder"/>
-                                                    </ChildContent>
-                                                </Badge>
+                                                <Tag Closable="true"
+                                                     OnClosing="e => OnRemovingTag(bk.Bk, tag)"
+                                                     OnClick="e => OnClickTag(tag)"
+                                                     Color="@WebHelper.GetTagColor(tag)">
+                                                    @tag
+                                                </Tag>
                                             }
-                                        </SpaceItem>
-                                        <SpaceItem Style="width: 100%">@bk.Bk.Title</SpaceItem>
-                                    </Space>
-                                </Button>
-                                @if (bk.Bk.Tags != null)
-                                {
-                                    @foreach (var tag in bk.Bk.Tags)
-                                    {
-                                        <Tag Closable="true"
-                                             OnClosing="e => OnRemovingTag(bk.Bk, tag)"
-                                             OnClick="e => OnClickTag(tag)"
-                                             Color="@WebHelper.GetTagColor(tag)">
-                                            @tag
-                                        </Tag>
-                                    }
-                                }
-                                <TagInput OnNewTagsCreated="e => OnNewTagsAddAsync(bk, e.Tags)"
-                                          Options="_allTags">
-                                </TagInput>
+                                        }
+                                    </SpaceItem>
+                                    <SpaceItem>
+                                        <TagInput OnNewTagsCreated="e => OnNewTagsAddAsync(bk, e.Tags)"
+                                                  Options="_allTags">
+                                        </TagInput>
+                                    </SpaceItem>
+                                </Space>
                             </Col>
                         </ListItem>
                     </ChildContent>
@@ -118,3 +133,32 @@
 <ControlPanel OnClickResumeFactorySetting="OnClickResumeFactorySetting"
               OnUserOptionSave="OnUserOptionSave"
               @bind-Visible="_controlPanelVisible"/>
+
+@{
+    RenderFragment editFormFooter = @<Template>
+                                        <Button OnClick="OnClickModalRemoveAsync"
+                                                Type="danger">
+                                            Remove
+                                        </Button>
+                                        <Button OnClick="OnClickModalSaveAsync"
+                                                Type="primary">
+                                            Save
+                                        </Button>
+                                        <Button OnClick="OnClickModalCancelAsync">
+                                            Cancel
+                                        </Button>
+                                    </Template>;
+}
+
+<Modal Title="@("Edit Bookmark")"
+       Visible="@_modalVisible"
+       Width="1000"
+       Footer="@editFormFooter">
+    <BkEditForm
+        Url="@BkEditFormData.Url"
+        @bind-Title="@BkEditFormData.Title"
+        AllTags="@BkEditFormData.AllTags"
+        Tags="@BkEditFormData.Tags">
+
+    </BkEditForm>
+</Modal>

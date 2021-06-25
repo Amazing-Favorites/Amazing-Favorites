@@ -22,6 +22,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public ITagsManager TagsManager { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
         [Inject] public IUserOptionsService UserOptionsService { get; set; }
+        [Inject] public IBkEditFormData BkEditFormData { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -47,6 +48,7 @@ namespace Newbe.BookmarkManager.Pages
         private Search _search;
         private string[] _allTags = Array.Empty<string>();
         private string _searchValue;
+        private bool _modalVisible;
 
         [JSInvokable]
         public async Task OnReceivedCommand(string command)
@@ -97,7 +99,7 @@ namespace Newbe.BookmarkManager.Pages
 
                         StateHasChanged();
                     });
-                SearchValue = SearchValue;
+                SearchValue = _searchValue;
 
                 _altKeySubject.DistinctUntilChanged()
                     .Subscribe(show =>
@@ -219,7 +221,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             await BkManager.RemoveTagAsync(bk.Url, tag);
             _allTags = await TagsManager.GetAllTagsAsync();
-            SearchValue = SearchValue;
+            SearchValue = _searchValue;
         }
 
         private void OnClickTag(string tagKey)
@@ -241,7 +243,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             _allTags = await TagsManager.GetAllTagsAsync();
             await BkManager.AppendTagAsync(bk.Bk.Url, newTags);
-            SearchValue = SearchValue;
+            SearchValue = _searchValue;
         }
 
         private async Task OpenHelp()
@@ -257,7 +259,7 @@ namespace Newbe.BookmarkManager.Pages
         private async Task OnClickResumeFactorySetting()
         {
             await BkManager.RestoreAsync();
-            SearchValue = SearchValue;
+            SearchValue = _searchValue;
             _controlPanelVisible = false;
         }
 
@@ -265,5 +267,38 @@ namespace Newbe.BookmarkManager.Pages
         {
             _userOptions = args.Options;
         }
+
+        #region Modal
+
+        private async Task OnClickEdit(string url, string title)
+        {
+            await BkEditFormData.LoadAsync(url, title);
+            _modalVisible = true;
+        }
+
+        private async Task OnClickModalRemoveAsync()
+        {
+            await BkEditFormData.RemoveAsync();
+            CloseBkEditForm();
+        }
+
+        private async Task OnClickModalSaveAsync()
+        {
+            await BkEditFormData.SaveAsync();
+            CloseBkEditForm();
+        }
+
+        private async Task OnClickModalCancelAsync()
+        {
+            CloseBkEditForm();
+        }
+
+        private void CloseBkEditForm()
+        {
+            _modalVisible = false;
+            SearchValue = _searchValue;
+        }
+
+        #endregion
     }
 }

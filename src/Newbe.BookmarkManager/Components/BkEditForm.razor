@@ -1,0 +1,43 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Newbe.BookmarkManager.Services
+
+@code {
+
+    private async Task OnInputChange(FocusEventArgs value)
+    {
+        await TitleChanged.InvokeAsync(Title);
+    }
+}
+
+<Row>
+    <Col Span="24">
+        <Card Size="small" Title="Title" Bordered="false">
+            <Body>
+            <Input @bind-Value="@Title"
+                   OnBlur="OnInputChange" />
+            </Body>
+        </Card>
+        <Card Size="small" Title="Tags" Bordered="false">
+            <Body>
+            @foreach (var tag in Tags)
+            {
+                <Tag Closable="true"
+                     OnClosing="e => OnRemovingTag(tag)"
+                     Color="@WebHelper.GetTagColor(tag)">
+                    @tag
+                </Tag>
+            }
+            <TagInput OnNewTagsCreated="OnNewTagsAddAsync"
+                      Options="@AllTags"
+                      IsAdding="true">
+            </TagInput>
+            </Body>
+        </Card>
+        <Card Size="small" Title="Url" Bordered="false">
+            <Body>
+            <Input @bind-Value="@Url" Disabled/>
+            </Body>
+        </Card>
+    </Col>
+</Row>
+

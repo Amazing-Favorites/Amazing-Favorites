@@ -34,12 +34,8 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        Task.Run(async () =>
-        {
-            var tags = await TagsManager.GetHotAsync();
-            _tags = tags;
-            StateHasChanged();
-        });
+        var tags = await TagsManager.GetHotAsync();
+        _tags = tags;
     }
 
     public record TagClickEventArgs(BkTag Tag);
