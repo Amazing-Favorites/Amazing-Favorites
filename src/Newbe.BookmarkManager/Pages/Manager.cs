@@ -268,7 +268,6 @@ namespace Newbe.BookmarkManager.Pages
             _userOptions = args.Options;
         }
 
-
         #region Modal
 
         private async Task OnClickEdit(string url, string title)

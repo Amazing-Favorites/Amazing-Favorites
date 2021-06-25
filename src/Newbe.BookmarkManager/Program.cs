@@ -76,8 +76,7 @@ namespace Newbe.BookmarkManager
                     client.BaseAddress = new Uri(service?.CloudBkFeature?.BaseUrl ??
                                                  sp.GetRequiredService<IOptions<BaseUriOptions>>().Value.CloudBkApi);
                 })
-                .AddHttpMessageHandler<AuthHeaderHandler>()
-                ;
+                .AddHttpMessageHandler<AuthHeaderHandler>();
 
             builder.Services.AddIndexedDB(dbStore =>
             {

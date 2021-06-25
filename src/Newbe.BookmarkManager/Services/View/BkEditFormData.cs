@@ -31,7 +31,6 @@ namespace Newbe.BookmarkManager.Services
             _bookmarksApi = bookmarksApi;
         }
 
-
         public async Task LoadAsync(string url, string title)
         {
             Url = url;
