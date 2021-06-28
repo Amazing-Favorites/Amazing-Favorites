@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Web;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -23,6 +26,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IJSRuntime JsRuntime { get; set; }
         [Inject] public IUserOptionsService UserOptionsService { get; set; }
         [Inject] public IBkEditFormData BkEditFormData { get; set; }
+        [Inject] public NavigationManager NavigationManager { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -142,7 +146,50 @@ namespace Newbe.BookmarkManager.Pages
                     });
                 _allTags = await TagsManager.GetAllTagsAsync();
                 _userOptions = await UserOptionsService.GetOptionsAsync();
+
+                await WebExtensions.Runtime.OnMessage.AddListener((o, sender, arg3) =>
+                {
+                    HandleNewBookmarkAddedEvent(o);
+                    return true;
+                });
+
+                var editTabIdStr = QueryString(NavigationManager, "editTabId");
+                if (int.TryParse(editTabIdStr, out var editTabId))
+                {
+                    var tab = await WebExtensions.Tabs.Get(editTabId);
+                    if (tab != null)
+                    {
+                        await BkEditFormData.LoadAsync(tab.Url, tab.Title);
+                        _modalVisible = true;
+                        _returnTabId = tab.Id;
+                        StateHasChanged();
+                    }
+                }
             }
+        }
+
+        private static string QueryString(NavigationManager nav, string paramName)
+        {
+            var uri = nav.ToAbsoluteUri(nav.Uri);
+            var paramValue = HttpUtility.ParseQueryString(uri.Query).Get(paramName);
+            return paramValue ?? "";
+        }
+
+        public record NewBkAddEvent
+        {
+            [JsonPropertyName("title")] public string Title { get; set; }
+            [JsonPropertyName("url")] public string Url { get; set; }
+            [JsonPropertyName("tabId")] public int TabId { get; set; }
+        }
+
+        private async Task HandleNewBookmarkAddedEvent(object arg1)
+        {
+            var evt = JsonSerializer.Deserialize<NewBkAddEvent>(JsonSerializer.Serialize(arg1))!;
+            Logger.LogInformation("Received : {Event}", evt);
+            await BkEditFormData.LoadAsync(evt.Url, evt.Title);
+            _modalVisible = true;
+            _returnTabId = evt.TabId;
+            StateHasChanged();
         }
 
         private BkViewItem[] Map(SearchResultItem[] items)
@@ -279,24 +326,44 @@ namespace Newbe.BookmarkManager.Pages
         private async Task OnClickModalRemoveAsync()
         {
             await BkEditFormData.RemoveAsync();
-            CloseBkEditForm();
+            await CloseBkEditFormAsync();
         }
 
         private async Task OnClickModalSaveAsync()
         {
             await BkEditFormData.SaveAsync();
-            CloseBkEditForm();
+            await CloseBkEditFormAsync();
         }
 
         private async Task OnClickModalCancelAsync()
         {
-            CloseBkEditForm();
+            await CloseBkEditFormAsync();
         }
 
-        private void CloseBkEditForm()
+        private int? _returnTabId;
+
+        private async Task CloseBkEditFormAsync()
         {
             _modalVisible = false;
             SearchValue = _searchValue;
+            try
+            {
+                if (_returnTabId != null)
+                {
+                    var tab = await WebExtensions.Tabs.Get(_returnTabId.Value);
+                    if (tab != null)
+                    {
+                        await WebExtensions.Tabs.Update(tab.Id, new UpdateProperties
+                        {
+                            Active = true
+                        });
+                    }
+                }
+            }
+            finally
+            {
+                _returnTabId = null;
+            }
         }
 
         #endregion
