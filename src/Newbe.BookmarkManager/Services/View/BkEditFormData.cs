@@ -10,9 +10,9 @@ namespace Newbe.BookmarkManager.Services
     {
         public string Url { get; set; }
         public string Title { get; set; }
-        public string OldTitle { get; set; }
         public HashSet<string> Tags { get; set; } = new();
         public string[] AllTags { get; set; }
+        private string _oldTitle;
 
         private readonly ILogger<BkEditFormData> _logger;
         private readonly IBkManager _bkManager;
@@ -34,12 +34,17 @@ namespace Newbe.BookmarkManager.Services
         public async Task LoadAsync(string url, string title)
         {
             Url = url;
-            Title = title;
-            OldTitle = title;
             var bk = await _bkManager.Get(url);
+            Title = title;
             if (bk != null)
             {
+                _oldTitle = bk.Title;
                 Tags = bk.Tags?.ToHashSet() ?? new HashSet<string>();
+            }
+            else
+            {
+                _oldTitle = string.Empty;
+                Tags = new HashSet<string>();
             }
 
             AllTags = await _tagsManager.GetAllTagsAsync();
@@ -51,7 +56,7 @@ namespace Newbe.BookmarkManager.Services
             var url = Url;
             var title = Title;
             await _bkManager.UpdateTagsAsync(url, Tags);
-            if (OldTitle != title)
+            if (_oldTitle != title)
             {
                 await _bkManager.UpdateTitleAsync(url, title);
                 var bookmarkTreeNodes = await _bookmarksApi.Search(new
@@ -82,7 +87,7 @@ namespace Newbe.BookmarkManager.Services
             {
                 await _bookmarksApi.Remove(node.Id);
             }
-            
+
             await _bkManager.DeleteAsync(Url);
         }
     }
