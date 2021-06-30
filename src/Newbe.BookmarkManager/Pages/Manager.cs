@@ -156,13 +156,16 @@ namespace Newbe.BookmarkManager.Pages
                 var editTabIdStr = QueryString(NavigationManager, "editTabId");
                 if (int.TryParse(editTabIdStr, out var editTabId))
                 {
-                    var tab = await WebExtensions.Tabs.Get(editTabId);
-                    if (tab != null)
+                    if (editTabId > 0)
                     {
-                        await BkEditFormData.LoadAsync(tab.Url, tab.Title);
-                        _modalVisible = true;
-                        _returnTabId = tab.Id;
-                        StateHasChanged();
+                        var tab = await WebExtensions.Tabs.Get(editTabId);
+                        if (tab != null)
+                        {
+                            await BkEditFormData.LoadAsync(tab.Url, tab.Title);
+                            _modalVisible = true;
+                            _returnTabId = tab.Id;
+                            StateHasChanged();
+                        }
                     }
                 }
             }
@@ -345,6 +348,7 @@ namespace Newbe.BookmarkManager.Pages
         private async Task CloseBkEditFormAsync()
         {
             _modalVisible = false;
+            StateHasChanged();
             SearchValue = _searchValue;
             try
             {

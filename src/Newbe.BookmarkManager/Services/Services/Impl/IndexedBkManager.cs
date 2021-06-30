@@ -122,20 +122,20 @@ namespace Newbe.BookmarkManager.Services
 
         public async ValueTask UpdateTagsAsync(string url, IEnumerable<string> tags)
         {
-            var bk = await _bkRepo.GetAsync(url);
-            if (bk != null)
+            var bk = await _bkRepo.GetAsync(url) ?? new Bk
             {
-                var tagList = tags.Distinct().OrderBy(x => x).ToList();
-                foreach (var tag in tagList)
-                {
-                    await AppendTagsAsync(tag);
-                }
-
-                bk.Tags = tagList;
-                await _bkRepo.UpsertAsync(bk);
-                await UpdateMetadataAsync();
-                _logger.LogInformation("Tag {Tags} added for {Url}", tagList, url);
+                Url = url
+            };
+            var tagList = tags.Distinct().OrderBy(x => x).ToList();
+            foreach (var tag in tagList)
+            {
+                await AppendTagsAsync(tag);
             }
+
+            bk.Tags = tagList;
+            await _bkRepo.UpsertAsync(bk);
+            await UpdateMetadataAsync();
+            _logger.LogInformation("Tag {Tags} updated for {Url}", tagList, url);
         }
 
         private async Task AppendTagsAsync(string tag)

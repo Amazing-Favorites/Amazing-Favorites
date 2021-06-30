@@ -23,6 +23,7 @@
             {
                 <Tag Closable="true"
                      OnClosing="e => OnRemovingTag(tag)"
+                     @key="@tag"
                      Color="@WebHelper.GetTagColor(tag)">
                     @tag
                 </Tag>
