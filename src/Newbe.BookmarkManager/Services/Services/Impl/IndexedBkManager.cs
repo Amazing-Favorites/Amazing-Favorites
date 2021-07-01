@@ -120,12 +120,22 @@ namespace Newbe.BookmarkManager.Services
             return true;
         }
 
-        public async ValueTask UpdateTagsAsync(string url, IEnumerable<string> tags)
+        public async ValueTask UpdateTagsAsync(string url, string title, IEnumerable<string> tags)
         {
-            var bk = await _bkRepo.GetAsync(url) ?? new Bk
+            var bk = await _bkRepo.GetAsync(url);
+            if (bk == null)
             {
-                Url = url
-            };
+                bk = new Bk
+                {
+                    Title = title,
+                    TitleLastUpdateTime = _clock.UtcNow,
+                    Url = url,
+                    UrlHash = _urlHashService.GetHash(url),
+                    LastCreateTime = _clock.UtcNow,
+                };
+                await _bkRepo.UpsertAsync(bk);
+            }
+
             var tagList = tags.Distinct().OrderBy(x => x).ToList();
             foreach (var tag in tagList)
             {

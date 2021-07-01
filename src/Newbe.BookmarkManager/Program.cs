@@ -48,7 +48,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<ISyncTagRelatedBkCountJob, SyncTagRelatedBkCountJob>()
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddTransient<ICloudService, CloudService>()
-                .AddSingleton<ISyncCloudJob, SyncCloudJob>();
+                .AddSingleton<ISyncCloudJob, SyncCloudJob>()
+                .AddSingleton<IDataFixJob, DataFixJob>();
 
             builder.Services
                 .AddTransient<IBkEditFormData, BkEditFormData>()

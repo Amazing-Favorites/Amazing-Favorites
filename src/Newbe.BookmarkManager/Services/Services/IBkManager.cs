@@ -12,7 +12,7 @@ namespace Newbe.BookmarkManager.Services
 
         ValueTask RemoveTagAsync(string url, string tag);
         ValueTask<bool> AppendTagAsync(string url, params string[]? tags);
-        ValueTask UpdateTagsAsync(string url, IEnumerable<string> tags);
+        ValueTask UpdateTagsAsync(string url, string title, IEnumerable<string> tags);
         ValueTask UpdateFavIconUrlAsync(Dictionary<string, string> urls);
         ValueTask AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes);
         Task LoadCloudCollectionAsync(CloudBkCollection cloudBkCollection);
