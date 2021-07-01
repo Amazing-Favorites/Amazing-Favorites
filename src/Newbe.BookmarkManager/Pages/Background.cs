@@ -11,6 +11,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
         [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
         [Inject] public ISyncCloudJob SyncCloudJob { get; set; }
+        [Inject] public IDataFixJob DataFixJob { get; set; }
         [Inject] public ISyncTagRelatedBkCountJob SyncTagRelatedBkCountJob { get; set; }
         
         [JSInvokable]
@@ -35,6 +36,7 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
+                await DataFixJob.StartAsync();
                 await SyncBookmarkJob.StartAsync();
                 await SyncAliasJob.StartAsync();
                 await SyncCloudJob.StartAsync();

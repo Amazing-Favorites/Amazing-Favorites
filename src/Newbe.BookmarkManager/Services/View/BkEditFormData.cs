@@ -55,10 +55,9 @@ namespace Newbe.BookmarkManager.Services
             _logger.LogInformation("On click save: {Data}", this);
             var url = Url;
             var title = Title;
-            await _bkManager.UpdateTagsAsync(url, Tags);
+            await _bkManager.UpdateTagsAsync(url, title, Tags);
             if (_oldTitle != title)
             {
-                await _bkManager.UpdateTitleAsync(url, title);
                 var bookmarkTreeNodes = await _bookmarksApi.Search(new
                 {
                     url = Url
