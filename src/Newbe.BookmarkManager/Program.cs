@@ -42,6 +42,7 @@ namespace Newbe.BookmarkManager
                 .AddTransient<ITagsManager, TagsManager>()
                 .AddTransient<IBkSearcher, IndexedBkSearcher>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
+                .AddSingleton<IAfCodeService, AfCodeService>()
                 .AddTransient<IUserOptionsService, UserOptionsService>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()

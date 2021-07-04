@@ -31,7 +31,7 @@ namespace Newbe.BookmarkManager.Services
             _bookmarksApi = bookmarksApi;
         }
 
-        public async Task LoadAsync(string url, string title)
+        public async Task LoadAsync(string url, string title, string[] tags)
         {
             Url = url;
             var bk = await _bkManager.Get(url);
@@ -44,7 +44,7 @@ namespace Newbe.BookmarkManager.Services
             else
             {
                 _oldTitle = string.Empty;
-                Tags = new HashSet<string>();
+                Tags = new HashSet<string>(tags);
             }
 
             AllTags = await _tagsManager.GetAllTagsAsync();
@@ -56,16 +56,27 @@ namespace Newbe.BookmarkManager.Services
             var url = Url;
             var title = Title;
             await _bkManager.UpdateTagsAsync(url, title, Tags);
-            if (_oldTitle != title)
+
+            var bookmarkTreeNodes = await _bookmarksApi.Search(new
             {
-                var bookmarkTreeNodes = await _bookmarksApi.Search(new
+                url = Url
+            });
+            var bookmarkTreeNode = bookmarkTreeNodes.FirstOrDefault();
+            if (bookmarkTreeNode == null)
+            {
+                var folderNode = await CreateAmazingFavoriteFolderAsync();
+                await _bookmarksApi.Create(new CreateDetails
                 {
-                    url = Url
+                    Title = Title,
+                    Url = Url,
+                    ParentId = folderNode.Id,
                 });
-                var node = bookmarkTreeNodes.FirstOrDefault();
-                if (node != null)
+            }
+            else
+            {
+                if (_oldTitle != title)
                 {
-                    await _bookmarksApi.Update(node.Id, new Changes
+                    await _bookmarksApi.Update(bookmarkTreeNode.Id, new Changes
                     {
                         Title = title,
                         Url = url
@@ -73,6 +84,29 @@ namespace Newbe.BookmarkManager.Services
                     _logger.LogInformation("Bookmark updated, new title: {Title}", title);
                 }
             }
+        }
+
+        private async Task<BookmarkTreeNode> CreateAmazingFavoriteFolderAsync()
+        {
+            var bookmarkTreeNodes = await _bookmarksApi.Search(new
+            {
+                title = Consts.AmazingFavoriteFolderName
+            });
+            var oldNode = bookmarkTreeNodes.FirstOrDefault();
+            if (oldNode is not {Type: BookmarkTreeNodeType.Folder})
+            {
+                var newNode = await _bookmarksApi.Create(new CreateDetails
+                {
+                    Title = Consts.AmazingFavoriteFolderName,
+                });
+
+                _logger.LogInformation("{FolderName} not found, created", Consts.AmazingFavoriteFolderName);
+                return newNode;
+            }
+
+            _logger.LogInformation("{FolderName} found", Consts.AmazingFavoriteFolderName);
+
+            return oldNode;
         }
 
         public async Task RemoveAsync()

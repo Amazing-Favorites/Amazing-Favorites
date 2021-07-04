@@ -12,6 +12,7 @@ namespace Newbe.BookmarkManager.Services
         public const string ManagerTabTitle = "Amazing Favorites";
         public const string AmazingFavoriteFolderName = "Amazing Favorites";
 
+        public const string AfCodeSchemaPrefix = "af://";
         public const string DbName = "Amazing Favorites";
 
         public const string SingleOneDataId = "Amazing Favorites";

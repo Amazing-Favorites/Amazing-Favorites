@@ -26,7 +26,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IJSRuntime JsRuntime { get; set; }
         [Inject] public IUserOptionsService UserOptionsService { get; set; }
         [Inject] public IBkEditFormData BkEditFormData { get; set; }
-        [Inject] public NavigationManager NavigationManager { get; set; }
+        [Inject] public IAfCodeService AfCodeService { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -88,8 +88,22 @@ namespace Newbe.BookmarkManager.Pages
                         StateHasChanged();
                         try
                         {
-                            Logger.LogInformation("Search: {Args}", args);
-                            var target = await BkSearcher.Search(args, _resultLimit);
+                            Logger.LogInformation("Search: {Args}", args!);
+                            if (!string.IsNullOrWhiteSpace(args))
+                            {
+                                var afCode = args;
+                                if (await AfCodeService.TryParseAsync(afCode, out var afCodeResult))
+                                {
+                                    if (afCodeResult != null)
+                                    {
+                                        await OnClickEdit(afCodeResult.Url, afCodeResult.Title, afCodeResult.Tags);
+                                        SearchValue = string.Empty;
+                                        return;
+                                    }
+                                }
+                            }
+
+                            var target = await BkSearcher.Search(args!, _resultLimit);
                             _targetBks = Map(target);
                         }
                         catch (Exception e)
@@ -161,7 +175,7 @@ namespace Newbe.BookmarkManager.Pages
                         var tab = await WebExtensions.Tabs.Get(editTabId);
                         if (tab != null)
                         {
-                            await BkEditFormData.LoadAsync(tab.Url, tab.Title);
+                            await BkEditFormData.LoadAsync(tab.Url, tab.Title, Array.Empty<string>());
                             _modalVisible = true;
                             _returnTabId = tab.Id;
                             StateHasChanged();
@@ -189,7 +203,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             var evt = JsonSerializer.Deserialize<NewBkAddEvent>(JsonSerializer.Serialize(arg1))!;
             Logger.LogInformation("Received : {Event}", evt);
-            await BkEditFormData.LoadAsync(evt.Url, evt.Title);
+            await BkEditFormData.LoadAsync(evt.Url, evt.Title, Array.Empty<string>());
             _modalVisible = true;
             _returnTabId = evt.TabId;
             StateHasChanged();
@@ -320,22 +334,49 @@ namespace Newbe.BookmarkManager.Pages
 
         #region Modal
 
-        private async Task OnClickEdit(string url, string title)
+        private bool _isFormLoading = false;
+
+        private async Task OnClickEdit(string url, string title, string[]? tags = null)
         {
-            await BkEditFormData.LoadAsync(url, title);
-            _modalVisible = true;
+            try
+            {
+                _isFormLoading = true;
+                tags ??= Array.Empty<string>();
+                await BkEditFormData.LoadAsync(url, title, tags);
+                _modalVisible = true;
+            }
+            finally
+            {
+                _isFormLoading = false;
+            }
         }
 
         private async Task OnClickModalRemoveAsync()
         {
-            await BkEditFormData.RemoveAsync();
-            await CloseBkEditFormAsync();
+            try
+            {
+                _isFormLoading = true;
+                await BkEditFormData.RemoveAsync();
+                await CloseBkEditFormAsync();
+            }
+            finally
+            {
+                _isFormLoading = false;
+            }
         }
 
         private async Task OnClickModalSaveAsync()
         {
-            await BkEditFormData.SaveAsync();
-            await CloseBkEditFormAsync();
+            try
+            {
+                _isFormLoading = true;
+                await BkEditFormData.SaveAsync();
+                await CloseBkEditFormAsync();
+            }
+            finally
+            {
+                _isFormLoading = false;
+            }
         }
 
         private async Task OnClickModalCancelAsync()
@@ -368,6 +409,19 @@ namespace Newbe.BookmarkManager.Pages
             {
                 _returnTabId = null;
             }
+        }
+
+        #endregion
+
+        #region AfCode
+
+        private bool _afCodeSharingPanelVisible;
+        private string _afCodeSharingUrl = string.Empty;
+
+        private void OnClickSharing(string url)
+        {
+            _afCodeSharingUrl = url;
+            _afCodeSharingPanelVisible = true;
         }
 
         #endregion

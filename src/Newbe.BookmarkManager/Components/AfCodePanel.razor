@@ -1,0 +1,72 @@
+﻿@using Newbe.BookmarkManager.Services
+<Modal Title="@($"Sharing {Url}")"
+       Visible="@Visible"
+       Width="1000"
+       OnOk="e => ClosePanel()"
+       OnCancel="e => ClosePanel()">
+    <Form Model="@_model"
+          LabelColSpan="4"
+          WrapperColSpan="20"
+          Size="Default">
+        <FormItem Label="Plain Text Json">
+            <Paragraph Copyable>@((MarkupString) context.PlainText)</Paragraph>
+        </FormItem>
+        <FormItem Label="Base64 Encoded Json">
+            <Paragraph Copyable>@((MarkupString) context.JsonBase64)</Paragraph>
+        </FormItem>
+        <FormItem Label="Gzip Compression Json">
+            <Paragraph Copyable>@((MarkupString) context.CompressionJsonBase64)</Paragraph>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code {
+
+    [Inject]
+    public IAfCodeService AfCodeService { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter]
+    public string Url { get; set; }
+
+    [Inject]
+    public MessageService MessageHelper { get; set; }
+
+    private AfCodes _model = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!string.IsNullOrEmpty(Url))
+        {
+            _model.PlainText = await AfCodeService.CreateAfCodeAsync(Url, AfCodeType.PlainText);
+            _model.JsonBase64 = await AfCodeService.CreateAfCodeAsync(Url, AfCodeType.JsonBase64);
+            _model.CompressionJsonBase64 = await AfCodeService.CreateAfCodeAsync(Url, AfCodeType.CompressionJsonBase64);
+            StateHasChanged();
+        }
+    }
+
+    public record AfCodes
+    {
+        public string PlainText { get; set; }
+        public string JsonBase64 { get; set; }
+        public string CompressionJsonBase64 { get; set; }
+    }
+
+    public async Task ClosePanel()
+    {
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+}
