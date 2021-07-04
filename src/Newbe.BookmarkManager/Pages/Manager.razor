@@ -57,7 +57,7 @@
                         </Row>
                     </Header>
                     <ChildContent Context="bk">
-                        <ListItem>
+                        <ListItem @key="@bk.Bk.Url">
                             <Col Span="24">
                                 <Space>
                                     <SpaceItem>
@@ -115,6 +115,12 @@
                                                   Options="_allTags">
                                         </TagInput>
                                     </SpaceItem>
+                                    <SpaceItem>
+                                        <Button Shape="circle"
+                                                Icon="share-alt"
+                                                Size="small"
+                                                OnClick="e => OnClickSharing(bk.Bk.Url)"/>
+                                    </SpaceItem>
                                 </Space>
                             </Col>
                         </ListItem>
@@ -150,15 +156,24 @@
                                     </Template>;
 }
 
+
 <Modal Title="@("Edit Bookmark")"
        Visible="@_modalVisible"
        Width="1000"
        Footer="@editFormFooter">
-    <BkEditForm
-        Url="@BkEditFormData.Url"
-        @bind-Title="@BkEditFormData.Title"
-        AllTags="@BkEditFormData.AllTags"
-        Tags="@BkEditFormData.Tags">
+    <Spin Tip="Loading..."
+          Spinning="@_isFormLoading">
+        <BkEditForm
+            Url="@BkEditFormData.Url"
+            @bind-Title="@BkEditFormData.Title"
+            AllTags="@BkEditFormData.AllTags"
+            Tags="@BkEditFormData.Tags">
 
-    </BkEditForm>
+        </BkEditForm>
+    </Spin>
 </Modal>
+
+<AfCodePanel @bind-Visible="@_afCodeSharingPanelVisible"
+             Url="@_afCodeSharingUrl">
+
+</AfCodePanel>
