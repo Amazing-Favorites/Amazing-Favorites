@@ -149,7 +149,6 @@ namespace Newbe.BookmarkManager.Services
                     throw new ArgumentOutOfRangeException();
             }
 
-
             afCodeResult = null;
             return Task.FromResult(false);
         }
