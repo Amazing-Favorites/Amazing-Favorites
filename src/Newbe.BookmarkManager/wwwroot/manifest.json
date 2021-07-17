@@ -21,7 +21,6 @@
   "permissions": [
     "tabs",
     "bookmarks",
-    "storage",
     "commands"
   ],
   "commands": {
