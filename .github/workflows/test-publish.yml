@@ -9,6 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         enable-aot: [ 'true','false' ]
         antdesign-version: [ 0.8.4, 0.9.0 ]
