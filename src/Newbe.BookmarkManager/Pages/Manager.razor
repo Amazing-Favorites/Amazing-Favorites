@@ -102,6 +102,7 @@
                                             @foreach (var tag in bk.Bk.Tags)
                                             {
                                                 <Tag Closable="true"
+                                                     @key="@tag"
                                                      OnClosing="e => OnRemovingTag(bk.Bk, tag)"
                                                      OnClick="e => OnClickTag(tag)"
                                                      Color="@WebHelper.GetTagColor(tag)">
@@ -164,11 +165,7 @@
     <Spin Tip="Loading..."
           Spinning="@_isFormLoading">
         <BkEditForm
-            Url="@BkEditFormData.Url"
-            @bind-Title="@BkEditFormData.Title"
-            AllTags="@BkEditFormData.AllTags"
-            Tags="@BkEditFormData.Tags">
-
+            BkEditFormModel="@BkEditFormData">
         </BkEditForm>
     </Spin>
 </Modal>
