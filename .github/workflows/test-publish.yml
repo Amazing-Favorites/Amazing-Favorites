@@ -1,4 +1,4 @@
-name: Amazing Favorites publish with AOT test
+name: Amazing Favorites test publish
 
 on:
   push:
@@ -8,6 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        enable-aot: [ 'true','false' ]
+        antdesign-version: [ 0.8.4, 0.9.0 ]
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
@@ -29,4 +33,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
         run: |
           cd $GITHUB_WORKSPACE/src
-          dotnet publish Newbe.BookmarkManager -c Release -o out -p:EnableAOT=true
+          dotnet publish Newbe.BookmarkManager -c Release -o out -p:EnableAOT=${{ matrix.enable-aot }} -p:AntDeisgnVersion=${{ matrix.antdesign-version }}
