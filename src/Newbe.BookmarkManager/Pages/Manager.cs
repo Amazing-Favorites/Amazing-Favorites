@@ -18,8 +18,9 @@ using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
 {
-    public partial class Manager
+    public partial class Manager : IAsyncDisposable
     {
+        private IJSObjectReference? _keyboardEventModule;
         [Inject] public IBkSearcher BkSearcher { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public ITagsManager TagsManager { get; set; }
@@ -69,9 +70,6 @@ namespace Newbe.BookmarkManager.Pages
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
-            await ImportAsync("content/manager_keyboard.js");
-            var lDotNetReference = DotNetObjectReference.Create(this);
-            await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -79,6 +77,10 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
+                _keyboardEventModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", 
+                    "/content/manager_keyboard.js");
+                var lDotNetReference = DotNetObjectReference.Create(this);
+                await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
                 _searchSubject
                     .Throttle(TimeSpan.FromMilliseconds(100))
                     .Select(x => x?.Trim())
@@ -425,5 +427,13 @@ namespace Newbe.BookmarkManager.Pages
         }
 
         #endregion
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_keyboardEventModule is not null)
+            {
+                await _keyboardEventModule.DisposeAsync();
+            }
+        }
     }
 }
