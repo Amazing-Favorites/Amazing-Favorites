@@ -1,7 +1,8 @@
 ﻿@using Microsoft.Extensions.Logging
 @using System.Reactive.Subjects
 @using System.Reactive.Linq
-<span style="display: @(IsAdding ? "inline-block" : "none")">
+@if (IsAdding)
+{
     <AutoComplete Options="Options" OnSelectionChange="OnCreatingTag">
         <ChildContent>
             <AutoCompleteSearch OnPressEnter="e => OnCreatingTag(default)"
@@ -12,12 +13,13 @@
             </AutoCompleteSearch>
         </ChildContent>
     </AutoComplete>
-</span>
-<span style="display: @(!IsAdding ? "inline-block" : "none")">
+}
+else
+{
     <Tag Class="site-tag-plus" OnClick="e => OnClickAddTagAsync()">
         <Icon Type="plus"/>New Tag
     </Tag>
-</span>
+}
 
 @code {
 
