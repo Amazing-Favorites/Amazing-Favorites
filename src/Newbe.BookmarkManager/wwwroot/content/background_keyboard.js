@@ -1,15 +1,12 @@
 ﻿(async () => {
     const global = globalThis;
-    global.GLOBAL = {};
-    GLOBAL.DotNetReference = null;
-    GLOBAL.SetDotnetReference = function (pDotNetReference) {
+    window.DotNet.SetDotnetReference = function (pDotNetReference) {
         console.log(`dotnet set: ${pDotNetReference}`)
-        GLOBAL.DotNetReference = pDotNetReference;
+        window.DotNet.DotNetReference = pDotNetReference;
     };
-    setTimeout(() => {
-        global.browser.commands.onCommand.addListener(async (c) => {
-            console.log(`received command: ${c}`);
-            await GLOBAL.DotNetReference.invokeMethodAsync('OnReceivedCommand', c);
-        });
-    }, 5000);
+    global.browser.commands.onCommand.addListener(async (c) => {
+        console.log(`received command: ${c}`);
+        await global.DotNet.DotNetReference.invokeMethodAsync('OnReceivedCommand', c);
+    });
+    console.info("keyboard event loaded");
 })();

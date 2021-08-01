@@ -12,7 +12,8 @@
                 <ChildContent>
                     <Tag Closable="false"
                          OnClick="e => OnClickTag(tag)"
-                         Color="@WebHelper.GetTagColor(tag.Tag)">
+                         Color="@WebHelper.GetTagColor(tag.Tag)"
+                         @key="@tag.Tag">
                         @tag.Tag
                     </Tag>
                 </ChildContent>
@@ -43,11 +44,13 @@
     private async Task OnClickTag(BkTag tag)
     {
         await OnTagClick.InvokeAsync(new TagClickEventArgs(tag));
-        Task.Run(async () =>
+#pragma warning disable 4014
+        InvokeAsync(async () =>
         {
             var tags = await TagsManager.GetHotAsync();
             _tags = tags;
             StateHasChanged();
         });
+#pragma warning restore 4014
     }
 }
