@@ -28,4 +28,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
         run: |
+          cd $GITHUB_WORKSPACE/src
           dotnet publish Newbe.BookmarkManager -c Release -o out -p:EnableAOT=true
