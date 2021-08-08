@@ -2,27 +2,31 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using BlazorApplicationInsights;
 using Microsoft.Extensions.Logging;
 
 namespace Newbe.BookmarkManager.Services
 {
     public class IndexedBkSearcher : IBkSearcher
     {
+        private readonly IApplicationInsights _insights;
         private readonly IIndexedDbRepo<Bk, string> _bkRepo;
         private readonly ILogger<IndexedBkSearcher> _logger;
         private readonly IIndexedDbRepo<BkTag, string> _tagRepo;
 
         public IndexedBkSearcher(
+            IApplicationInsights insights,
             ILogger<IndexedBkSearcher> logger,
             IIndexedDbRepo<Bk, string> bkRepo,
             IIndexedDbRepo<BkTag, string> tagRepo)
         {
+            _insights = insights;
             _bkRepo = bkRepo;
             _logger = logger;
             _tagRepo = tagRepo;
         }
 
-        public async Task<SearchResultItem[]> Search(string searchText, int limit)
+        public virtual async Task<SearchResultItem[]> Search(string searchText, int limit)
         {
             var sw = Stopwatch.StartNew();
             var result = await SearchCore();
@@ -59,7 +63,8 @@ namespace Newbe.BookmarkManager.Services
                 var tagDict = tags.ToDictionary(x => x.Tag);
                 var matchTags = tagDict
                     .Where(tag =>
-                        input.Tags.Contains(tag.Key) || input.Keywords.Any(keyword => StringContains(tag.Key, keyword)))
+                        input.Tags.Contains(tag.Key) ||
+                        input.Keywords.Any(keyword => StringContains(tag.Key, keyword)))
                     .Select(x => x.Key)
                     .ToHashSet();
 
@@ -90,7 +95,8 @@ namespace Newbe.BookmarkManager.Services
 
                     result.AddScore(ScoreReason.TitleAlias, item.TitleAlias?.Values != null &&
                                                             item.TitleAlias.Values.Any(al =>
-                                                                input.Keywords.Any(x => StringContains(al.Alias, x))));
+                                                                input.Keywords.Any(x =>
+                                                                    StringContains(al.Alias, x))));
 
                     result.AddScore(ScoreReason.Url, input.Keywords.Any(x => StringContains(item.Url, x)));
                     if (item.Tags?.Any() == true)

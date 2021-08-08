@@ -41,7 +41,7 @@ namespace Newbe.BookmarkManager.Services
             return re;
         }
 
-        public async ValueTask SaveAsync(UserOptions options)
+        public async Task SaveAsync(UserOptions options)
         {
             await _userOptionsRepo.UpsertAsync(options);
         }
@@ -49,32 +49,28 @@ namespace Newbe.BookmarkManager.Services
         private UserOptions ApplyDefaultValue(UserOptions options)
         {
             var baseUriOptions = _baseUriOptions.Value;
-            if (options.PinyinFeature == null)
+            options.PinyinFeature ??= new PinyinFeature
             {
-                options.PinyinFeature = new PinyinFeature
-                {
-                    Enabled = false,
-                    BaseUrl = baseUriOptions.PinyinApi
-                };
-            }
+                Enabled = false,
+                BaseUrl = baseUriOptions.PinyinApi
+            };
 
-            if (options.CloudBkFeature == null)
+            options.CloudBkFeature ??= new CloudBkFeature
             {
-                options.CloudBkFeature = new CloudBkFeature
-                {
-                    Enabled = false,
-                    BaseUrl = baseUriOptions.CloudBkApi
-                };
-            }
+                Enabled = false,
+                BaseUrl = baseUriOptions.CloudBkApi
+            };
 
-            if (options.HotTagsFeature == null)
+            options.HotTagsFeature ??= new HotTagsFeature
             {
-                options.HotTagsFeature = new HotTagsFeature
-                {
-                    Enabled = true,
-                    ListCount = 10
-                };
-            }
+                Enabled = true,
+                ListCount = 10
+            };
+
+            options.ApplicationInsightFeature ??= new ApplicationInsightFeature
+            {
+                Enabled = false
+            };
 
             return options;
         }

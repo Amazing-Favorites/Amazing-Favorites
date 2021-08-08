@@ -33,7 +33,7 @@ namespace Newbe.BookmarkManager.Services
             _tagsRepo = tagsRepo;
         }
 
-        public async ValueTask AddClickAsync(string url, int moreCount)
+        public async Task AddClickAsync(string url, int moreCount)
         {
             var bk = await _bkRepo.GetAsync(url);
             if (bk == null)
@@ -45,7 +45,7 @@ namespace Newbe.BookmarkManager.Services
             await _bkRepo.UpsertAsync(bk);
         }
 
-        public async ValueTask RestoreAsync()
+        public async Task RestoreAsync()
         {
             await _bkRepo.DeleteAllAsync();
             await _bkMetadataRepo.UpsertAsync(new BkMetadata
@@ -54,7 +54,7 @@ namespace Newbe.BookmarkManager.Services
             });
         }
 
-        public async ValueTask RemoveTagAsync(string url, string tag)
+        public async Task RemoveTagAsync(string url, string tag)
         {
             var bk = await _bkRepo.GetAsync(url);
             if (bk != null)
@@ -69,7 +69,7 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
-        public async ValueTask<bool> AppendTagAsync(string url, params string[]? tags)
+        public async Task<bool> AppendTagAsync(string url, params string[]? tags)
         {
             if (tags == null)
             {
@@ -120,7 +120,7 @@ namespace Newbe.BookmarkManager.Services
             return true;
         }
 
-        public async ValueTask UpdateTagsAsync(string url, string title, IEnumerable<string> tags)
+        public async Task UpdateTagsAsync(string url, string title, IEnumerable<string> tags)
         {
             var bk = await _bkRepo.GetAsync(url);
             if (bk == null)
@@ -163,7 +163,7 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
-        public async ValueTask UpdateFavIconUrlAsync(Dictionary<string, string> urls)
+        public async Task UpdateFavIconUrlAsync(Dictionary<string, string> urls)
         {
             foreach (var (url, furl) in urls)
             {
@@ -177,7 +177,7 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
-        public async ValueTask AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes)
+        public async Task AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes)
         {
             var updated = false;
             var bkDic = nodes.ToLookup(x => x.Url, x => new Bk

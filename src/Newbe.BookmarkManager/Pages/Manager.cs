@@ -20,7 +20,7 @@ namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
     {
-        private IJSObjectReference? _keyboardEventModule;
+        private JsModuleLoader _moduleLoader;
         [Inject] public IBkSearcher BkSearcher { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public ITagsManager TagsManager { get; set; }
@@ -77,8 +77,14 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                _keyboardEventModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", 
-                    "/content/manager_keyboard.js");
+                _moduleLoader = new JsModuleLoader(JsRuntime);
+                await _moduleLoader.LoadAsync("/content/manager_keyboard.js");
+                var userOptions = await UserOptionsService.GetOptionsAsync();
+                if (userOptions.ApplicationInsightFeature?.Enabled == true)
+                {
+                    await _moduleLoader.LoadAsync("/content/ai.js");
+                }
+
                 var lDotNetReference = DotNetObjectReference.Create(this);
                 await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
                 _searchSubject
@@ -151,7 +157,7 @@ namespace Newbe.BookmarkManager.Pages
                                 Logger.LogInformation("success to get favicon url");
                                 await BkManager.UpdateFavIconUrlAsync(new Dictionary<string, string>
                                 {
-                                    {url, tabNow.FavIconUrl}
+                                    { url, tabNow.FavIconUrl }
                                 });
                             }
                         }
@@ -161,7 +167,7 @@ namespace Newbe.BookmarkManager.Pages
                         }
                     });
                 _allTags = await TagsManager.GetAllTagsAsync();
-                _userOptions = await UserOptionsService.GetOptionsAsync();
+                _userOptions = userOptions;
 
                 await WebExtensions.Runtime.OnMessage.AddListener((o, sender, arg3) =>
                 {
@@ -430,10 +436,7 @@ namespace Newbe.BookmarkManager.Pages
 
         public async ValueTask DisposeAsync()
         {
-            if (_keyboardEventModule is not null)
-            {
-                await _keyboardEventModule.DisposeAsync();
-            }
+            await _moduleLoader.DisposeAsync();
         }
     }
 }

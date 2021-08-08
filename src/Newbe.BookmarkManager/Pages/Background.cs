@@ -14,8 +14,10 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public ISyncCloudJob SyncCloudJob { get; set; }
         [Inject] public IDataFixJob DataFixJob { get; set; }
         [Inject] public ISyncTagRelatedBkCountJob SyncTagRelatedBkCountJob { get; set; }
+        [Inject] public IUserOptionsService UserOptionsService { get; set; }
 
-        private IJSObjectReference? _keyboardEventModule;
+        private JsModuleLoader _moduleLoader;
+
         [JSInvokable]
         public void OnReceivedCommand(string command)
         {
@@ -30,8 +32,14 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                _keyboardEventModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", 
-                    "/content/background_keyboard.js");
+                _moduleLoader = new JsModuleLoader(JsRuntime);
+                await _moduleLoader.LoadAsync("/content/background_keyboard.js");
+                var userOptions = await UserOptionsService.GetOptionsAsync();
+                if (userOptions.ApplicationInsightFeature?.Enabled == true)
+                {
+                    await _moduleLoader.LoadAsync("/content/ai.js");
+                }
+
                 var lDotNetReference = DotNetObjectReference.Create(this);
                 await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
                 await DataFixJob.StartAsync();
@@ -44,10 +52,7 @@ namespace Newbe.BookmarkManager.Pages
 
         public async ValueTask DisposeAsync()
         {
-            if (_keyboardEventModule is not null)
-            {
-                await _keyboardEventModule.DisposeAsync();
-            }
+            await _moduleLoader.DisposeAsync();
         }
     }
 }

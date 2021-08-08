@@ -9,14 +9,20 @@
        OnCancel="@HandleUserOptionsCancel"
        AfterClose="OnAfterClose"
        MaskClosable="false"
-       Width="1000">
+       Width="1200">
     <Form Model="@_modal"
           LabelColSpan="4"
           WrapperColSpan="20"
           Size="Default">
         @if (context.AcceptPrivacyAgreement)
         {
-            <FormItem Label="Enable Pinyin">
+            <FormItem Label="👋 Anonymous Improving">
+                <Switch @bind-Value="@context.ApplicationInsightFeature.Enabled"/>
+                <p>👋 Recommended to enable</p>
+                <p>Collecting fully anonymous application performance and error logs helps us to continually strive to provide you with better applications. When enabled, we will collect information about the application's errors, the time spent on each operation, and other data that is not related to personal information. </p>
+                <p>Modifying the options will only take effect after you restart your browser</p>.
+            </FormItem>
+            <FormItem Label="🌏 Enable Pinyin">
                 <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
             </FormItem>
             @if (context.PinyinFeature.Enabled)
@@ -33,7 +39,7 @@
                     <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
                 </FormItem>
             }
-            <FormItem Label="Enable Cloud Sync">
+            <FormItem Label="☁ Enable Cloud Sync">
                 <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
             </FormItem>
             @if (context.CloudBkFeature.Enabled)
@@ -63,7 +69,7 @@
                 <Button OnClick="OnClickAgreeUserPrivacyAgreement" Type="primary">I agree to the User Privacy Agreement</Button>
             </FormItem>
         }
-        <FormItem Label="Enable Hot Tags">
+        <FormItem Label="🔥 Enable Hot Tags">
             <Switch @bind-Value="@context.HotTagsFeature.Enabled"/>
         </FormItem>
         @if (context.HotTagsFeature.Enabled)
@@ -77,7 +83,7 @@
         }
         <FormItem Label="System Actions">
             <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
-            <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting</Button>
+            <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting of Amazing Favirotes</Button>
         </FormItem>
     </Form>
 </Modal>
@@ -124,6 +130,7 @@
         public PinyinFeature PinyinFeature { get; set; }
         public CloudBkFeature CloudBkFeature { get; set; }
         public HotTagsFeature HotTagsFeature { get; set; }
+        public ApplicationInsightFeature ApplicationInsightFeature { get; set; }
     }
 
     private async Task OnClickDumpDataAsync()
@@ -162,7 +169,9 @@
         {
             AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
             PinyinFeature = _modal.PinyinFeature,
-            CloudBkFeature = _modal.CloudBkFeature
+            CloudBkFeature = _modal.CloudBkFeature,
+            ApplicationInsightFeature = _modal.ApplicationInsightFeature,
+            HotTagsFeature = _modal.HotTagsFeature,
         });
     }
 
@@ -178,7 +187,8 @@
             AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
             PinyinFeature = _modal.PinyinFeature,
             CloudBkFeature = _modal.CloudBkFeature,
-            HotTagsFeature = _modal.HotTagsFeature
+            HotTagsFeature = _modal.HotTagsFeature,
+            ApplicationInsightFeature = _modal.ApplicationInsightFeature
         };
         await UserOptionsService.SaveAsync(userOptions);
         await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
@@ -201,6 +211,7 @@
         _modal.PinyinFeature = options.PinyinFeature;
         _modal.CloudBkFeature = options.CloudBkFeature;
         _modal.HotTagsFeature = options.HotTagsFeature;
+        _modal.ApplicationInsightFeature = options.ApplicationInsightFeature;
         _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement == true;
     }
 
