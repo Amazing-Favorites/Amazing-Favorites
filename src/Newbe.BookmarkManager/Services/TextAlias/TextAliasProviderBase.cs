@@ -20,7 +20,6 @@ namespace Newbe.BookmarkManager.Services
             _logger = logger;
         }
 
-
         public bool NeedFill(BkTag tag)
         {
             return !tag.TagAlias.ContainsKey(TextAliasType);
