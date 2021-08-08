@@ -1,11 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using Autofac.Extras.DynamicProxy;
+using BlazorApplicationInsights;
+using Castle.DynamicProxy;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newbe.BookmarkManager.Pages;
 using Newbe.BookmarkManager.Services;
+using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
 using Refit;
 using TG.Blazor.IndexedDB;
@@ -21,15 +28,16 @@ namespace Newbe.BookmarkManager
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
+            builder.ConfigureContainer(new AutofacServiceProviderFactory(Register));
             builder.RootComponents.Add<App>("#app");
 
+            builder.Services.AddBlazorApplicationInsights(addILoggerProvider: false)
+                .AddSingleton<ILoggerProvider, AiLoggerProvider>();
             builder.Services.AddScoped(
-                    sp => new HttpClient {BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)})
-                .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
-                ;
+                    sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
+                .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)));
             builder.Services
-                .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>))
-                ;
+                .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
             builder.Services
                 .AddAntDesign()
                 .AddBrowserExtensionServices(options => { options.ProjectNamespace = typeof(Program).Namespace; })
@@ -38,27 +46,21 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IWindowsApi, WindowsApi>()
                 .AddTransient<IStorageApi, StorageApi>()
                 .AddTransient<IClock, SystemClock>()
-                .AddTransient<IBkManager, IndexedBkManager>()
                 .AddTransient<ITagsManager, TagsManager>()
-                .AddTransient<IBkSearcher, IndexedBkSearcher>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddSingleton<IAfCodeService, AfCodeService>()
-                .AddTransient<IUserOptionsService, UserOptionsService>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()
                 .AddSingleton<ISyncTagRelatedBkCountJob, SyncTagRelatedBkCountJob>()
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
-                .AddTransient<ICloudService, CloudService>()
                 .AddSingleton<ISyncCloudJob, SyncCloudJob>()
                 .AddSingleton<IDataFixJob, DataFixJob>();
 
             builder.Services
-                .AddTransient<IBkEditFormData, BkEditFormData>()
-                ;
+                .AddTransient<IBkEditFormData, BkEditFormData>();
 
             builder.Services
-                .AddTransient<AuthHeaderHandler>()
-                ;
+                .AddTransient<AuthHeaderHandler>();
             builder.Services
                 .AddRefitClient<IPinyinApi>()
                 .ConfigureHttpClient((sp, client) =>
@@ -88,26 +90,49 @@ namespace Newbe.BookmarkManager
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.Bks,
-                    PrimaryKey = new IndexSpec {Name = "url", KeyPath = "url", Auto = false, Unique = true},
+                    PrimaryKey = new IndexSpec { Name = "url", KeyPath = "url", Auto = false, Unique = true },
                 });
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.Tags,
-                    PrimaryKey = new IndexSpec {Name = "tag", KeyPath = "tag", Auto = false, Unique = true},
+                    PrimaryKey = new IndexSpec { Name = "tag", KeyPath = "tag", Auto = false, Unique = true },
                 });
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.BkMetadata,
-                    PrimaryKey = new IndexSpec {Name = "id", KeyPath = "id", Auto = false, Unique = true},
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.UserOptions,
-                    PrimaryKey = new IndexSpec {Name = "id", KeyPath = "id", Auto = false, Unique = true},
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
             });
 
-            await builder.Build().RunAsync();
+            var webAssemblyHost = builder.Build();
+            var userOptionsService = webAssemblyHost.Services.GetRequiredService<IUserOptionsService>();
+            var userOptions = await userOptionsService.GetOptionsAsync();
+            ApplicationInsightAop.Enabled = userOptions.ApplicationInsightFeature!.Enabled;
+            await webAssemblyHost.RunAsync();
+        }
+
+        private static void Register(ContainerBuilder builder)
+        {
+            builder.RegisterType<ApplicationInsightAop>();
+            RegisterType<IndexedBkSearcher, IBkSearcher>();
+            RegisterType<IndexedBkManager, IBkManager>();
+            RegisterType<CloudService, ICloudService>();
+            RegisterType<UserOptionsService, IUserOptionsService>();
+
+            void RegisterType<TType, TInterface>()
+            {
+#pragma warning disable 8714
+                builder.RegisterType<TType>()
+                    .As<TInterface>()
+#pragma warning restore 8714
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
+            }
         }
     }
 }

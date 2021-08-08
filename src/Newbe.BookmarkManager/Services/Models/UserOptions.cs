@@ -10,6 +10,7 @@ namespace Newbe.BookmarkManager.Services
         public PinyinFeature? PinyinFeature { get; set; }
         public CloudBkFeature? CloudBkFeature { get; set; }
         public HotTagsFeature? HotTagsFeature { get; set; }
+        public ApplicationInsightFeature? ApplicationInsightFeature { get; set; }
     }
 
     public record PinyinFeature
@@ -30,5 +31,10 @@ namespace Newbe.BookmarkManager.Services
     {
         public bool Enabled { get; set; }
         public int ListCount { get; set; }
+    }
+
+    public record ApplicationInsightFeature
+    {
+        public bool Enabled { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.WebApi;
 using WebExtensions.Net.Bookmarks;
 
@@ -7,18 +8,37 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface IBkManager
     {
-        ValueTask AddClickAsync(string url, int moreCount);
-        ValueTask RestoreAsync();
+        [Insight(EventName = "Bk Click Event")]
+        Task AddClickAsync(string url, int moreCount);
 
-        ValueTask RemoveTagAsync(string url, string tag);
-        ValueTask<bool> AppendTagAsync(string url, params string[]? tags);
-        ValueTask UpdateTagsAsync(string url, string title, IEnumerable<string> tags);
-        ValueTask UpdateFavIconUrlAsync(Dictionary<string, string> urls);
-        ValueTask AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes);
+        [Insight(EventName = "Bk Restore Event")]
+        Task RestoreAsync();
+
+        [Insight(EventName = "Bk Tag Remove Event")]
+        Task RemoveTagAsync(string url, string tag);
+
+        [Insight(EventName = "Bk Tag Append Event")]
+        Task<bool> AppendTagAsync(string url, params string[]? tags);
+
+        [Insight(EventName = "Bk Tag Update Event")]
+        Task UpdateTagsAsync(string url, string title, IEnumerable<string> tags);
+
+        Task UpdateFavIconUrlAsync(Dictionary<string, string> urls);
+
+        [Insight(EventName = "Bk Bookmarks Sync Event")]
+        Task AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes);
+
+        [Insight(EventName = "Bk Cloud To Local Event")]
         Task LoadCloudCollectionAsync(CloudBkCollection cloudBkCollection);
+
         Task<CloudBkCollection> GetCloudBkCollectionAsync();
+
+        [Insight(EventName = "Bk Delete Event")]
         Task DeleteAsync(string url);
+
+        [Insight(EventName = "Bk Title Update Event")]
         Task UpdateTitleAsync(string url, string title);
+
         Task<long> GetEtagVersionAsync();
         Task<Bk?> Get(string url);
         Task<Dictionary<string, int>> GetTagRelatedCountAsync();

@@ -1,7 +1,7 @@
 ﻿{
   "manifest_version": 2,
   "name": "Amazing Favorites",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Amazing Favorites help you to manage you bookmarks efficiently",
   "background": {
     "page": "index.html?path=background",
@@ -12,7 +12,7 @@
     "48": "icons/48icon.png",
     "128": "icons/128icon.png"
   },
-  "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-eval' 'sha256-v8v3RKRPmN4odZ1CWM5gw80QKPCCWMcpNeOmimNL2AA='; object-src 'self'",
+  "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-eval' 'sha256-v8v3RKRPmN4odZ1CWM5gw80QKPCCWMcpNeOmimNL2AA=' 'sha256-j0z5Z6xOoSHTeg6zVPMoHNt5D5v+7IWgT9m5uC9mrGg=' https://js.monitor.azure.com/scripts/b/ai.2.min.js ; object-src 'self'",
   "web_accessible_resources": [
     "framework/*",
     "BrowserExtensionScripts/*",
