@@ -134,94 +134,94 @@
     ld: -1, // Defines the load delay (in ms) before attempting to load the sdk. -1 = block page load and add to head. (default) = 0ms load after timeout,
 // useXhr: 1, // Use XHR instead of fetch to report failures (if available),
     crossOrigin: "anonymous", // When supplied this will add the provided value as the cross origin attribute on the script tag
-onInit: () => {
-    window.blazorApplicationInsights = {
-        addTelemetryInitializer: function (telemetryItem) {
-            var telemetryInitializer = (envelope) => {
-                if (telemetryItem.ver !== null) {
-                    envelope.ver = telemetryItem.ver;
+    onInit: () => {
+        window.blazorApplicationInsights = {
+            addTelemetryInitializer: function (telemetryItem) {
+                var telemetryInitializer = (envelope) => {
+                    if (telemetryItem.ver !== null) {
+                        envelope.ver = telemetryItem.ver;
+                    }
+                    if (telemetryItem.name !== null) {
+                        envelope.name = telemetryItem.name;
+                    }
+                    if (telemetryItem.time !== null) {
+                        envelope.time = telemetryItem.time;
+                    }
+                    if (telemetryItem.iKey !== null) {
+                        envelope.iKey = telemetryItem.iKey;
+                    }
+                    if (telemetryItem.ext !== null) {
+                        envelope.ext = telemetryItem.ext;
+                    }
+                    if (telemetryItem.tags !== null) {
+                        envelope.tags = telemetryItem.tags;
+                    }
+                    if (telemetryItem.data !== null) {
+                        Object.assign(envelope.data, telemetryItem.data);
+                    }
+                    if (telemetryItem.baseType !== null) {
+                        envelope.baseType = telemetryItem.baseType;
+                    }
+                    if (telemetryItem.baseData !== null) {
+                        envelope.baseData = telemetryItem.baseData;
+                    }
                 }
-                if (telemetryItem.name !== null) {
-                    envelope.name = telemetryItem.name;
-                }
-                if (telemetryItem.time !== null) {
-                    envelope.time = telemetryItem.time;
-                }
-                if (telemetryItem.iKey !== null) {
-                    envelope.iKey = telemetryItem.iKey;
-                }
-                if (telemetryItem.ext !== null) {
-                    envelope.ext = telemetryItem.ext;
-                }
-                if (telemetryItem.tags !== null) {
-                    envelope.tags = telemetryItem.tags;
-                }
-                if (telemetryItem.data !== null) {
-                    Object.assign(envelope.data, telemetryItem.data);
-                }
-                if (telemetryItem.baseType !== null) {
-                    envelope.baseType = telemetryItem.baseType;
-                }
-                if (telemetryItem.baseData !== null) {
-                    envelope.baseData = telemetryItem.baseData;
-                }
-            }
-            appInsights.addTelemetryInitializer(telemetryInitializer);
-        },
-        trackDependencyData: function (data) {
-            var dependencyTelemetry = {};
+                appInsights.addTelemetryInitializer(telemetryInitializer);
+            },
+            trackDependencyData: function (data) {
+                var dependencyTelemetry = {};
 
-            if (data.id !== null) {
-                dependencyTelemetry["id"] = data.id;
-            }
-            if (data.name !== null) {
-                dependencyTelemetry["name"] = data.name;
-            }
-            if (data.duration !== null) {
-                dependencyTelemetry["duration"] = data.duration;
-            }
-            if (data.success !== null) {
-                dependencyTelemetry["success"] = data.success;
-            }
-            if (data.startTime !== null) {
-                dependencyTelemetry["startTime"] = new Date(data.startTime);
-            }
-            if (data.responseCode !== null) {
-                dependencyTelemetry["responseCode"] = data.responseCode;
-            }
-            if (data.correlationContext !== null) {
-                dependencyTelemetry["correlationContext"] = data.correlationContext;
-            }
-            if (data.type !== null) {
-                dependencyTelemetry["type"] = data.type;
-            }
-            if (data.data !== null) {
-                dependencyTelemetry["data"] = data.data;
-            }
-            if (data.target !== null) {
-                dependencyTelemetry["target"] = data.target;
-            }
+                if (data.id !== null) {
+                    dependencyTelemetry["id"] = data.id;
+                }
+                if (data.name !== null) {
+                    dependencyTelemetry["name"] = data.name;
+                }
+                if (data.duration !== null) {
+                    dependencyTelemetry["duration"] = data.duration;
+                }
+                if (data.success !== null) {
+                    dependencyTelemetry["success"] = data.success;
+                }
+                if (data.startTime !== null) {
+                    dependencyTelemetry["startTime"] = new Date(data.startTime);
+                }
+                if (data.responseCode !== null) {
+                    dependencyTelemetry["responseCode"] = data.responseCode;
+                }
+                if (data.correlationContext !== null) {
+                    dependencyTelemetry["correlationContext"] = data.correlationContext;
+                }
+                if (data.type !== null) {
+                    dependencyTelemetry["type"] = data.type;
+                }
+                if (data.data !== null) {
+                    dependencyTelemetry["data"] = data.data;
+                }
+                if (data.target !== null) {
+                    dependencyTelemetry["target"] = data.target;
+                }
 
-            appInsights.trackDependencyData(dependencyTelemetry);
-        },
-        setInstrumentationKey: function (instrumentationKey) {
-            appInsights.config.instrumentationKey = instrumentationKey;
-        },
-        loadAppInsights: function () {
-            if (appInsights.loadAppInsights !== undefined) {
-                appInsights.loadAppInsights();
+                appInsights.trackDependencyData(dependencyTelemetry);
+            },
+            setInstrumentationKey: function (instrumentationKey) {
+                appInsights.config.instrumentationKey = instrumentationKey;
+            },
+            loadAppInsights: function () {
+                if (appInsights.loadAppInsights !== undefined) {
+                    appInsights.loadAppInsights();
+                }
+            },
+        };
+        // window.loadAppInsights();
+        window.blazorApplicationInsights.addTelemetryInitializer({
+            tags: {
+                "ai.cloud.role": "Browser Extensions",
+                "ai.cloud.roleInstance": "Blazor Wasm",
+                "af.version": "0.7.0"
             }
-        },
-    };
-    // window.loadAppInsights();
-    window.blazorApplicationInsights.addTelemetryInitializer({
-       tags:{
-           "ai.cloud.role": "Browser Extensions",
-           "ai.cloud.roleInstance": "Blazor Wasm",
-           "af.version": "0.7.0"
-       }
-    });
-}, // Once the application insights instance has loaded and initialized this callback function will be called with 1 argument -- the sdk instance (DO NOT ADD anything to the sdk.queue -- As they won't get called)
+        });
+    }, // Once the application insights instance has loaded and initialized this callback function will be called with 1 argument -- the sdk instance (DO NOT ADD anything to the sdk.queue -- As they won't get called)
     cfg: { // Application Insights Configuration
         instrumentationKey: "217da878-9de0-4c4d-955b-a6d32e638649"
     }

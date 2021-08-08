@@ -104,17 +104,17 @@ namespace Newbe.BookmarkManager.Services.Ai
 
             return dict;
         }
-    }
 
-    internal class NullScope : IDisposable
-    {
-        public NullScope()
+        private class NullScope : IDisposable
         {
-        }
+            public NullScope()
+            {
+            }
 
-        /// <inheritdoc />
-        public void Dispose()
-        {
+            /// <inheritdoc />
+            public void Dispose()
+            {
+            }
         }
     }
 }

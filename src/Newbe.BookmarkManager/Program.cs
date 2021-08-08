@@ -29,19 +29,15 @@ namespace Newbe.BookmarkManager
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.ConfigureContainer(new AutofacServiceProviderFactory(Register));
-            ;
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddBlazorApplicationInsights(addILoggerProvider: false)
-                .AddSingleton<ILoggerProvider, AiLoggerProvider>()
-                ;
+                .AddSingleton<ILoggerProvider, AiLoggerProvider>();
             builder.Services.AddScoped(
                     sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
-                .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
-                ;
+                .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)));
             builder.Services
-                .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>))
-                ;
+                .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
             builder.Services
                 .AddAntDesign()
                 .AddBrowserExtensionServices(options => { options.ProjectNamespace = typeof(Program).Namespace; })
@@ -61,12 +57,10 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<IDataFixJob, DataFixJob>();
 
             builder.Services
-                .AddTransient<IBkEditFormData, BkEditFormData>()
-                ;
+                .AddTransient<IBkEditFormData, BkEditFormData>();
 
             builder.Services
-                .AddTransient<AuthHeaderHandler>()
-                ;
+                .AddTransient<AuthHeaderHandler>();
             builder.Services
                 .AddRefitClient<IPinyinApi>()
                 .ConfigureHttpClient((sp, client) =>
