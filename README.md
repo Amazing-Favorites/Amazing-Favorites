@@ -14,7 +14,7 @@ You can find the user manual at [af.newbe.pro](https://af.newbe.pro/docs/)
 
 ### Add a new page as bookmark
 
-![Add a new page as bookmark](./assets/add_bookmark.gif)
+![Add a new page as bookmark](https://af.newbe.pro/images/20210805-002.gif)
 
 ### Amazing Favorites Manager
 
