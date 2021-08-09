@@ -213,7 +213,7 @@
                 }
             },
         };
-        // window.loadAppInsights();
+        window.loadAppInsights();
         window.blazorApplicationInsights.addTelemetryInitializer({
             tags: {
                 "ai.cloud.role": "Browser Extensions",
