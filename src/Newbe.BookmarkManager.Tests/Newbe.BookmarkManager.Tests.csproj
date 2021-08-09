@@ -10,7 +10,7 @@
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="NUnit" Version="3.13.1" />
-    <PackageReference Include="NunitXml.TestLogger" Version="3.0.97" />
+    <PackageReference Include="NunitXml.TestLogger" Version="3.0.107" />
     <PackageReference Include="NUnit.Analyzers" Version="3.1.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <PackageReference Include="coverlet.collector" Version="3.0.3" />
