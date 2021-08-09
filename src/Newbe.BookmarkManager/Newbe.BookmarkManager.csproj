@@ -17,10 +17,10 @@
         <PackageReference Include="Blazor.BrowserExtension" Version="0.5.1" />
         <PackageReference Include="BlazorApplicationInsights" Version="1.2.1" />
         <PackageReference Include="Castle.Core.AsyncInterceptor" Version="2.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.6.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.6.*" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.6.*" />
-        <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.6.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.6.21355.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.6.21355.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.6.21352.12" />
+        <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.6.21352.12" />
         <PackageReference Include="Refit" Version="6.0.94" />
         <PackageReference Include="Refit.HttpClientFactory" Version="6.0.94" />
         <PackageReference Include="System.Reactive" Version="5.0.0" />
