@@ -187,9 +187,9 @@ namespace Newbe.BookmarkManager.Services
                 Url = x.Url,
                 UrlHash = _urlHashService.GetHash(x.Url),
                 LastCreateTime = x.DateAdded.HasValue
-                    ? DateTimeOffset.FromUnixTimeMilliseconds((long) x.DateAdded.Value).ToUnixTimeSeconds()
+                    ? DateTimeOffset.FromUnixTimeMilliseconds((long)x.DateAdded.Value).ToUnixTimeSeconds()
                     : 0L,
-                Tags = x.Tags
+                Tags = x.Tags.Distinct().ToList()
             });
             var bookmarksKeys = bkDic.Select(x => x.Key).ToHashSet();
             _logger.LogDebug("Found {Count} bookmark", bookmarksKeys.Count);
