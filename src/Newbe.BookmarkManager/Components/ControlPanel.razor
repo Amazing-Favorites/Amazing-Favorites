@@ -17,43 +17,45 @@
         @if (context.AcceptPrivacyAgreement)
         {
             <FormItem Label="👋 Anonymous Improving">
-                <Switch @bind-Value="@context.ApplicationInsightFeature.Enabled"/>
+                <Switch @bind-Value="@context.ApplicationInsightFeature.Enabled" />
                 <p>👋 Recommended to enable</p>
                 <p>Collecting fully anonymous application performance and error logs helps us to continually strive to provide you with better applications. When enabled, we will collect information about the application's errors, the time spent on each operation, and other data that is not related to personal information. </p>
                 <p>Modifying the options will only take effect after you restart your browser</p>.
             </FormItem>
             <FormItem Label="🌏 Enable Pinyin">
-                <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
+                <Switch @bind-Value="@context.PinyinFeature.Enabled" />
             </FormItem>
             @if (context.PinyinFeature.Enabled)
             {
                 <FormItem Label="Access Token">
-                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken" />
+                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken" OnChange="OnChangeAccessToken" />
                     <p>
-                        <Icon Type="question" Theme="outline"/>
+                        <Icon Type="question" Theme="outline" />
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
                     </p>
 
+                    <FormItem Label="Exp">
+                        <TimePicker TValue="DateTime?" Disabled="@true" Format="HH:mm:ss" Value="@context.PinyinFeature.Expire" />
+                    </FormItem>
                 </FormItem>
                 <FormItem Label="Pinyin Api BaseUrl">
-                    <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
+                    <Input @bind-Value="@context.PinyinFeature.BaseUrl" />
                 </FormItem>
             }
             <FormItem Label="☁ Enable Cloud Sync">
-                <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
+                <Switch @bind-Value="@context.CloudBkFeature.Enabled" />
             </FormItem>
             @if (context.CloudBkFeature.Enabled)
             {
                 <FormItem Label="Access Token">
                     <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" />
                     <p>
-                        <Icon Type="question" Theme="outline"/>
+                        <Icon Type="question" Theme="outline" />
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
                     </p>
-
                 </FormItem>
                 <FormItem Label="Cloud Sync Api BaseUrl">
-                    <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
+                    <Input @bind-Value="@context.CloudBkFeature.BaseUrl" />
                 </FormItem>
             }
         }
@@ -70,7 +72,7 @@
             </FormItem>
         }
         <FormItem Label="🔥 Enable Hot Tags">
-            <Switch @bind-Value="@context.HotTagsFeature.Enabled"/>
+            <Switch @bind-Value="@context.HotTagsFeature.Enabled" />
         </FormItem>
         @if (context.HotTagsFeature.Enabled)
         {
@@ -78,7 +80,7 @@
                 <AntDesign.InputNumber @bind-Value="@context.HotTagsFeature.ListCount"
                                        Min="1"
                                        Max="100"
-                                       DefaultValue="10"/>
+                                       DefaultValue="10" />
             </FormItem>
         }
         <FormItem Label="System Actions">
@@ -219,6 +221,11 @@
     {
         await base.OnInitializedAsync();
         await LoadUserOptions();
+    }
+
+    private async Task OnChangeAccessToken()
+    {
+        _modal.PinyinFeature.Expire = WebHelper.GetJwtExp(_modal.PinyinFeature.AccessToken);
     }
 
 }

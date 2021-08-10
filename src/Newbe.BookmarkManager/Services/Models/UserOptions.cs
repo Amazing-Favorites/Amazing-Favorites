@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -18,6 +19,8 @@ namespace Newbe.BookmarkManager.Services
         public bool Enabled { get; set; }
         public string? BaseUrl { get; set; }
         public string? AccessToken { get; set; }
+
+        public DateTime? Expire { get; set; }
     }
 
     public record CloudBkFeature
@@ -25,6 +28,8 @@ namespace Newbe.BookmarkManager.Services
         public bool Enabled { get; set; }
         public string? BaseUrl { get; set; }
         public string? AccessToken { get; set; }
+
+        public DateTime? Expire { get; set; }
     }
 
     public record HotTagsFeature
