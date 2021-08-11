@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace Newbe.BookmarkManager.Services
@@ -14,9 +15,10 @@ namespace Newbe.BookmarkManager.Services
 
         public static DateTime? GetJwtExp(string token)
         {
-            var t1 = JwtPayload.Deserialize(token);
-            if (t1?.Exp.HasValue == true)
-                return DateTimeOffset.FromUnixTimeSeconds(t1.Exp.Value).DateTime;
+            var jwt = new JwtSecurityTokenHandler();
+            var exp = jwt.CanReadToken(token) ? jwt.ReadJwtToken(token)?.Claims?.FirstOrDefault(a => a.Type == "exp") : null;
+            if (exp != null)
+                return DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(exp?.Value)).DateTime;
             return null;
         }
 

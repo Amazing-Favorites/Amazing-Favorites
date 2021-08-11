@@ -34,8 +34,8 @@
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
                     </p>
 
-                    <FormItem Label="Exp">
-                        <TimePicker TValue="DateTime?" Disabled="@true" Format="HH:mm:ss" Value="@context.PinyinFeature.Expire" />
+                    <FormItem Label="Expiration Date">
+                        <TimePicker TValue="DateTime?" Disabled="@true" Format="yyyy-MM-dd HH:mm:ss" @bind-Value="@context.PinyinFeature.Expire" />
                     </FormItem>
                 </FormItem>
                 <FormItem Label="Pinyin Api BaseUrl">
