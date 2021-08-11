@@ -28,14 +28,14 @@
             @if (context.PinyinFeature.Enabled)
             {
                 <FormItem Label="Access Token">
-                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken" OnChange="OnChangeAccessToken" />
+                    <TextArea Value="@context.PinyinFeature.AccessToken"  OnChange="OnChangePinyinFeatureAccessToken"/>
                     <p>
                         <Icon Type="question" Theme="outline" />
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
                     </p>
 
                     <FormItem Label="Expiration Date">
-                        <TimePicker TValue="DateTime?" Disabled="@true" Format="yyyy-MM-dd HH:mm:ss" @bind-Value="@context.PinyinFeature.Expire" />
+                        <DatePicker TValue="DateTime?" Disabled="@true" @bind-Value="@context.PinyinFeature.Expire" />
                     </FormItem>
                 </FormItem>
                 <FormItem Label="Pinyin Api BaseUrl">
@@ -48,11 +48,14 @@
             @if (context.CloudBkFeature.Enabled)
             {
                 <FormItem Label="Access Token">
-                    <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" />
+                    <TextArea Value="@context.CloudBkFeature.AccessToken" OnChange="OnChangeCloudBkFeatureAccessToken" />
                     <p>
                         <Icon Type="question" Theme="outline" />
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
                     </p>
+                    <FormItem Label="Expiration Date">
+                        <DatePicker TValue="DateTime?" Disabled="@true" @bind-Value="@context.CloudBkFeature.Expire" />
+                    </FormItem>
                 </FormItem>
                 <FormItem Label="Cloud Sync Api BaseUrl">
                     <Input @bind-Value="@context.CloudBkFeature.BaseUrl" />
@@ -223,9 +226,18 @@
         await LoadUserOptions();
     }
 
-    private async Task OnChangeAccessToken()
+    private Task OnChangePinyinFeatureAccessToken(string accessToken)
     {
-        _modal.PinyinFeature.Expire = WebHelper.GetJwtExp(_modal.PinyinFeature.AccessToken);
+        _modal.PinyinFeature.Expire = WebHelper.GetJwtExp(accessToken);
+        _modal.PinyinFeature.AccessToken = accessToken;
+        return Task.CompletedTask;
+    }
+
+    private Task OnChangeCloudBkFeatureAccessToken(string accessToken)
+    {
+        _modal.CloudBkFeature.Expire = WebHelper.GetJwtExp(accessToken);
+        _modal.CloudBkFeature.AccessToken = accessToken;
+        return Task.CompletedTask;
     }
 
 }
