@@ -28,7 +28,7 @@
             @if (context.PinyinFeature.Enabled)
             {
                 <FormItem Label="Access Token">
-                    <TextArea Value="@context.PinyinFeature.AccessToken"  OnChange="OnChangePinyinFeatureAccessToken"/>
+                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken"  OnChange="OnChangePinyinFeatureAccessToken"/>
                     <p>
                         <Icon Type="question" Theme="outline" />
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
@@ -48,7 +48,7 @@
             @if (context.CloudBkFeature.Enabled)
             {
                 <FormItem Label="Access Token">
-                    <TextArea Value="@context.CloudBkFeature.AccessToken" OnChange="OnChangeCloudBkFeatureAccessToken" />
+                    <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" OnChange="OnChangeCloudBkFeatureAccessToken" />
                     <p>
                         <Icon Type="question" Theme="outline" />
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
@@ -228,16 +228,33 @@
 
     private Task OnChangePinyinFeatureAccessToken(string accessToken)
     {
-        _modal.PinyinFeature.Expire = WebHelper.GetJwtExp(accessToken);
-        _modal.PinyinFeature.AccessToken = accessToken;
-        return Task.CompletedTask;
+        try
+		{
+			_modal.PinyinFeature.Expire = WebHelper.GetJwtExp(accessToken);
+		}
+		catch (Services.Common.AccessTokenInvalidException e)
+		{
+			_modal.PinyinFeature.Expire = null;
+			_modal.PinyinFeature.AccessToken = string.Empty;
+			throw;
+		}
+		return Task.CompletedTask;
     }
 
     private Task OnChangeCloudBkFeatureAccessToken(string accessToken)
     {
-        _modal.CloudBkFeature.Expire = WebHelper.GetJwtExp(accessToken);
-        _modal.CloudBkFeature.AccessToken = accessToken;
-        return Task.CompletedTask;
+        try
+		{
+			_modal.CloudBkFeature.Expire = WebHelper.GetJwtExp(accessToken);
+		}
+		catch (Services.Common.AccessTokenInvalidException e)
+		{
+			_modal.CloudBkFeature.Expire = null;
+			_modal.CloudBkFeature.AccessToken = string.Empty;
+			throw;
+		}
+
+		return Task.CompletedTask;
     }
 
 }

@@ -28,6 +28,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IUserOptionsService UserOptionsService { get; set; }
         [Inject] public IBkEditFormData BkEditFormData { get; set; }
         [Inject] public IAfCodeService AfCodeService { get; set; }
+        [Inject] public NotificationService Notice { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -190,6 +191,7 @@ namespace Newbe.BookmarkManager.Pages
                         }
                     }
                 }
+                await AccessTokenExpiredWarningNotification();
             }
         }
 
@@ -419,7 +421,7 @@ namespace Newbe.BookmarkManager.Pages
             }
         }
 
-        #endregion
+        #endregion Modal
 
         #region AfCode
 
@@ -432,7 +434,38 @@ namespace Newbe.BookmarkManager.Pages
             _afCodeSharingPanelVisible = true;
         }
 
-        #endregion
+        #endregion AfCode
+
+        #region Notification
+
+        private async Task AccessTokenExpiredWarningNotification()
+        {
+            if (_userOptions?.PinyinFeature?.Enabled == true &&
+                _userOptions.PinyinFeature?.Expire.HasValue == true &&
+                _userOptions.PinyinFeature.Expire < DateTime.Now.AddDays(7))
+            {
+                await NoticeWarning("PinyinAccessToken");
+            }
+
+            if (_userOptions?.CloudBkFeature?.Enabled == true &&
+                _userOptions.CloudBkFeature?.Expire.HasValue == true &&
+                _userOptions.CloudBkFeature.Expire < DateTime.Now.AddDays(7))
+            {
+                await NoticeWarning("CloudBkAccessToken");
+            }
+
+            async Task NoticeWarning(string name)
+            {
+                await Notice.Open(new NotificationConfig()
+                {
+                    Message = $"{name} is about to expire",
+                    Description = "Your token will be expired within 7 days, please try to create a new one.",
+                    NotificationType = NotificationType.Warning
+                });
+            }
+        }
+
+        #endregion Notification
 
         public async ValueTask DisposeAsync()
         {
