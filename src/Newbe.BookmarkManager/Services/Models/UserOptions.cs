@@ -20,7 +20,7 @@ namespace Newbe.BookmarkManager.Services
         public string? BaseUrl { get; set; }
         public string? AccessToken { get; set; }
 
-        public DateTime? Expire { get; set; }
+        public DateTime? ExpireDate { get; set; }
     }
 
     public record CloudBkFeature
@@ -29,7 +29,7 @@ namespace Newbe.BookmarkManager.Services
         public string? BaseUrl { get; set; }
         public string? AccessToken { get; set; }
 
-        public DateTime? Expire { get; set; }
+        public DateTime? ExpireDate { get; set; }
     }
 
     public record HotTagsFeature

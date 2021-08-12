@@ -35,7 +35,7 @@
                     </p>
 
                     <FormItem Label="Expiration Date">
-                        <DatePicker TValue="DateTime?" Disabled="@true" @bind-Value="@context.PinyinFeature.Expire" />
+                        <DatePicker TValue="DateTime?" Disabled="@true" @bind-Value="@context.PinyinFeature.ExpireDate" />
                     </FormItem>
                 </FormItem>
                 <FormItem Label="Pinyin Api BaseUrl">
@@ -54,7 +54,7 @@
                         You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
                     </p>
                     <FormItem Label="Expiration Date">
-                        <DatePicker TValue="DateTime?" Disabled="@true" @bind-Value="@context.CloudBkFeature.Expire" />
+                        <DatePicker TValue="DateTime?" Disabled="@true" @bind-Value="@context.CloudBkFeature.ExpireDate" />
                     </FormItem>
                 </FormItem>
                 <FormItem Label="Cloud Sync Api BaseUrl">
@@ -228,32 +228,13 @@
 
     private Task OnChangePinyinFeatureAccessToken(string accessToken)
     {
-        try
-		{
-			_modal.PinyinFeature.Expire = WebHelper.GetJwtExp(accessToken);
-		}
-		catch (Services.Common.AccessTokenInvalidException e)
-		{
-			_modal.PinyinFeature.Expire = null;
-			_modal.PinyinFeature.AccessToken = string.Empty;
-			throw;
-		}
+        _modal.PinyinFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
 		return Task.CompletedTask;
     }
 
     private Task OnChangeCloudBkFeatureAccessToken(string accessToken)
     {
-        try
-		{
-			_modal.CloudBkFeature.Expire = WebHelper.GetJwtExp(accessToken);
-		}
-		catch (Services.Common.AccessTokenInvalidException e)
-		{
-			_modal.CloudBkFeature.Expire = null;
-			_modal.CloudBkFeature.AccessToken = string.Empty;
-			throw;
-		}
-
+        _modal.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
 		return Task.CompletedTask;
     }
 

@@ -441,15 +441,15 @@ namespace Newbe.BookmarkManager.Pages
         private async Task AccessTokenExpiredWarningNotification()
         {
             if (_userOptions?.PinyinFeature?.Enabled == true &&
-                _userOptions.PinyinFeature?.Expire.HasValue == true &&
-                _userOptions.PinyinFeature.Expire < DateTime.Now.AddDays(7))
+                _userOptions.PinyinFeature?.ExpireDate.HasValue == true &&
+                _userOptions.PinyinFeature.ExpireDate < DateTime.Now.AddDays(7))
             {
                 await NoticeWarning("PinyinAccessToken");
             }
 
             if (_userOptions?.CloudBkFeature?.Enabled == true &&
-                _userOptions.CloudBkFeature?.Expire.HasValue == true &&
-                _userOptions.CloudBkFeature.Expire < DateTime.Now.AddDays(7))
+                _userOptions.CloudBkFeature?.ExpireDate.HasValue == true &&
+                _userOptions.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(7))
             {
                 await NoticeWarning("CloudBkAccessToken");
             }
