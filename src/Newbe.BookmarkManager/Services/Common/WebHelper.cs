@@ -1,4 +1,8 @@
-﻿using System.Linq;
+﻿using Newbe.BookmarkManager.Services.Common;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace Newbe.BookmarkManager.Services
@@ -9,7 +13,22 @@ namespace Newbe.BookmarkManager.Services
         {
             "magenta", "pink", "red", "volcano", "orange", "green", "cyan", "blue", "lime", "geekblue", "purple"
         };
-        
+
+        public static DateTime? GetJwtExp(string token)
+        {
+            var jwt = new JwtSecurityTokenHandler();
+            if(!jwt.CanReadToken(token))
+            {
+                throw new AccessTokenInvalidException(token);
+            }
+            var exp = jwt.ReadJwtToken(token).Claims.FirstOrDefault(a => a.Type == "exp")?.Value;
+            if(string.IsNullOrWhiteSpace(exp))
+            {
+                throw new AccessTokenInvalidException(token);
+            }
+            return DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(exp)).DateTime;
+        }
+
         public static string GetTagColor(string tag)
         {
             var index = Encoding.UTF8.GetBytes(tag).Sum(x => x) % TagColors.Length;
