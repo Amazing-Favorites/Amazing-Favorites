@@ -228,14 +228,28 @@
 
     private Task OnChangePinyinFeatureAccessToken(string accessToken)
     {
-        _modal.PinyinFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
-		return Task.CompletedTask;
+        try
+        {
+            _modal.PinyinFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
+        }
+        catch (Services.Common.AccessTokenInvalidException)
+        {
+            // ignored
+        }
+        return Task.CompletedTask;
     }
 
     private Task OnChangeCloudBkFeatureAccessToken(string accessToken)
     {
-        _modal.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
-		return Task.CompletedTask;
+        try
+        {
+            _modal.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
+        }
+        catch (Services.Common.AccessTokenInvalidException)
+        {
+            // ignored
+        }
+        return Task.CompletedTask;
     }
 
 }
