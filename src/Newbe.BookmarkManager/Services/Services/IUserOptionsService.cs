@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services.Ai;
+using static Newbe.BookmarkManager.Services.Ai.Events;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -7,7 +8,7 @@ namespace Newbe.BookmarkManager.Services
     {
         ValueTask<UserOptions> GetOptionsAsync();
 
-        [Insight(EventName = "User Option Save Event")]
+        [Insight(EventName = UserOptionSaveEvent)]
         Task SaveAsync(UserOptions options);
     }
 }

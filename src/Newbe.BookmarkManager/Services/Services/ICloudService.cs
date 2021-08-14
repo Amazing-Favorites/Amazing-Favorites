@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.WebApi;
+using static Newbe.BookmarkManager.Services.Ai.Events;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -8,7 +9,7 @@ namespace Newbe.BookmarkManager.Services
     {
         Task<CloudBkStatus> GetCloudAsync(long etagVersion);
 
-        [Insight(EventName = "Bk Local To Cloud Event")]
+        [Insight(EventName = BkLocalToCloudEvent)]
         Task<SaveToCloudOutput> SaveToCloudAsync(CloudBkCollection cloudBkCollection);
     }
 }

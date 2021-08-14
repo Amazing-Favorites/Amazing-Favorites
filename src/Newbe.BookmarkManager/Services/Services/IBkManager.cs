@@ -3,40 +3,41 @@ using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.WebApi;
 using WebExtensions.Net.Bookmarks;
+using static Newbe.BookmarkManager.Services.Ai.Events;
 
 namespace Newbe.BookmarkManager.Services
 {
     public interface IBkManager
     {
-        [Insight(EventName = "Bk Click Event")]
+        [Insight(EventName = BkClickEvent)]
         Task AddClickAsync(string url, int moreCount);
 
-        [Insight(EventName = "Bk Restore Event")]
+        [Insight(EventName = BkRestoreEvent)]
         Task RestoreAsync();
 
-        [Insight(EventName = "Bk Tag Remove Event")]
+        [Insight(EventName = BkTagRemoveEvent)]
         Task RemoveTagAsync(string url, string tag);
 
-        [Insight(EventName = "Bk Tag Append Event")]
+        [Insight(EventName = BkTagAppendEvent)]
         Task<bool> AppendTagAsync(string url, params string[]? tags);
 
-        [Insight(EventName = "Bk Tag Update Event")]
+        [Insight(EventName = BkTagUpdateEvent)]
         Task UpdateTagsAsync(string url, string title, IEnumerable<string> tags);
 
         Task UpdateFavIconUrlAsync(Dictionary<string, string> urls);
 
-        [Insight(EventName = "Bk Bookmarks Sync Event")]
+        [Insight(EventName = BkBookmarksSyncEvent)]
         Task AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes);
 
-        [Insight(EventName = "Bk Cloud To Local Event")]
+        [Insight(EventName = BkCloudToLocalEvent)]
         Task LoadCloudCollectionAsync(CloudBkCollection cloudBkCollection);
 
         Task<CloudBkCollection> GetCloudBkCollectionAsync();
 
-        [Insight(EventName = "Bk Delete Event")]
+        [Insight(EventName = BkDeleteEvent)]
         Task DeleteAsync(string url);
 
-        [Insight(EventName = "Bk Title Update Event")]
+        [Insight(EventName = BkTitleUpdateEvent)]
         Task UpdateTitleAsync(string url, string title);
 
         Task<long> GetEtagVersionAsync();

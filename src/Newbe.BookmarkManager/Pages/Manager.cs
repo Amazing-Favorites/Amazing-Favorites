@@ -11,9 +11,11 @@ using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
+using Newbe.BookmarkManager.Services.Configuration;
 using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
@@ -29,6 +31,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IBkEditFormData BkEditFormData { get; set; }
         [Inject] public IAfCodeService AfCodeService { get; set; }
         [Inject] public NotificationService Notice { get; set; }
+        [Inject] public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -322,7 +325,12 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task OpenHelp()
         {
-            await WebExtensions.Tabs.OpenAsync("https://af.newbe.pro/");
+            await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.Docs);
+        }
+        
+        private async Task OpenWhatsNew()
+        {
+            await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.WhatsNew);
         }
 
         private async Task OpenControlPanel()
@@ -440,16 +448,17 @@ namespace Newbe.BookmarkManager.Pages
 
         private async Task AccessTokenExpiredWarningNotification()
         {
+            await Task.Delay(TimeSpan.FromSeconds(5));
             if (_userOptions?.PinyinFeature?.Enabled == true &&
                 _userOptions.PinyinFeature?.ExpireDate.HasValue == true &&
-                _userOptions.PinyinFeature.ExpireDate < DateTime.Now.AddDays(7))
+                _userOptions.PinyinFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
             {
                 await NoticeWarning("PinyinAccessToken");
             }
 
             if (_userOptions?.CloudBkFeature?.Enabled == true &&
                 _userOptions.CloudBkFeature?.ExpireDate.HasValue == true &&
-                _userOptions.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(7))
+                _userOptions.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
             {
                 await NoticeWarning("CloudBkAccessToken");
             }
@@ -459,7 +468,7 @@ namespace Newbe.BookmarkManager.Pages
                 await Notice.Open(new NotificationConfig()
                 {
                     Message = $"{name} is about to expire",
-                    Description = "Your token will be expired within 7 days, please try to create a new one.",
+                    Description = $"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.",
                     NotificationType = NotificationType.Warning
                 });
             }
