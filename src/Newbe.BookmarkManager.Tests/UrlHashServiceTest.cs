@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Autofac.Extras.Moq;
 using FluentAssertions;
 using Newbe.BookmarkManager.Services;

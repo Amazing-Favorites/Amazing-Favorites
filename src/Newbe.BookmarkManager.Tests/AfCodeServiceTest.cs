@@ -13,6 +13,7 @@ namespace Newbe.BookmarkManager.Tests
     {
         public const string ShortUrl = "http://www.newbe.pro";
         public const string LongUrl = "https://mvp.microsoft.com/zh-cn/PublicProfile/5004283?fullName=Justin%20Yu";
+
         [Test]
         [TestCase(ShortUrl, AfCodeType.JsonBase64)]
         [TestCase(ShortUrl, AfCodeType.CompressionJsonBase64)]

@@ -34,26 +34,26 @@ namespace Newbe.BookmarkManager.Services
             switch (codeType)
             {
                 case AfCodeType.JsonBase64:
-                {
-                    var json = JsonSerializer.Serialize(code);
-                    var base64String = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
-                    return CreateCode(base64String);
-                }
+                    {
+                        var json = JsonSerializer.Serialize(code);
+                        var base64String = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+                        return CreateCode(base64String);
+                    }
                 case AfCodeType.CompressionJsonBase64:
-                {
-                    var json = JsonSerializer.Serialize(code);
-                    var input = Encoding.UTF8.GetBytes(json).AsMemory();
-                    var readOnlyMemory = Compress(input);
-                    var base64String = Convert.ToBase64String(readOnlyMemory.Span);
-                    return CreateCode(base64String);
-                }
+                    {
+                        var json = JsonSerializer.Serialize(code);
+                        var input = Encoding.UTF8.GetBytes(json).AsMemory();
+                        var readOnlyMemory = Compress(input);
+                        var base64String = Convert.ToBase64String(readOnlyMemory.Span);
+                        return CreateCode(base64String);
+                    }
                 case AfCodeType.Cloud:
                     throw new NotImplementedException();
                 case AfCodeType.PlainText:
-                {
-                    var json = JsonSerializer.Serialize(code);
-                    return CreateCode(json);
-                }
+                    {
+                        var json = JsonSerializer.Serialize(code);
+                        return CreateCode(json);
+                    }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(codeType), codeType, null);
             }
@@ -86,62 +86,62 @@ namespace Newbe.BookmarkManager.Services
                 return Task.FromResult(false);
             }
 
-            var codeType = (AfCodeType) codeTypeInt;
+            var codeType = (AfCodeType)codeTypeInt;
             payload = payload[1..];
 
             switch (codeType)
             {
                 case AfCodeType.JsonBase64:
-                {
-                    var json = Convert.FromBase64String(payload);
-                    var afCode = JsonSerializer.Deserialize<AfCode>(json);
-                    if (!string.IsNullOrEmpty(afCode?.Url))
                     {
-                        afCodeResult = new AfCodeResult
+                        var json = Convert.FromBase64String(payload);
+                        var afCode = JsonSerializer.Deserialize<AfCode>(json);
+                        if (!string.IsNullOrEmpty(afCode?.Url))
                         {
-                            Tags = afCode.Tags!,
-                            Title = afCode.Title!,
-                            Url = afCode.Url,
-                            AfCodeType = AfCodeType.JsonBase64
-                        };
-                        return Task.FromResult(true);
+                            afCodeResult = new AfCodeResult
+                            {
+                                Tags = afCode.Tags!,
+                                Title = afCode.Title!,
+                                Url = afCode.Url,
+                                AfCodeType = AfCodeType.JsonBase64
+                            };
+                            return Task.FromResult(true);
+                        }
                     }
-                }
                     break;
                 case AfCodeType.CompressionJsonBase64:
-                {
-                    var gzipBytes = Convert.FromBase64String(payload);
-                    var utf8Json = Decompress(gzipBytes);
-                    var json = Encoding.UTF8.GetString(utf8Json.Span);
-                    var afCode = JsonSerializer.Deserialize<AfCode>(json);
-                    if (!string.IsNullOrEmpty(afCode?.Url))
                     {
-                        afCodeResult = new AfCodeResult
+                        var gzipBytes = Convert.FromBase64String(payload);
+                        var utf8Json = Decompress(gzipBytes);
+                        var json = Encoding.UTF8.GetString(utf8Json.Span);
+                        var afCode = JsonSerializer.Deserialize<AfCode>(json);
+                        if (!string.IsNullOrEmpty(afCode?.Url))
                         {
-                            Tags = afCode.Tags!,
-                            Title = afCode.Title!,
-                            Url = afCode.Url,
-                            AfCodeType = AfCodeType.JsonBase64
-                        };
-                        return Task.FromResult(true);
+                            afCodeResult = new AfCodeResult
+                            {
+                                Tags = afCode.Tags!,
+                                Title = afCode.Title!,
+                                Url = afCode.Url,
+                                AfCodeType = AfCodeType.JsonBase64
+                            };
+                            return Task.FromResult(true);
+                        }
                     }
-                }
                     break;
                 case AfCodeType.PlainText:
-                {
-                    var afCode = JsonSerializer.Deserialize<AfCode>(payload);
-                    if (!string.IsNullOrEmpty(afCode?.Url))
                     {
-                        afCodeResult = new AfCodeResult
+                        var afCode = JsonSerializer.Deserialize<AfCode>(payload);
+                        if (!string.IsNullOrEmpty(afCode?.Url))
                         {
-                            Tags = afCode.Tags!,
-                            Title = afCode.Title!,
-                            Url = afCode.Url,
-                            AfCodeType = AfCodeType.JsonBase64
-                        };
-                        return Task.FromResult(true);
+                            afCodeResult = new AfCodeResult
+                            {
+                                Tags = afCode.Tags!,
+                                Title = afCode.Title!,
+                                Url = afCode.Url,
+                                AfCodeType = AfCodeType.JsonBase64
+                            };
+                            return Task.FromResult(true);
+                        }
                     }
-                }
                     break;
                 case AfCodeType.Cloud:
                     break;

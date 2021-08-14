@@ -17,12 +17,12 @@ namespace Newbe.BookmarkManager.Services
         public static DateTime? GetJwtExp(string token)
         {
             var jwt = new JwtSecurityTokenHandler();
-            if(!jwt.CanReadToken(token))
+            if (!jwt.CanReadToken(token))
             {
                 throw new AccessTokenInvalidException(token);
             }
             var exp = jwt.ReadJwtToken(token).Claims.FirstOrDefault(a => a.Type == "exp")?.Value;
-            if(string.IsNullOrWhiteSpace(exp))
+            if (string.IsNullOrWhiteSpace(exp))
             {
                 throw new AccessTokenInvalidException(token);
             }

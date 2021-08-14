@@ -4,6 +4,15 @@ namespace Newbe.BookmarkManager.Services
 {
     public static class Consts
     {
+        public const string CurrentVersion = "0.6.1";
+
+        public static readonly string[] Versions =
+        {
+            CurrentVersion
+        };
+
+        public const int JwtExpiredWarningDays = 7;
+
         public static class Commands
         {
             public const string OpenManager = "open-manager-ui";
@@ -23,6 +32,7 @@ namespace Newbe.BookmarkManager.Services
             public const string BkMetadata = "BkMetadata";
             public const string Tags = "Tags";
             public const string UserOptions = "UserOptions";
+            public const string AfMetadata = "AfMetadata";
         }
 
         private static readonly HashSet<string> ReservedBookmarkFolder = new()

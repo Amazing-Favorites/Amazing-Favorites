@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -35,7 +35,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<ILoggerProvider, AiLoggerProvider>();
             builder.Services.AddScoped(
                     sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
-                .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)));
+                .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
+                .Configure<StaticUrlOptions>(builder.Configuration.GetSection(nameof(StaticUrlOptions)));
             builder.Services
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
             builder.Services
@@ -54,6 +55,7 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<ISyncTagRelatedBkCountJob, SyncTagRelatedBkCountJob>()
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddSingleton<ISyncCloudJob, SyncCloudJob>()
+                .AddSingleton<IShowWhatNewJob, ShowWhatNewJob>()
                 .AddSingleton<IDataFixJob, DataFixJob>();
 
             builder.Services
@@ -85,7 +87,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
-                dbStore.Version = 1;
+                dbStore.Version = 2;
 
                 dbStore.Stores.Add(new StoreSchema
                 {
@@ -105,6 +107,11 @@ namespace Newbe.BookmarkManager
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.UserOptions,
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.AfMetadata,
                     PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
             });

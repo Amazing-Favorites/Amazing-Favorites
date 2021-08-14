@@ -12,11 +12,11 @@ namespace Newbe.BookmarkManager.Services
 
         private static readonly Dictionary<ScoreReason, int> ScoreDictionary = new()
         {
-            {ScoreReason.Title, 100},
-            {ScoreReason.TitleAlias, 80},
-            {ScoreReason.Url, 50},
-            {ScoreReason.Tags, 20},
-            {ScoreReason.TagAlias, 20},
+            { ScoreReason.Title, 100 },
+            { ScoreReason.TitleAlias, 80 },
+            { ScoreReason.Url, 50 },
+            { ScoreReason.Tags, 20 },
+            { ScoreReason.TagAlias, 20 },
         };
 
         public void AddScore(ScoreReason reason, bool matched)

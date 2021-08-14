@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Text.Json;
@@ -40,7 +40,7 @@ app.MapGet("/bk", (async context =>
     {
         if (etagVersion == re!.EtagVersion)
         {
-            context.Response.StatusCode = (int) HttpStatusCode.NotModified;
+            context.Response.StatusCode = (int)HttpStatusCode.NotModified;
             return;
         }
 
@@ -52,7 +52,7 @@ app.MapGet("/bk", (async context =>
 
     await context.Response.WriteAsJsonAsync(re);
 }));
-app.MapPost("/bk", (Func<CloudBkCollection, Task<SaveToCloudOutput>>) (async collection =>
+app.MapPost("/bk", (Func<CloudBkCollection, Task<SaveToCloudOutput>>)(async collection =>
 {
     if (File.Exists(fileName))
     {
