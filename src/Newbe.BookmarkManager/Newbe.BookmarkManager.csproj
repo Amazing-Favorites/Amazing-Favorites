@@ -21,7 +21,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.6.*" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.6.*" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.6.*" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.12.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.12.1" />
         <PackageReference Include="Refit" Version="6.0.94" />
         <PackageReference Include="Refit.HttpClientFactory" Version="6.0.94" />
         <PackageReference Include="System.Reactive" Version="5.0.0" />
