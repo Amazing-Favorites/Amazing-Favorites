@@ -93,7 +93,7 @@ namespace Newbe.BookmarkManager.Services
                 title = Consts.AmazingFavoriteFolderName
             });
             var oldNode = bookmarkTreeNodes.FirstOrDefault();
-            if (oldNode is not {Type: BookmarkTreeNodeType.Folder})
+            if (oldNode is not { Type: BookmarkTreeNodeType.Folder })
             {
                 var newNode = await _bookmarksApi.Create(new CreateDetails
                 {

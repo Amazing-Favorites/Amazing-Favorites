@@ -31,7 +31,7 @@ namespace Newbe.BookmarkManager.Services
         public async ValueTask StartAsync()
         {
             await Task.Delay(TimeSpan.FromSeconds(5));
-            _jobHandler =  new[] {1L}.ToObservable()
+            _jobHandler = new[] { 1L }.ToObservable()
                 .Concat(Observable.Interval(TimeSpan.FromMinutes(10)))
                 .Buffer(TimeSpan.FromSeconds(5), 50)
                 .Where(x => x.Count > 0)

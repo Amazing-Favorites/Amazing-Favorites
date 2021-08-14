@@ -24,11 +24,11 @@ namespace Newbe.BookmarkManager.Services
             _bkManager = bkManager;
             _tagsManager = tagsManager;
         }
-        
+
         public async ValueTask StartAsync()
         {
             await Task.Delay(TimeSpan.FromSeconds(10));
-            _jobHandler =  new[] {1L}.ToObservable()
+            _jobHandler = new[] { 1L }.ToObservable()
                 .Concat(Observable.Interval(TimeSpan.FromMinutes(10)))
                 .Buffer(TimeSpan.FromSeconds(5), 50)
                 .Where(x => x.Count > 0)
@@ -47,7 +47,7 @@ namespace Newbe.BookmarkManager.Services
                 .Concat()
                 .Subscribe();
         }
-        
+
         private async Task RunSyncAsync()
         {
             var counts = await _bkManager.GetTagRelatedCountAsync();

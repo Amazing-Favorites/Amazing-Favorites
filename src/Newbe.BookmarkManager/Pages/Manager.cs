@@ -327,7 +327,7 @@ namespace Newbe.BookmarkManager.Pages
         {
             await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.Docs);
         }
-        
+
         private async Task OpenWhatsNew()
         {
             await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.WhatsNew);

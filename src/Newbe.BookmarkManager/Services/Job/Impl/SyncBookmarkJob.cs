@@ -27,7 +27,7 @@ namespace Newbe.BookmarkManager.Services
         {
             await _bookmarksApi.OnRemoved.AddListener(async (s, info) =>
             {
-                var nodes = GetAllChildren(new[] {info.Node});
+                var nodes = GetAllChildren(new[] { info.Node });
                 foreach (var bookmarkTreeNode in nodes)
                 {
                     await _bkManager.DeleteAsync(bookmarkTreeNode.Url);

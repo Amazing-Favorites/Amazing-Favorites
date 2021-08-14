@@ -47,11 +47,11 @@ namespace Newbe.BookmarkManager.Services
                     {
                         var options = await _userOptionsService.GetOptionsAsync();
                         if (options?.PinyinFeature is
-                        {
-                            Enabled: true,
-                            AccessToken: not null,
-                            BaseUrl: not null
-                        })
+                            {
+                                Enabled: true,
+                                AccessToken: not null,
+                                BaseUrl: not null
+                            })
                         {
                             foreach (var textAliasFiller in _fillers)
                             {
@@ -86,7 +86,7 @@ namespace Newbe.BookmarkManager.Services
                                         bks.Length,
                                         textAliasFiller.TextAliasType);
                                     const int pageSize = 100;
-                                    var pageCount = (int) Math.Ceiling(1.0 * bks.Length / pageSize);
+                                    var pageCount = (int)Math.Ceiling(1.0 * bks.Length / pageSize);
                                     for (var i = 0; i < pageCount; i++)
                                     {
                                         var items = bks.Skip(i * pageSize).Take(pageSize).ToArray();

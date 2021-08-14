@@ -7,7 +7,7 @@ namespace Newbe.BookmarkManager.Services
         public TextAliasType TextAliasType { get; }
         bool NeedFill(BkTag tag);
         Task<AliasUpdateResult> FillAsync(BkTag[] tags);
-        
+
         bool NeedFill(Bk bk);
         Task<AliasUpdateResult> FillAsync(Bk[] bks);
     }

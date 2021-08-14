@@ -13,7 +13,7 @@ namespace Newbe.BookmarkManager.Services
                 Title = Consts.ManagerTabTitle,
             });
             var managerTab = tabs.FirstOrDefault();
-            if (managerTab is {Id: { }})
+            if (managerTab is { Id: { } })
             {
                 await tabsApi.Update(managerTab.Id.Value, new UpdateProperties
                 {
@@ -34,7 +34,7 @@ namespace Newbe.BookmarkManager.Services
                 Url = url
             });
             var managerTab = tabs.FirstOrDefault();
-            if (managerTab is {Id: { }})
+            if (managerTab is { Id: { } })
             {
                 await tabsApi.Update(managerTab.Id.Value, new UpdateProperties
                 {
