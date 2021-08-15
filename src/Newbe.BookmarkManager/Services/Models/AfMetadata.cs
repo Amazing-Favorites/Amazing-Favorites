@@ -7,5 +7,6 @@ namespace Newbe.BookmarkManager.Services
     {
         public string Id { get; set; } = Consts.SingleOneDataId;
         public string WhatsNewVersion { get; set; }
+        public bool WelcomeShown { get; set; }
     }
 }

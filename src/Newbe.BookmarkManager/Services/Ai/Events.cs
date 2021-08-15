@@ -15,5 +15,6 @@
         public const string BkLocalToCloudEvent = "Bk Local To Cloud Event";
         public const string UserOptionSaveEvent = "User Option Save Event";
         public const string AfWhatsNewShown = "Af Whats New Shown";
+        public const string AfWelcomeShown = "Af Welcome Shown";
     }
 }

@@ -15,6 +15,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IDataFixJob DataFixJob { get; set; } = null!;
         [Inject] public ISyncTagRelatedBkCountJob SyncTagRelatedBkCountJob { get; set; } = null!;
         [Inject] public IShowWhatNewJob ShowWhatNewJob { get; set; } = null!;
+        [Inject] public IShowWelcomeJob ShowWelcomeJob { get; set; } = null!;
         [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
 
         private JsModuleLoader _moduleLoader;
@@ -51,6 +52,7 @@ namespace Newbe.BookmarkManager.Pages
                 var lDotNetReference = DotNetObjectReference.Create(this);
                 await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
                 await DataFixJob.StartAsync();
+                await ShowWelcomeJob.StartAsync();
                 await ShowWhatNewJob.StartAsync();
                 await SyncBookmarkJob.StartAsync();
                 await SyncAliasJob.StartAsync();
