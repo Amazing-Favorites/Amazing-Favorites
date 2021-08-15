@@ -59,6 +59,7 @@ namespace Newbe.BookmarkManager
                 .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddSingleton<ISyncCloudJob, SyncCloudJob>()
                 .AddSingleton<IShowWhatNewJob, ShowWhatNewJob>()
+                .AddSingleton<IShowWelcomeJob, ShowWelcomeJob>()
                 .AddSingleton<IDataFixJob, DataFixJob>();
 
             builder.Services

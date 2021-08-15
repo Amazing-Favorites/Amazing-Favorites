@@ -8,6 +8,9 @@
         <SpaceItem>
             <Button OnClick="ClickResetPrivacyAgreementStatusAsync">Reset Privacy Agreement Status</Button>
         </SpaceItem>
+        <SpaceItem>
+            <Button OnClick="ClickResetWelcomeStatusAsync">Reset Welcome Status</Button>
+        </SpaceItem>
     </Space>
 }
 
@@ -22,11 +25,23 @@
     [Inject]
     public IUserOptionsService UserOptionsService { get; set; }
 
+    [Inject]
+    public IIndexedDbRepo<AfMetadata, string> AfMetadataRepo { get; set; }
+
     private async Task ClickResetPrivacyAgreementStatusAsync(MouseEventArgs obj)
     {
         var userOptions = await UserOptionsService.GetOptionsAsync();
         userOptions.AcceptPrivacyAgreementVersion = string.Empty;
         await UserOptionsService.SaveAsync(userOptions);
+        Logger.LogInformation("Reset Privacy Agreement Status success");
+    }
+
+    private async Task ClickResetWelcomeStatusAsync(MouseEventArgs obj)
+    {
+        var afMetadata = await AfMetadataRepo.GetSingleOneAsync();
+        afMetadata ??= new AfMetadata();
+        afMetadata.WelcomeShown = false;
+        await AfMetadataRepo.UpsertAsync(afMetadata);
         Logger.LogInformation("Reset Privacy Agreement Status success");
     }
 

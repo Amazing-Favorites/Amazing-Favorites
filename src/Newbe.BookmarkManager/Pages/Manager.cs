@@ -342,6 +342,11 @@ namespace Newbe.BookmarkManager.Pages
             await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.WhatsNew);
         }
 
+        private async Task OpenWelcome()
+        {
+            await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.Welcome);
+        }
+
         private async Task OpenControlPanel()
         {
             _controlPanelVisible = true;
