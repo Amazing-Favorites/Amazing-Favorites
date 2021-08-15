@@ -8,14 +8,14 @@ namespace Newbe.BookmarkManager.Pages
 {
     public partial class Background : IAsyncDisposable
     {
-        [Inject] public IJSRuntime JsRuntime { get; set; }
-        [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; }
-        [Inject] public ISyncAliasJob SyncAliasJob { get; set; }
-        [Inject] public ISyncCloudJob SyncCloudJob { get; set; }
-        [Inject] public IDataFixJob DataFixJob { get; set; }
-        [Inject] public ISyncTagRelatedBkCountJob SyncTagRelatedBkCountJob { get; set; }
-        [Inject] public IShowWhatNewJob ShowWhatNewJob { get; set; }
-        [Inject] public IUserOptionsService UserOptionsService { get; set; }
+        [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
+        [Inject] public ISyncBookmarkJob SyncBookmarkJob { get; set; } = null!;
+        [Inject] public ISyncAliasJob SyncAliasJob { get; set; } = null!;
+        [Inject] public ISyncCloudJob SyncCloudJob { get; set; } = null!;
+        [Inject] public IDataFixJob DataFixJob { get; set; } = null!;
+        [Inject] public ISyncTagRelatedBkCountJob SyncTagRelatedBkCountJob { get; set; } = null!;
+        [Inject] public IShowWhatNewJob ShowWhatNewJob { get; set; } = null!;
+        [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
 
         private JsModuleLoader _moduleLoader;
 
