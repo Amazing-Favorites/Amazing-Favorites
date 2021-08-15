@@ -55,15 +55,15 @@ namespace Newbe.BookmarkManager.Services
         {
             var options = await _userOptionsService.GetOptionsAsync();
             if (options is
-            {
-                AcceptPrivacyAgreement: true,
-                CloudBkFeature:
                 {
-                    Enabled: true,
-                    AccessToken: not null,
-                    BaseUrl: not null
-                }
-            })
+                    AcceptPrivacyAgreement: true,
+                    CloudBkFeature:
+                    {
+                        Enabled: true,
+                        AccessToken: not null,
+                        BaseUrl: not null
+                    }
+                })
             {
                 var etagVersion = await _bkManager.GetEtagVersionAsync();
                 var (hasChanged, output) = await _cloudService.GetCloudAsync(etagVersion);

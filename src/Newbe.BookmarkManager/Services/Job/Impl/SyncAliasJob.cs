@@ -47,15 +47,15 @@ namespace Newbe.BookmarkManager.Services
                     {
                         var options = await _userOptionsService.GetOptionsAsync();
                         if (options is
-                        {
-                            AcceptPrivacyAgreement: true,
-                            PinyinFeature:
                             {
-                                Enabled: true,
-                                AccessToken: not null,
-                                BaseUrl: not null
-                            }
-                        })
+                                AcceptPrivacyAgreement: true,
+                                PinyinFeature:
+                                {
+                                    Enabled: true,
+                                    AccessToken: not null,
+                                    BaseUrl: not null
+                                }
+                            })
                         {
                             foreach (var textAliasFiller in _fillers)
                             {

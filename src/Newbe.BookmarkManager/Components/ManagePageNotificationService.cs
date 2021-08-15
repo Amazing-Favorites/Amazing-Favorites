@@ -37,9 +37,9 @@ namespace Newbe.BookmarkManager.Components
             }
 
             if (userOptions is
-            {
-                AcceptPrivacyAgreement: false
-            })
+                {
+                    AcceptPrivacyAgreement: false
+                })
             {
                 var msg = userOptions.AcceptPrivacyAgreementBefore
                     ? "Privacy Agreement has been updated recently, please check it out in control panel"
