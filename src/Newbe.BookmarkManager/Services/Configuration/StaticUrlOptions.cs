@@ -4,5 +4,6 @@
     {
         public string Docs { get; set; }
         public string WhatsNew { get; set; }
+        public string PrivacyAgreement { get; set; }
     }
 }

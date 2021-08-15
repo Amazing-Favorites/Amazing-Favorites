@@ -8,7 +8,7 @@ namespace Newbe.BookmarkManager.Services
 {
     public partial class SyncCloudJob : ISyncCloudJob
     {
-        private readonly ILogger<SyncCloudJob> _logger;
+        private readonly ILogger _logger;
         private readonly IBkManager _bkManager;
         private readonly IUserOptionsService _userOptionsService;
         private readonly ICloudService _cloudService;
@@ -44,7 +44,7 @@ namespace Newbe.BookmarkManager.Services
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, "Faile");
+                        _logger.LogError(e, "Failed");
                     }
                 }))
                 .Concat()
@@ -54,7 +54,16 @@ namespace Newbe.BookmarkManager.Services
         private async Task RunSyncAsync()
         {
             var options = await _userOptionsService.GetOptionsAsync();
-            if (options.CloudBkFeature?.Enabled == true)
+            if (options is
+                {
+                    AcceptPrivacyAgreement: true,
+                    CloudBkFeature:
+                    {
+                        Enabled: true,
+                        AccessToken: not null,
+                        BaseUrl: not null
+                    }
+                })
             {
                 var etagVersion = await _bkManager.GetEtagVersionAsync();
                 var (hasChanged, output) = await _cloudService.GetCloudAsync(etagVersion);
@@ -64,7 +73,7 @@ namespace Newbe.BookmarkManager.Services
                     {
                         // sync to local
                         await _bkManager.LoadCloudCollectionAsync(output.CloudBkCollection!);
-                        LogSyncToLocal(_logger, output.EtagVersion, output.LastUpdateTime);
+                        LogSyncToLocal(output.EtagVersion, output.LastUpdateTime);
                     }
                     else if (output.EtagVersion < etagVersion)
                     {
@@ -73,19 +82,19 @@ namespace Newbe.BookmarkManager.Services
                         if (cloudBkCollection.Bks.Count > 0)
                         {
                             await _cloudService.SaveToCloudAsync(cloudBkCollection);
-                            LogSyncToCloud(_logger,
+                            LogSyncToCloud(
                                 cloudBkCollection.EtagVersion,
                                 cloudBkCollection.LastUpdateTime);
                         }
                         else
                         {
-                            LogNoBkFoundToSync(_logger);
+                            LogNoBkFoundToSync();
                         }
                     }
                 }
                 else
                 {
-                    LogSameToCloud(_logger, etagVersion);
+                    LogSameToCloud(etagVersion);
                 }
             }
         }
@@ -93,26 +102,26 @@ namespace Newbe.BookmarkManager.Services
         [LoggerMessage(Level = LogLevel.Error,
             Message = "Failed to sync log",
             EventId = 1)]
-        partial void LogErrorSync(ILogger logger, Exception ex);
+        partial void LogErrorSync(Exception ex);
 
         [LoggerMessage(Level = LogLevel.Information,
             Message = "It is the same to cloud. etagVersion: {etagVersion}",
             EventId = 2)]
-        partial void LogSameToCloud(ILogger logger, long etagVersion);
+        partial void LogSameToCloud(long etagVersion);
 
         [LoggerMessage(Level = LogLevel.Information,
             Message = "There is no BK need sync to cloud",
             EventId = 3)]
-        partial void LogNoBkFoundToSync(ILogger logger);
+        partial void LogNoBkFoundToSync();
 
         [LoggerMessage(Level = LogLevel.Information,
             Message = "Bk collection sync to local, etagVersion: {etagVersion}, lastUpdateTime: {lastUpdateTime}",
             EventId = 4)]
-        partial void LogSyncToLocal(ILogger logger, long etagVersion, long lastUpdateTime);
+        partial void LogSyncToLocal(long etagVersion, long lastUpdateTime);
 
         [LoggerMessage(Level = LogLevel.Information,
             Message = "Bk collection sync to cloud, etagVersion: {etagVersion}, lastUpdateTime: {lastUpdateTime}",
             EventId = 5)]
-        partial void LogSyncToCloud(ILogger logger, long etagVersion, long lastUpdateTime);
+        partial void LogSyncToCloud(long etagVersion, long lastUpdateTime);
     }
 }
