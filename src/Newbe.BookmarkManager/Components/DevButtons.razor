@@ -1,0 +1,33 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.Extensions.Logging
+@using Microsoft.Extensions.Options
+@using Newbe.BookmarkManager.Services.Configuration
+@if (DevOptions.Value.Enabled)
+{
+    <Space>
+        <SpaceItem>
+            <Button OnClick="ClickResetPrivacyAgreementStatusAsync">Reset Privacy Agreement Status</Button>
+        </SpaceItem>
+    </Space>
+}
+
+@code {
+
+    [Inject]
+    public IOptions<DevOptions> DevOptions { get; set; }
+
+    [Inject]
+    public ILogger<DevButtons> Logger { get; set; }
+
+    [Inject]
+    public IUserOptionsService UserOptionsService { get; set; }
+
+    private async Task ClickResetPrivacyAgreementStatusAsync(MouseEventArgs obj)
+    {
+        var userOptions = await UserOptionsService.GetOptionsAsync();
+        userOptions.AcceptPrivacyAgreementVersion = string.Empty;
+        await UserOptionsService.SaveAsync(userOptions);
+        Logger.LogInformation("Reset Privacy Agreement Status success");
+    }
+
+}

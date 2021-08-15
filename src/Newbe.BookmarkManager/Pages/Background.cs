@@ -36,7 +36,14 @@ namespace Newbe.BookmarkManager.Pages
                 _moduleLoader = new JsModuleLoader(JsRuntime);
                 await _moduleLoader.LoadAsync("/content/background_keyboard.js");
                 var userOptions = await UserOptionsService.GetOptionsAsync();
-                if (userOptions.ApplicationInsightFeature?.Enabled == true)
+                if (userOptions is
+                {
+                    AcceptPrivacyAgreement: true,
+                    ApplicationInsightFeature:
+                    {
+                        Enabled: true
+                    }
+                })
                 {
                     await _moduleLoader.LoadAsync("/content/ai.js");
                 }

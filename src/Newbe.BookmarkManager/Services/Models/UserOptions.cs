@@ -7,7 +7,10 @@ namespace Newbe.BookmarkManager.Services
     public record UserOptions : IEntity<string>
     {
         public string Id => Consts.SingleOneDataId;
-        public bool? AcceptPrivacyAgreement { get; set; }
+
+        public bool AcceptPrivacyAgreement => AcceptPrivacyAgreementVersion == Consts.PrivacyAgreementVersionDate;
+        public bool AcceptPrivacyAgreementBefore { get; set; }
+        public string AcceptPrivacyAgreementVersion { get; set; } = string.Empty;
         public PinyinFeature? PinyinFeature { get; set; }
         public CloudBkFeature? CloudBkFeature { get; set; }
         public HotTagsFeature? HotTagsFeature { get; set; }

@@ -3,6 +3,8 @@
 @using WebExtensions.Net.Tabs
 @using System.Text.Json
 @using System.Text
+@using Microsoft.Extensions.Options
+@using Newbe.BookmarkManager.Services.Configuration
 <Modal Title="@("Control Panel")"
        Visible="@Visible"
        OnOk="@HandleUserOptionsOk"
@@ -96,7 +98,7 @@
         else
         {
             <FormItem Label="User Privacy Agreement">
-                <p>The following features may transfer some data to cloud servers, so please <a href="https://af.newbe.pro/docs/00-1-Privacy" target="_blank">click here</a>, read and understand our User Privacy Agreement. After you confirm and agree to the content of the agreement click the button below to enable the advanced features.</p>
+                <p>The following features may transfer some data to cloud servers, so please <a href="@StaticUrlOptions.Value.PrivacyAgreement" target="_blank">click here</a>, read and understand our User Privacy Agreement. After you confirm and agree to the content of the agreement click the button below to enable the advanced features.</p>
                 <p>Feature shows as below:</p>
                 <ul>
                     <li>Pinyin Support. You could search your bookmark title and your tags by PinYin</li>
@@ -118,8 +120,15 @@
             </FormItem>
         }
         <FormItem Label="System Actions">
-            <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
-            <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting of Amazing Favirotes</Button>
+            <Space>
+                <SpaceItem>
+                    <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
+                </SpaceItem>
+                <SpaceItem>
+                    <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting of Amazing Favirotes</Button>
+                </SpaceItem>
+            </Space>
+            <DevButtons></DevButtons>
         </FormItem>
     </Form>
 </Modal>
@@ -143,6 +152,9 @@
 
     [Inject]
     public IIndexedDbRepo<BkMetadata, string> BkMetadataRepo { get; set; }
+
+    [Inject]
+    public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
 
     private ModalModel _modal = new();
 
@@ -201,14 +213,8 @@
     private async Task OnClickAgreeUserPrivacyAgreement()
     {
         _modal.AcceptPrivacyAgreement = true;
-        await UserOptionsService.SaveAsync(new UserOptions
-        {
-            AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
-            PinyinFeature = _modal.PinyinFeature,
-            CloudBkFeature = _modal.CloudBkFeature,
-            ApplicationInsightFeature = _modal.ApplicationInsightFeature,
-            HotTagsFeature = _modal.HotTagsFeature,
-        });
+        var userOptions = MapToUserOptions();
+        await UserOptionsService.SaveAsync(userOptions);
     }
 
     private async Task CloseControlPanel()
@@ -218,17 +224,26 @@
 
     private async Task HandleUserOptionsOk(MouseEventArgs e)
     {
+        var userOptions = MapToUserOptions();
+        await UserOptionsService.SaveAsync(userOptions);
+        await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
+        await CloseControlPanel();
+    }
+
+    private UserOptions MapToUserOptions()
+    {
         var userOptions = new UserOptions
         {
-            AcceptPrivacyAgreement = _modal.AcceptPrivacyAgreement,
+            AcceptPrivacyAgreementVersion = _modal.AcceptPrivacyAgreement
+                ? Consts.PrivacyAgreementVersionDate
+                : string.Empty,
+            AcceptPrivacyAgreementBefore = _modal.AcceptPrivacyAgreement,
             PinyinFeature = _modal.PinyinFeature,
             CloudBkFeature = _modal.CloudBkFeature,
             HotTagsFeature = _modal.HotTagsFeature,
             ApplicationInsightFeature = _modal.ApplicationInsightFeature
         };
-        await UserOptionsService.SaveAsync(userOptions);
-        await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
-        await CloseControlPanel();
+        return userOptions;
     }
 
     private async Task HandleUserOptionsCancel(MouseEventArgs e)
@@ -248,7 +263,7 @@
         _modal.CloudBkFeature = options.CloudBkFeature;
         _modal.HotTagsFeature = options.HotTagsFeature;
         _modal.ApplicationInsightFeature = options.ApplicationInsightFeature;
-        _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement == true;
+        _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement;
     }
 
     protected override async Task OnInitializedAsync()

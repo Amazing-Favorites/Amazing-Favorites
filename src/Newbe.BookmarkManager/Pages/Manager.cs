@@ -30,8 +30,9 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IUserOptionsService UserOptionsService { get; set; }
         [Inject] public IBkEditFormData BkEditFormData { get; set; }
         [Inject] public IAfCodeService AfCodeService { get; set; }
-        [Inject] public NotificationService Notice { get; set; }
+        [Inject] public IManagePageNotificationService ManagePageNotificationService { get; set; }
         [Inject] public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
+        [Inject] public IOptions<DevOptions> DevOptions { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -84,7 +85,14 @@ namespace Newbe.BookmarkManager.Pages
                 _moduleLoader = new JsModuleLoader(JsRuntime);
                 await _moduleLoader.LoadAsync("/content/manager_keyboard.js");
                 var userOptions = await UserOptionsService.GetOptionsAsync();
-                if (userOptions.ApplicationInsightFeature?.Enabled == true)
+                if (userOptions is
+                {
+                    AcceptPrivacyAgreement: true,
+                    ApplicationInsightFeature:
+                    {
+                        Enabled: true
+                    }
+                })
                 {
                     await _moduleLoader.LoadAsync("/content/ai.js");
                 }
@@ -194,7 +202,8 @@ namespace Newbe.BookmarkManager.Pages
                         }
                     }
                 }
-                await AccessTokenExpiredWarningNotification();
+
+                await ManagePageNotificationService.RunAsync();
             }
         }
 
@@ -443,38 +452,6 @@ namespace Newbe.BookmarkManager.Pages
         }
 
         #endregion AfCode
-
-        #region Notification
-
-        private async Task AccessTokenExpiredWarningNotification()
-        {
-            await Task.Delay(TimeSpan.FromSeconds(5));
-            if (_userOptions?.PinyinFeature?.Enabled == true &&
-                _userOptions.PinyinFeature?.ExpireDate.HasValue == true &&
-                _userOptions.PinyinFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-            {
-                await NoticeWarning("PinyinAccessToken");
-            }
-
-            if (_userOptions?.CloudBkFeature?.Enabled == true &&
-                _userOptions.CloudBkFeature?.ExpireDate.HasValue == true &&
-                _userOptions.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-            {
-                await NoticeWarning("CloudBkAccessToken");
-            }
-
-            async Task NoticeWarning(string name)
-            {
-                await Notice.Open(new NotificationConfig()
-                {
-                    Message = $"{name} is about to expire",
-                    Description = $"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.",
-                    NotificationType = NotificationType.Warning
-                });
-            }
-        }
-
-        #endregion Notification
 
         public async ValueTask DisposeAsync()
         {

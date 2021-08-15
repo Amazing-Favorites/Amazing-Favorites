@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
@@ -36,6 +37,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddScoped(
                     sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
+                .Configure<DevOptions>(builder.Configuration.GetSection(nameof(DevOptions)))
                 .Configure<StaticUrlOptions>(builder.Configuration.GetSection(nameof(StaticUrlOptions)));
             builder.Services
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
@@ -46,6 +48,7 @@ namespace Newbe.BookmarkManager
                 .AddTransient<ITabsApi, TabsApi>()
                 .AddTransient<IWindowsApi, WindowsApi>()
                 .AddTransient<IStorageApi, StorageApi>()
+                .AddTransient<IManagePageNotificationService, ManagePageNotificationService>()
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<ITagsManager, TagsManager>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
@@ -119,7 +122,14 @@ namespace Newbe.BookmarkManager
             var webAssemblyHost = builder.Build();
             var userOptionsService = webAssemblyHost.Services.GetRequiredService<IUserOptionsService>();
             var userOptions = await userOptionsService.GetOptionsAsync();
-            ApplicationInsightAop.Enabled = userOptions.ApplicationInsightFeature!.Enabled;
+            ApplicationInsightAop.Enabled = userOptions is
+            {
+                AcceptPrivacyAgreement: true,
+                ApplicationInsightFeature:
+                {
+                    Enabled: true
+                }
+            };
             await webAssemblyHost.RunAsync();
         }
 
