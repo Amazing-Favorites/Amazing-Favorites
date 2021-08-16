@@ -39,7 +39,7 @@ jobs:
       - name: Restore dependencies
         run: |
           cd $GITHUB_WORKSPACE/src
-          dotnet workload install microsoft-net-sdk-blazorwebassembly-aot
+          # dotnet workload install microsoft-net-sdk-blazorwebassembly-aot
           dotnet restore
       - name: Build
         run: |
