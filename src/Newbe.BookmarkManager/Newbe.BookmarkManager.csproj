@@ -14,7 +14,7 @@
         <PackageReference Include="AntDesign" Version="$(AntDeisgnVersion)" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
         <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.0" />
-        <PackageReference Include="Blazor.BrowserExtension" Version="0.5.1" />
+        <PackageReference Include="Blazor.BrowserExtension" Version="0.5.2" />
         <PackageReference Include="BlazorApplicationInsights" Version="1.2.1" />
         <PackageReference Include="Castle.Core.AsyncInterceptor" Version="2.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.6.*" />
