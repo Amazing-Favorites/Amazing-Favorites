@@ -34,6 +34,7 @@ namespace Newbe.BookmarkManager.Services
             public const string Tags = "Tags";
             public const string UserOptions = "UserOptions";
             public const string AfMetadata = "AfMetadata";
+            public const string SearchRecord = "SearchRecord";
         }
 
         private static readonly HashSet<string> ReservedBookmarkFolder = new()

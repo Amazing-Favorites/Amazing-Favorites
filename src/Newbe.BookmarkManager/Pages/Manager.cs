@@ -33,6 +33,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IManagePageNotificationService ManagePageNotificationService { get; set; }
         [Inject] public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
         [Inject] public IOptions<DevOptions> DevOptions { get; set; }
+        [Inject] public IRecordService RecordService { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -51,8 +52,8 @@ namespace Newbe.BookmarkManager.Pages
         private readonly Subject<string?> _searchSubject = new();
         private readonly Subject<bool> _altKeySubject = new();
         private readonly Subject<string> _updateFaviconSubject = new();
-        private IDisposable _searchPlaceHolderHandler;
-        private IDisposable _updateFaviconHandler;
+        private readonly Subject<BkViewItem> _userUrlClickSubject = new();
+        private readonly List<IDisposable> _subjectHandlers = new();
         private readonly int _resultLimit = 10;
         private bool _controlPanelVisible;
         private Search _search;
@@ -86,13 +87,13 @@ namespace Newbe.BookmarkManager.Pages
                 await _moduleLoader.LoadAsync("/content/manager_keyboard.js");
                 var userOptions = await UserOptionsService.GetOptionsAsync();
                 if (userOptions is
+                {
+                    AcceptPrivacyAgreement: true,
+                    ApplicationInsightFeature:
                     {
-                        AcceptPrivacyAgreement: true,
-                        ApplicationInsightFeature:
-                        {
-                            Enabled: true
-                        }
-                    })
+                        Enabled: true
+                    }
+                })
                 {
                     await _moduleLoader.LoadAsync("/content/ai.js");
                 }
@@ -152,32 +153,60 @@ namespace Newbe.BookmarkManager.Pages
                         StateHasChanged();
                     });
 
-                _updateFaviconHandler = _updateFaviconSubject
-                    .Subscribe(async url =>
+                var subjectHandler = _userUrlClickSubject.Subscribe(bk => { _updateFaviconSubject.OnNext(bk.Bk.Url); });
+                _subjectHandlers.Add(subjectHandler);
+                subjectHandler = _userUrlClickSubject.Subscribe(bk => { BkManager.AddClickAsync(bk.Bk.Url, 1); });
+                _subjectHandlers.Add(subjectHandler);
+                subjectHandler = _userUrlClickSubject.Subscribe(bk =>
+                {
+                    RecordService.AddAsync(new UserClickRecord
                     {
-                        try
-                        {
-                            await Task.Delay(TimeSpan.FromSeconds(5));
-                            var tabs = await WebExtensions.Tabs.Query(new QueryInfo
-                            {
-                                Url = url
-                            });
-                            var tabNow = tabs.FirstOrDefault();
-                            if (tabNow != null &&
-                                !string.IsNullOrWhiteSpace(tabNow.FavIconUrl))
-                            {
-                                Logger.LogInformation("success to get favicon url");
-                                await BkManager.UpdateFavIconUrlAsync(new Dictionary<string, string>
-                                {
-                                    { url, tabNow.FavIconUrl }
-                                });
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            // ignored
-                        }
+                        Index = bk.LineIndex,
+                        Url = bk.Bk.Url,
+                        Title = bk.Bk.Title,
+                        Search = SearchValue,
+                        Tags = string.Join(",", ((IEnumerable<string>?)bk.Bk.Tags) ?? Array.Empty<string>())
                     });
+
+                    InvokeAsync(() =>
+                    {
+                        SearchValue = string.Empty;
+                        _searchSubject.OnNext(null);
+                    });
+                });
+                _subjectHandlers.Add(subjectHandler);
+
+                subjectHandler = _updateFaviconSubject
+                    .Subscribe(url =>
+                    {
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(5));
+                                var tabs = await WebExtensions.Tabs.Query(new QueryInfo
+                                {
+                                    Url = url
+                                });
+                                var tabNow = tabs.FirstOrDefault();
+                                if (tabNow != null &&
+                                    !string.IsNullOrWhiteSpace(tabNow.FavIconUrl))
+                                {
+                                    Logger.LogInformation("success to get favicon url");
+                                    await BkManager.UpdateFavIconUrlAsync(new Dictionary<string, string>
+                                    {
+                                        { url, tabNow.FavIconUrl }
+                                    });
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                // ignored
+                            }
+                        });
+                    });
+                _subjectHandlers.Add(subjectHandler);
+
                 _allTags = await TagsManager.GetAllTagsAsync();
                 _userOptions = userOptions;
 
@@ -297,10 +326,7 @@ namespace Newbe.BookmarkManager.Pages
                 await WebExtensions.Tabs.ActiveOrOpenAsync(url);
             }
 
-            _updateFaviconSubject.OnNext(url);
-            await BkManager.AddClickAsync(url, 1);
-            SearchValue = string.Empty;
-            _searchSubject.OnNext(null);
+            _userUrlClickSubject.OnNext(bk);
         }
 
         private async Task OnRemovingTag(Bk bk, string tag)
@@ -460,6 +486,11 @@ namespace Newbe.BookmarkManager.Pages
 
         public async ValueTask DisposeAsync()
         {
+            foreach (var subjectHandler in _subjectHandlers)
+            {
+                subjectHandler.Dispose();
+            }
+
             await _moduleLoader.DisposeAsync();
         }
     }

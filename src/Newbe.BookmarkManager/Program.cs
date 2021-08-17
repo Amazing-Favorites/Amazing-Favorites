@@ -53,6 +53,7 @@ namespace Newbe.BookmarkManager
                 .AddTransient<ITagsManager, TagsManager>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddSingleton<IAfCodeService, AfCodeService>()
+                .AddSingleton<IRecordService, RecordService>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()
                 .AddSingleton<ISyncTagRelatedBkCountJob, SyncTagRelatedBkCountJob>()
@@ -91,7 +92,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
-                dbStore.Version = 2;
+                dbStore.Version = 3;
 
                 dbStore.Stores.Add(new StoreSchema
                 {
@@ -116,6 +117,11 @@ namespace Newbe.BookmarkManager
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.AfMetadata,
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.SearchRecord,
                     PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
             });
