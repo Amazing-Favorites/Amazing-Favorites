@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd $GITHUB_WORKSPACE/src
-          dotnet workload install microsoft-net-sdk-blazorwebassembly-aot
+          dotnet workload install wasm-tools
           dotnet restore
       - name: build and test
         env:
