@@ -1,8 +1,9 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - publish_test
 
 jobs:
   release:
@@ -18,10 +19,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Setup .NET 3.0 for gitreleasemanager
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.0.x
       - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v1
         with:
@@ -51,20 +48,6 @@ jobs:
           dotnet publish Newbe.BookmarkManager -c Release -o out -p:AssemblyVersion=${{ steps.gitversion.outputs.MajorMinorPatch }} -p:Version=${{ steps.gitversion.outputs.SemVer }} -p:EnableAOT=${{ matrix.enable-aot }}
           mv out/browserextension Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
           zip -r Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
-      - uses: gittools/actions/gitreleasemanager/setup@v0.9.10
-        name: Install GitReleaseManager
-        with:
-          versionSpec: "0.11.x"
-
-      - uses: gittools/actions/gitreleasemanager/addasset@v0.9.10
-        name: Add asset to a release with GitReleaseManager
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: "newbe36524"
-          repository: "Amazing-Favorites"
-          tagName: "v${{ steps.gitversion.outputs.MajorMinorPatch }}"
-          assets: |
-            src/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }.zip
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         with:
