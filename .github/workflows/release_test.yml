@@ -8,6 +8,10 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        enable-aot: [ 'true','false' ]
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
@@ -41,11 +45,11 @@ jobs:
       - name: Build
         run: |
           cd $GITHUB_WORKSPACE/src
-          dotnet publish Newbe.BookmarkManager -c Release -o out -p:AssemblyVersion=${{ steps.gitversion.outputs.MajorMinorPatch }} -p:Version=${{ steps.gitversion.outputs.SemVer }} -p:EnableAOT=true
+          dotnet publish Newbe.BookmarkManager -c Release -o out -p:AssemblyVersion=${{ steps.gitversion.outputs.MajorMinorPatch }} -p:Version=${{ steps.gitversion.outputs.SemVer }} -p:EnableAOT=${{ matrix.enable-aot }}
           mv out/browserextension Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
-          zip -r Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}.zip Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
+          zip -r Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
       - name: Archive artifacts
         uses: actions/upload-artifact@v2
         with:
           path: |
-            src/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}.zip
+            src/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip
