@@ -45,6 +45,15 @@ namespace Newbe.BookmarkManager.Services
         Task<Dictionary<string, int>> GetTagRelatedCountAsync();
     }
 
+    public record UserClickRecord
+    {
+        public string Search { get; set; }
+        public string Url { get; set; }
+        public string Title { get; set; }
+        public string Tags { get; set; }
+        public int Index { get; set; }
+    }
+
     public class BookmarkNode
     {
         public BookmarkNode()

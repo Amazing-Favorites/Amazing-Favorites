@@ -51,11 +51,16 @@
                             </Col>
                             <Col Span="24">
                                 <Spin Spinning="@_searchInputLoading">
-                                    <Search Placeholder="input keyword to search"
-                                            EnterButton="true"
-                                            AutoFocus="true"
-                                            @ref="_search"
-                                            @bind-Value="@SearchValue"/>
+                                    <AutoComplete Options="RecentSearchHolder.RecentSearch.Items.Select(x=>x.Text)">
+                                        <ChildContent>
+                                            <AutoCompleteSearch EnterButton="true"
+                                                                AutoFocus="true"
+                                                                Placeholder="input keyword to search"
+                                                                @ref="_search"
+                                                                @bind-Value="SearchValue">
+                                            </AutoCompleteSearch>
+                                        </ChildContent>
+                                    </AutoComplete>
                                 </Spin>
                             </Col>
                             @if (_userOptions?.HotTagsFeature?.Enabled == true)

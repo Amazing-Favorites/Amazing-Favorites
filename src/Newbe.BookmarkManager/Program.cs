@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
 using BlazorApplicationInsights;
-using Castle.DynamicProxy;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,8 +49,10 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IManagePageNotificationService, ManagePageNotificationService>()
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<ITagsManager, TagsManager>()
+                .AddSingleton<IRecentSearchHolder, RecentSearchHolder>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddSingleton<IAfCodeService, AfCodeService>()
+                .AddSingleton<IRecordService, RecordService>()
                 .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
                 .AddSingleton<ISyncAliasJob, SyncAliasJob>()
                 .AddSingleton<ISyncTagRelatedBkCountJob, SyncTagRelatedBkCountJob>()
@@ -91,7 +91,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
-                dbStore.Version = 2;
+                dbStore.Version = 4;
 
                 dbStore.Stores.Add(new StoreSchema
                 {
@@ -116,6 +116,16 @@ namespace Newbe.BookmarkManager
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.AfMetadata,
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.SearchRecord,
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.RecentSearch,
                     PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
             });

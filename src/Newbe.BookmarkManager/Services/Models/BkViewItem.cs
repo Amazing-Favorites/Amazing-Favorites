@@ -1,6 +1,4 @@
-﻿using AntDesign;
-
-namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services
 {
     public record BkViewItem(Bk Bk)
     {
