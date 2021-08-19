@@ -21,7 +21,6 @@ namespace Newbe.BookmarkManager.Services
             _clock = clock;
         }
 
-
         public async Task AddAsync(string text)
         {
             var items = RecentSearch.Items;
