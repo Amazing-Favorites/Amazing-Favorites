@@ -34,6 +34,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
         [Inject] public IOptions<DevOptions> DevOptions { get; set; }
         [Inject] public IRecordService RecordService { get; set; }
+        [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -52,14 +53,20 @@ namespace Newbe.BookmarkManager.Pages
         private readonly Subject<string?> _searchSubject = new();
         private readonly Subject<bool> _altKeySubject = new();
         private readonly Subject<string> _updateFaviconSubject = new();
-        private readonly Subject<BkViewItem> _userUrlClickSubject = new();
+        private readonly Subject<OnSearchResultClickArgs> _userUrlClickSubject = new();
         private readonly List<IDisposable> _subjectHandlers = new();
         private readonly int _resultLimit = 10;
         private bool _controlPanelVisible;
-        private Search _search;
+        private AutoCompleteSearch _search;
         private string[] _allTags = Array.Empty<string>();
         private string _searchValue;
         private bool _modalVisible;
+
+        public record OnSearchResultClickArgs
+        {
+            public string SearchText { get; set; }
+            public BkViewItem ClickItem { get; set; }
+        }
 
         [JSInvokable]
         public async Task OnReceivedCommand(string command)
@@ -87,13 +94,13 @@ namespace Newbe.BookmarkManager.Pages
                 await _moduleLoader.LoadAsync("/content/manager_keyboard.js");
                 var userOptions = await UserOptionsService.GetOptionsAsync();
                 if (userOptions is
-                {
-                    AcceptPrivacyAgreement: true,
-                    ApplicationInsightFeature:
                     {
-                        Enabled: true
-                    }
-                })
+                        AcceptPrivacyAgreement: true,
+                        ApplicationInsightFeature:
+                        {
+                            Enabled: true
+                        }
+                    })
                 {
                     await _moduleLoader.LoadAsync("/content/ai.js");
                 }
@@ -153,12 +160,25 @@ namespace Newbe.BookmarkManager.Pages
                         StateHasChanged();
                     });
 
-                var subjectHandler = _userUrlClickSubject.Subscribe(bk => { _updateFaviconSubject.OnNext(bk.Bk.Url); });
-                _subjectHandlers.Add(subjectHandler);
-                subjectHandler = _userUrlClickSubject.Subscribe(bk => { BkManager.AddClickAsync(bk.Bk.Url, 1); });
+                var subjectHandler = _userUrlClickSubject.Subscribe(bk =>
+                {
+                    _updateFaviconSubject.OnNext(bk.ClickItem.Bk.Url);
+                });
                 _subjectHandlers.Add(subjectHandler);
                 subjectHandler = _userUrlClickSubject.Subscribe(bk =>
                 {
+                    BkManager.AddClickAsync(bk.ClickItem.Bk.Url, 1);
+                });
+                _subjectHandlers.Add(subjectHandler);
+                subjectHandler = _userUrlClickSubject
+                    .Select(item =>
+                        Observable.FromAsync(() => RecentSearchHolder.AddAsync(item.SearchText)))
+                    .Concat()
+                    .Subscribe();
+                _subjectHandlers.Add(subjectHandler);
+                subjectHandler = _userUrlClickSubject.Subscribe(item =>
+                {
+                    var bk = item.ClickItem;
                     RecordService.AddAsync(new UserClickRecord
                     {
                         Index = bk.LineIndex,
@@ -232,6 +252,7 @@ namespace Newbe.BookmarkManager.Pages
                     }
                 }
 
+                await RecentSearchHolder.LoadAsync();
                 await ManagePageNotificationService.RunAsync();
             }
         }
@@ -326,7 +347,11 @@ namespace Newbe.BookmarkManager.Pages
                 await WebExtensions.Tabs.ActiveOrOpenAsync(url);
             }
 
-            _userUrlClickSubject.OnNext(bk);
+            _userUrlClickSubject.OnNext(new OnSearchResultClickArgs
+            {
+                ClickItem = bk,
+                SearchText = SearchValue
+            });
         }
 
         private async Task OnRemovingTag(Bk bk, string tag)
