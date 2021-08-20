@@ -21,7 +21,8 @@
   "permissions": [
     "tabs",
     "bookmarks",
-    "commands"
+    "commands",
+    "identity"
   ],
   "commands": {
     "open-manager-ui": {
@@ -36,5 +37,14 @@
   "options_page": "/manager/index.html",
   "browser_action": {
     "default_popup": "popup.html"
+  },
+  "oauth2": {
+    "client_id": "108132292975-3b9jr2udtr9i7ap8je5amtqmfefle0la.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/drive.appdata",
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive.install"
+    ]
   }
 }
