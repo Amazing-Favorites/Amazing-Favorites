@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AntDesign" Version="$(AntDeisgnVersion)" />
+        <PackageReference Include="AntDesign" Version="0.9.2" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
         <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.0" />
         <PackageReference Include="Blazor.BrowserExtension" Version="0.5.2" />
