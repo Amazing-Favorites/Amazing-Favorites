@@ -31,6 +31,17 @@ namespace Newbe.BookmarkManager
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddBlazorApplicationInsights(addILoggerProvider: false)
+                .AddSingleton<ApplicationInsights>()
+                .AddSingleton<EmptyApplicationInsights>()
+                .AddTransient<IApplicationInsights>(provider =>
+                {
+                    if (ApplicationInsightAop.Enabled)
+                    {
+                        return provider.GetRequiredService<ApplicationInsights>();
+                    }
+
+                    return provider.GetRequiredService<EmptyApplicationInsights>();
+                })
                 .AddSingleton<ILoggerProvider, AiLoggerProvider>();
             builder.Services.AddScoped(
                     sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
