@@ -4,11 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Google.Apis.Drive.v3;
-using Google.Apis.Http;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -188,21 +186,6 @@ namespace Newbe.BookmarkManager.Services
 
                 return false;
             }
-        }
-    }
-
-    public class TokenBaseInitializer : IConfigurableHttpClientInitializer
-    {
-        private readonly string _token;
-
-        public TokenBaseInitializer(string token)
-        {
-            _token = token;
-        }
-
-        public void Initialize(ConfigurableHttpClient httpClient)
-        {
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
         }
     }
 }
