@@ -11,7 +11,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly ILogger _logger;
         private readonly IBkManager _bkManager;
         private readonly IUserOptionsService _userOptionsService;
-        private readonly ICloudService _cloudService;
+        private readonly ICloudServiceFactory _cloudServiceFactory;
 
         // ReSharper disable once NotAccessedField.Local
         private IDisposable _jobHandler;
@@ -20,12 +20,12 @@ namespace Newbe.BookmarkManager.Services
             ILogger<SyncCloudJob> logger,
             IBkManager bkManager,
             IUserOptionsService userOptionsService,
-            ICloudService cloudService)
+            ICloudServiceFactory cloudServiceFactory)
         {
             _logger = logger;
             _bkManager = bkManager;
             _userOptionsService = userOptionsService;
-            _cloudService = cloudService;
+            _cloudServiceFactory = cloudServiceFactory;
         }
 
         public async ValueTask StartAsync()
@@ -53,6 +53,7 @@ namespace Newbe.BookmarkManager.Services
 
         private async Task RunSyncAsync()
         {
+            var cloudService = await _cloudServiceFactory.CreateAsync();
             var options = await _userOptionsService.GetOptionsAsync();
             if (options is
                 {
@@ -66,7 +67,7 @@ namespace Newbe.BookmarkManager.Services
                 })
             {
                 var etagVersion = await _bkManager.GetEtagVersionAsync();
-                var (hasChanged, output) = await _cloudService.GetCloudAsync(etagVersion);
+                var (hasChanged, output) = await cloudService.GetCloudAsync(etagVersion);
                 if (hasChanged)
                 {
                     if (output!.EtagVersion > etagVersion)
@@ -81,7 +82,7 @@ namespace Newbe.BookmarkManager.Services
                         var cloudBkCollection = await _bkManager.GetCloudBkCollectionAsync();
                         if (cloudBkCollection.Bks.Count > 0)
                         {
-                            await _cloudService.SaveToCloudAsync(cloudBkCollection);
+                            await cloudService.SaveToCloudAsync(cloudBkCollection);
                             LogSyncToCloud(
                                 cloudBkCollection.EtagVersion,
                                 cloudBkCollection.LastUpdateTime);

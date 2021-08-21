@@ -5,13 +5,13 @@ using Newbe.BookmarkManager.WebApi;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class CloudService : ICloudService
+    public class NewbeApiCloudService : ICloudService
     {
-        private readonly ILogger<CloudService> _logger;
+        private readonly ILogger<NewbeApiCloudService> _logger;
         private readonly ICloudBkApi _cloudBkApi;
 
-        public CloudService(
-            ILogger<CloudService> logger,
+        public NewbeApiCloudService(
+            ILogger<NewbeApiCloudService> logger,
             ICloudBkApi cloudBkApi)
         {
             _logger = logger;

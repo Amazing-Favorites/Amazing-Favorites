@@ -1,27 +1,29 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AntDesign;
 using Newbe.BookmarkManager.Services;
+using Newbe.BookmarkManager.Services.EventHubs;
 
 namespace Newbe.BookmarkManager.Components
 {
     public class ManagePageNotificationService : IManagePageNotificationService
     {
         private readonly IUserOptionsService _userOptionsService;
-        private readonly NotificationService _notificationService;
+        private readonly IAfEventHub _afEventHub;
 
         public ManagePageNotificationService(
             IUserOptionsService userOptionsService,
-            NotificationService notificationService)
+            IAfEventHub afEventHub)
         {
             _userOptionsService = userOptionsService;
-            _notificationService = notificationService;
+            _afEventHub = afEventHub;
         }
 
         public async Task RunAsync()
         {
             var userOptions = await _userOptionsService.GetOptionsAsync();
             await Task.Delay(TimeSpan.FromSeconds(5));
+
+
             if (userOptions?.PinyinFeature?.Enabled == true &&
                 userOptions.PinyinFeature?.ExpireDate.HasValue == true &&
                 userOptions.PinyinFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
@@ -29,11 +31,32 @@ namespace Newbe.BookmarkManager.Components
                 await NoticeWarning("PinyinAccessToken");
             }
 
-            if (userOptions?.CloudBkFeature?.Enabled == true &&
-                userOptions.CloudBkFeature?.ExpireDate.HasValue == true &&
-                userOptions.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+            if (userOptions is
+                {
+                    AcceptPrivacyAgreement: true,
+                    CloudBkFeature:
+                    {
+                        Enabled: true
+                    }
+                })
             {
-                await NoticeWarning("CloudBkAccessToken");
+                var cloudBkFeature = userOptions.CloudBkFeature;
+                switch (cloudBkFeature.CloudBkProviderType)
+                {
+                    case CloudBkProviderType.NewbeApi:
+                        if (cloudBkFeature.ExpireDate.HasValue &&
+                            cloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                        {
+                            await NoticeWarning("CloudBkAccessToken");
+                        }
+
+                        break;
+                    case CloudBkProviderType.GoogleDrive:
+                        await _afEventHub.PublishAsync(new GoogleTryLoginInBackgroundEvent());
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             if (userOptions is
@@ -44,16 +67,18 @@ namespace Newbe.BookmarkManager.Components
                 var msg = userOptions.AcceptPrivacyAgreementBefore
                     ? "Privacy Agreement has been updated recently, please check it out in control panel"
                     : "We invite you to read our privacy agreement to enable more features in control panel";
-                await _notificationService.Info(new NotificationConfig
+                await _afEventHub.PublishAsync(new UserNotificationEvent
                 {
+                    AfNotificationType = AfNotificationType.Info,
                     Message = msg
                 });
             }
 
             async Task NoticeWarning(string tokenName)
             {
-                await _notificationService.Warning(new NotificationConfig()
+                await _afEventHub.PublishAsync(new UserNotificationEvent
                 {
+                    AfNotificationType = AfNotificationType.Warning,
                     Message = $"{tokenName} is about to expire",
                     Description =
                         $"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.",

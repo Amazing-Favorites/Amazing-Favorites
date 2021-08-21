@@ -1,0 +1,95 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.Extensions.Logging
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Newbe.BookmarkManager.Services.SimpleData
+<Spin Spinning="@_testing">
+    <Space>
+        <SpaceItem>
+            <Button OnClick="ClickLoginAsync">
+
+                @switch (_loginStatus)
+                {
+                    case LoginStatus.NoTest:
+                        <AntDesign.Text>Login with Google</AntDesign.Text>
+                        break;
+                    case LoginStatus.Success:
+                        <AntDesign.Text Type="success">Login success, it starts to sync some data to Google Drive in a while in background.</AntDesign.Text>
+                        break;
+                    case LoginStatus.Failed:
+                        <AntDesign.Text Type="danger">Login failed, please refresh page to try again or check your network.</AntDesign.Text>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            </Button>
+        </SpaceItem>
+        <SpaceItem>
+            @if (_googleDriveStatics?.LastSuccessUploadTime != null)
+            {
+                <Text>Last sync time: @DateTimeOffset.FromUnixTimeSeconds(_googleDriveStatics.LastSuccessUploadTime.Value)</Text>
+            }
+        </SpaceItem>
+
+    </Space>
+
+
+</Spin>
+
+
+@code {
+
+    [Inject]
+    public IGoogleDriveClient GoogleDriveClient { get; set; }
+
+    [Inject]
+    public ILogger<GoogleLogin> Logger { get; set; }
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+
+    [Inject]
+    public ISimpleDataStorage SimpleDataStorage { get; set; }
+
+    private LoginStatus _loginStatus;
+    private bool _testing;
+    private GoogleDriveStatics _googleDriveStatics = null!;
+
+    public enum LoginStatus
+    {
+        NoTest,
+        Success,
+        Failed
+    }
+
+    private async Task ClickLoginAsync()
+    {
+        try
+        {
+            _testing = true;
+            await GoogleDriveClient.LoginAsync(true);
+            _loginStatus = LoginStatus.Success;
+            await AfEventHub.PublishAsync(new UserGoogleDriveLoginSuccessEvent());
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "failed to login with Google");
+            _loginStatus = LoginStatus.Failed;
+        }
+        finally
+        {
+            _testing = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            _googleDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
+            StateHasChanged();
+        }
+    }
+
+}

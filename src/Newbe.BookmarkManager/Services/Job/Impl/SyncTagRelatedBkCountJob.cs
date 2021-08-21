@@ -41,7 +41,7 @@ namespace Newbe.BookmarkManager.Services
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, "Faile");
+                        _logger.LogError(e, "Failed");
                     }
                 }))
                 .Concat()

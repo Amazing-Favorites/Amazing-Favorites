@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Newbe.BookmarkManager.Services.SimpleData;
 
 namespace Newbe.BookmarkManager.Services
 {

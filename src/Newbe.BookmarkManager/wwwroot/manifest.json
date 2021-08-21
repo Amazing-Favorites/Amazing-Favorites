@@ -1,7 +1,7 @@
 ﻿{
   "manifest_version": 2,
   "name": "Amazing Favorites",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Amazing Favorites help you to manage you bookmarks efficiently",
   "background": {
     "page": "index.html?path=background",
@@ -12,7 +12,7 @@
     "48": "icons/48icon.png",
     "128": "icons/128icon.png"
   },
-  "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-eval' 'sha256-v8v3RKRPmN4odZ1CWM5gw80QKPCCWMcpNeOmimNL2AA=' 'sha256-j0z5Z6xOoSHTeg6zVPMoHNt5D5v+7IWgT9m5uC9mrGg=' 'sha256-SQC3opwSNRzP3qBB9CWB9I3347XafmEdFyNx7sU8EhI=' 'sha256-ekPKVeJX0sFL97OO7iucY3R3j3qdTIvUSwffdbcbxjA=' 'sha256-Ku0DBFoNk825E3GZZ7OLqYiLPXgpfFVkmlpLYzy52Q0=' 'sha256-RXfkN4imQn+87yqYyEUBoeMJmcNRWSMfgv80LKZxKbc=' https://js.monitor.azure.com/scripts/b/ai.2.min.js ; object-src 'self'",
+  "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-eval' 'sha256-v8v3RKRPmN4odZ1CWM5gw80QKPCCWMcpNeOmimNL2AA=' 'sha256-j0z5Z6xOoSHTeg6zVPMoHNt5D5v+7IWgT9m5uC9mrGg=' 'sha256-SQC3opwSNRzP3qBB9CWB9I3347XafmEdFyNx7sU8EhI=' https://js.monitor.azure.com/scripts/b/ai.2.min.js ; object-src 'self'",
   "web_accessible_resources": [
     "framework/*",
     "BrowserExtensionScripts/*",
@@ -37,14 +37,5 @@
   "options_page": "/manager/index.html",
   "browser_action": {
     "default_popup": "popup.html"
-  },
-  "oauth2": {
-    "client_id": "108132292975-3b9jr2udtr9i7ap8je5amtqmfefle0la.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/drive.appdata",
-      "https://www.googleapis.com/auth/drive.file",
-      "https://www.googleapis.com/auth/drive.install"
-    ]
   }
 }

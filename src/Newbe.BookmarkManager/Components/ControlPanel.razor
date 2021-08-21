@@ -18,14 +18,15 @@
           Size="Default">
         @if (context.AcceptPrivacyAgreement)
         {
-            <FormItem Label="👋 Anonymous Improving">
-                <Switch @bind-Value="@context.ApplicationInsightFeature.Enabled"/>
-                <p>👋 Recommended to enable</p>
+            <FormItem Label="">
+                <Divider Plain Orientation="left"><Switch @bind-Value="@context.ApplicationInsightFeature.Enabled"/> 👋 Anonymous Improving</Divider>
+            </FormItem>
+            <FormItem Label="👋 Recommended to enable">
                 <p>Collecting fully anonymous application performance and error logs helps us to continually strive to provide you with better applications. When enabled, we will collect information about the application's errors, the time spent on each operation, and other data that is not related to personal information. </p>
                 <p>Modifying the options will only take effect after you restart your browser</p>.
             </FormItem>
-            <FormItem Label="🌏 Enable Pinyin">
-                <Switch @bind-Value="@context.PinyinFeature.Enabled"/>
+            <FormItem Label="">
+                <Divider Plain Orientation="left"><Switch @bind-Value="@context.PinyinFeature.Enabled"/> 🌏 Enable Pinyin</Divider>
             </FormItem>
             @if (context.PinyinFeature.Enabled)
             {
@@ -59,40 +60,58 @@
                     <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
                 </FormItem>
             }
-            <FormItem Label="☁ Enable Cloud Sync">
-                <Switch @bind-Value="@context.CloudBkFeature.Enabled"/>
+            <FormItem Label="">
+                <Divider Plain Orientation="left"><Switch @bind-Value="@context.CloudBkFeature.Enabled"/> ☁ Enable Cloud Sync</Divider>
             </FormItem>
             @if (context.CloudBkFeature.Enabled)
             {
-                <FormItem Label="Access Token">
-                    <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" OnChange="OnChangeCloudBkFeatureAccessToken" />
-                    <p>
-                        <Icon Type="question" Theme="outline"/>
-                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
-                    </p>
-                    <FormItem Label="Token Expiration Date">
-                        @(context.CloudBkFeature.ExpireDate != null ? $"{context.CloudBkFeature.ExpireDate:d}" : "")
-                        @if (context.CloudBkFeature.ExpireDate.HasValue &&
-                             context.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-                        {
-                            if (context.CloudBkFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-                            {
-                                <Alert
-                                    Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
-                                    Type="@AlertType.Warning"/>
-                            }
-                            else if (context.CloudBkFeature.ExpireDate <= DateTime.Now)
-                            {
-                                <Alert
-                                    Message=@($"Your token has been expired, please try to create a new one.")
-                                    Type="@AlertType.Error"/>
-                            }
-                        }
-                    </FormItem>
+                <FormItem Label="Cloud Storage Provider">
+                    <RadioGroup @bind-Value="context.CloudBkFeature.CloudBkProviderType" ButtonStyle="solid">
+                        <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> Google Drive</Radio>
+                        <Radio RadioButton Value="@(CloudBkProviderType.NewbeApi)">☁ Newbe API</Radio>
+                    </RadioGroup>
                 </FormItem>
-                <FormItem Label="Cloud Sync Api BaseUrl">
-                    <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
-                </FormItem>
+                @switch (context.CloudBkFeature.CloudBkProviderType)
+                {
+                    case CloudBkProviderType.NewbeApi:
+                        <FormItem Label="Access Token">
+                            <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" OnChange="OnChangeCloudBkFeatureAccessToken" />
+                            <p>
+                                <Icon Type="question" Theme="outline"/>
+                                You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                            </p>
+                            <FormItem Label="Token Expiration Date">
+                                @(context.CloudBkFeature.ExpireDate != null ? $"{context.CloudBkFeature.ExpireDate:d}" : "")
+                                @if (context.CloudBkFeature.ExpireDate.HasValue &&
+                                     context.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                                {
+                                    if (context.CloudBkFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                                    {
+                                        <Alert
+                                            Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
+                                            Type="@AlertType.Warning"/>
+                                    }
+                                    else if (context.CloudBkFeature.ExpireDate <= DateTime.Now)
+                                    {
+                                        <Alert
+                                            Message=@($"Your token has been expired, please try to create a new one.")
+                                            Type="@AlertType.Error"/>
+                                    }
+                                }
+                            </FormItem>
+                        </FormItem>
+                        <FormItem Label="Cloud Sync Api BaseUrl">
+                            <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
+                        </FormItem>
+                        break;
+                    case CloudBkProviderType.GoogleDrive:
+                        <FormItem Label="Google Drive">
+                            <GoogleLogin/>
+                        </FormItem>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
         else
@@ -107,8 +126,9 @@
                 <Button OnClick="OnClickAgreeUserPrivacyAgreement" Type="primary">I agree to the User Privacy Agreement</Button>
             </FormItem>
         }
-        <FormItem Label="🔥 Enable Hot Tags">
-            <Switch @bind-Value="@context.HotTagsFeature.Enabled"/>
+        <FormItem Label="">
+            <Divider Plain Orientation="left"><Switch @bind-Value="@context.HotTagsFeature.Enabled"/> 🔥 Enable Hot Tags</Divider>
+
         </FormItem>
         @if (context.HotTagsFeature.Enabled)
         {
@@ -119,7 +139,10 @@
                                        DefaultValue="10"/>
             </FormItem>
         }
-        <FormItem Label="System Actions">
+        <FormItem Label="">
+            <Divider Plain>System Actions</Divider>
+        </FormItem>
+        <FormItem Label="">
             <Space>
                 <SpaceItem>
                     <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
@@ -157,9 +180,21 @@
     public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
 
     private ModalModel _modal = new();
+    private bool _visible;
 
     [Parameter]
-    public bool Visible { get; set; }
+    public bool Visible
+    {
+        get => _visible;
+        set
+        {
+            _visible = value;
+            if (value)
+            {
+                InvokeAsync(LoadUserOptions);
+            }
+        }
+    }
 
     [Parameter]
     public virtual EventCallback<bool> VisibleChanged { get; set; }
