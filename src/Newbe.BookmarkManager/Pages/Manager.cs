@@ -16,6 +16,7 @@ using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
+using Newbe.BookmarkManager.Services.EventHubs;
 using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
@@ -35,6 +36,8 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IOptions<DevOptions> DevOptions { get; set; }
         [Inject] public IRecordService RecordService { get; set; }
         [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
+        [Inject] public IAfEventHub AfEventHub { get; set; }
+        [Inject] public NotificationService NotificationService { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -232,8 +235,14 @@ namespace Newbe.BookmarkManager.Pages
 
                 await WebExtensions.Runtime.OnMessage.AddListener((o, sender, arg3) =>
                 {
-                    HandleNewBookmarkAddedEvent(o);
-                    return true;
+                    var evt = JsonSerializer.Deserialize<NewBkAddEvent>(JsonSerializer.Serialize(o))!;
+                    if (!string.IsNullOrEmpty(evt.Url))
+                    {
+                        HandleNewBookmarkAddedEvent(evt);
+                        return true;
+                    }
+
+                    return false;
                 });
 
                 var editTabIdStr = QueryString(NavigationManager, "editTabId");
@@ -254,6 +263,29 @@ namespace Newbe.BookmarkManager.Pages
 
                 await RecentSearchHolder.LoadAsync();
                 await ManagePageNotificationService.RunAsync();
+                AfEventHub.RegisterHandler<GoogleBackgroundLoginResultEvent>(HandleGoogleBackgroundLoginResult);
+                await AfEventHub.StartAsync();
+            }
+        }
+
+
+        private async Task HandleGoogleBackgroundLoginResult(GoogleBackgroundLoginResultEvent afEvent)
+        {
+            if (afEvent.Success)
+            {
+                await AfEventHub.PublishAsync(new UserNotificationEvent
+                {
+                    AfNotificationType = AfNotificationType.Info,
+                    Message = "Google Drive login success, it starts to sync your data to your cloud storage"
+                });
+            }
+            else
+            {
+                await AfEventHub.PublishAsync(new UserNotificationEvent
+                {
+                    AfNotificationType = AfNotificationType.Warning,
+                    Message = "Google Drive login failed, please open control panel to login your account"
+                });
             }
         }
 
@@ -271,9 +303,8 @@ namespace Newbe.BookmarkManager.Pages
             [JsonPropertyName("tabId")] public int TabId { get; set; }
         }
 
-        private async Task HandleNewBookmarkAddedEvent(object arg1)
+        private async Task HandleNewBookmarkAddedEvent(NewBkAddEvent evt)
         {
-            var evt = JsonSerializer.Deserialize<NewBkAddEvent>(JsonSerializer.Serialize(arg1))!;
             Logger.LogInformation("Received : {Event}", evt);
             await BkEditFormData.LoadAsync(evt.Url, evt.Title, Array.Empty<string>());
             _modalVisible = true;

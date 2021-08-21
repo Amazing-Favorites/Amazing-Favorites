@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -35,7 +36,8 @@ namespace Newbe.BookmarkManager.Services
             public const string UserOptions = "UserOptions";
             public const string AfMetadata = "AfMetadata";
             public const string SearchRecord = "SearchRecord";
-            public const string RecentSearch = "RecentSearch";
+            [Obsolete("use simple data")] public const string RecentSearch = "RecentSearch";
+            public const string SimpleData = "SimpleData";
         }
 
         private static readonly HashSet<string> ReservedBookmarkFolder = new()

@@ -13,12 +13,17 @@ using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
+using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.SimpleData;
 using Refit;
 using TG.Blazor.IndexedDB;
 using WebExtensions.Net.Bookmarks;
+using WebExtensions.Net.Identity;
+using WebExtensions.Net.Runtime;
 using WebExtensions.Net.Storage;
 using WebExtensions.Net.Tabs;
 using WebExtensions.Net.Windows;
+using Module = Autofac.Module;
 
 namespace Newbe.BookmarkManager
 {
@@ -47,6 +52,7 @@ namespace Newbe.BookmarkManager
                     sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
                 .Configure<DevOptions>(builder.Configuration.GetSection(nameof(DevOptions)))
+                .Configure<GoogleDriveOAuthOptions>(builder.Configuration.GetSection(nameof(GoogleDriveOAuthOptions)))
                 .Configure<StaticUrlOptions>(builder.Configuration.GetSection(nameof(StaticUrlOptions)));
             builder.Services
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
@@ -57,6 +63,8 @@ namespace Newbe.BookmarkManager
                 .AddTransient<ITabsApi, TabsApi>()
                 .AddTransient<IWindowsApi, WindowsApi>()
                 .AddTransient<IStorageApi, StorageApi>()
+                .AddTransient<IIdentityApi, IdentityApi>()
+                .AddTransient<IRuntimeApi, RuntimeApi>()
                 .AddTransient<IManagePageNotificationService, ManagePageNotificationService>()
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<ITagsManager, TagsManager>()
@@ -102,7 +110,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
-                dbStore.Version = 4;
+                dbStore.Version = 5;
 
                 dbStore.Stores.Add(new StoreSchema
                 {
@@ -139,6 +147,11 @@ namespace Newbe.BookmarkManager
                     Name = Consts.StoreNames.RecentSearch,
                     PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.SimpleData,
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
+                });
             });
 
             var webAssemblyHost = builder.Build();
@@ -160,8 +173,10 @@ namespace Newbe.BookmarkManager
             builder.RegisterType<ApplicationInsightAop>();
             RegisterType<IndexedBkSearcher, IBkSearcher>();
             RegisterType<IndexedBkManager, IBkManager>();
-            RegisterType<CloudService, ICloudService>();
             RegisterType<UserOptionsService, IUserOptionsService>();
+            builder.RegisterModule<CloudServiceModule>();
+            builder.RegisterModule<EventHubModule>();
+            builder.RegisterModule<SimpleObjectStorageModule>();
 
             void RegisterType<TType, TInterface>()
             {
@@ -171,6 +186,52 @@ namespace Newbe.BookmarkManager
 #pragma warning restore 8714
                     .EnableInterfaceInterceptors()
                     .InterceptedBy(typeof(ApplicationInsightAop));
+            }
+        }
+
+        private class CloudServiceModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+                builder.RegisterType<CloudServiceFactory>()
+                    .As<ICloudServiceFactory>();
+                builder.RegisterType<NewbeApiCloudService>()
+                    .Keyed<ICloudService>(CloudBkProviderType.NewbeApi)
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
+                builder.RegisterType<GoogleDriveCloudService>()
+                    .Keyed<ICloudService>(CloudBkProviderType.GoogleDrive)
+                    .SingleInstance()
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
+                builder.RegisterType<GoogleDriveClient>()
+                    .As<IGoogleDriveClient>()
+                    .SingleInstance();
+            }
+        }
+
+        private class EventHubModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+                builder.RegisterType<AfEventHub>()
+                    .As<IAfEventHub>()
+                    .SingleInstance();
+
+                builder.RegisterType<FuncEventHandler>().AsSelf();
+            }
+        }
+
+        private class SimpleObjectStorageModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+                builder.RegisterType<SimpleDataStorage>()
+                    .As<ISimpleDataStorage>()
+                    .SingleInstance();
             }
         }
     }

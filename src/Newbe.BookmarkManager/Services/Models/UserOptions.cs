@@ -33,6 +33,13 @@ namespace Newbe.BookmarkManager.Services
         public string? AccessToken { get; set; }
 
         public DateTime? ExpireDate { get; set; }
+        public CloudBkProviderType CloudBkProviderType { get; set; }
+    }
+
+    public enum CloudBkProviderType
+    {
+        NewbeApi,
+        GoogleDrive
     }
 
     public record HotTagsFeature

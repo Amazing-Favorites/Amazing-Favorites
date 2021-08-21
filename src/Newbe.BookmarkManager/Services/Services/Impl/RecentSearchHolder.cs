@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newbe.BookmarkManager.Services.SimpleData;
 
 namespace Newbe.BookmarkManager.Services
 {
     public class RecentSearchHolder : IRecentSearchHolder
     {
-        private readonly IIndexedDbRepo<RecentSearch, string> _recentSearchRepo;
+        private readonly ISimpleDataStorage _simpleDataStorage;
         private readonly IClock _clock;
 
         public RecentSearch RecentSearch { get; private set; } = new()
@@ -14,10 +15,10 @@ namespace Newbe.BookmarkManager.Services
         };
 
         public RecentSearchHolder(
-            IIndexedDbRepo<RecentSearch, string> recentSearchRepo,
+            ISimpleDataStorage simpleDataStorage,
             IClock clock)
         {
-            _recentSearchRepo = recentSearchRepo;
+            _simpleDataStorage = simpleDataStorage;
             _clock = clock;
         }
 
@@ -46,16 +47,12 @@ namespace Newbe.BookmarkManager.Services
                 items.RemoveAt(maxCount - 1);
             }
 
-            await _recentSearchRepo.UpsertAsync(RecentSearch);
+            await _simpleDataStorage.SaveAsync(RecentSearch);
         }
 
         public async Task<RecentSearch> LoadAsync()
         {
-            RecentSearch = (await _recentSearchRepo.GetSingleOneAsync())!;
-            RecentSearch ??= new RecentSearch
-            {
-                Items = new List<RecentSearchItem>()
-            };
+            RecentSearch = await _simpleDataStorage.GetOrDefaultAsync<RecentSearch>();
             return RecentSearch;
         }
     }
