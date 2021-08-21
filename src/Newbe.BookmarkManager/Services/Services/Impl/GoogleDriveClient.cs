@@ -191,7 +191,6 @@ namespace Newbe.BookmarkManager.Services
         }
     }
 
-
     public class TokenBaseInitializer : IConfigurableHttpClientInitializer
     {
         private readonly string _token;
