@@ -1,0 +1,36 @@
+﻿<h3>Microsoft_Login</h3>
+@*<Spin Spinning="@_testing">
+    <Space>
+        <SpaceItem>
+            <Button OnClick="ClickLoginAsync">
+
+                @switch (_loginStatus)
+                {
+                    case LoginStatus.NoTest:
+                        <AntDesign.Text>Login with Google</AntDesign.Text>
+                        break;
+                    case LoginStatus.Success:
+                        <AntDesign.Text Type="success">Login success, it starts to sync some data to Google Drive in a while in background.</AntDesign.Text>
+                        break;
+                    case LoginStatus.Failed:
+                        <AntDesign.Text Type="danger">Login failed, please refresh page to try again or check your network.</AntDesign.Text>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            </Button>
+        </SpaceItem>
+        <SpaceItem>
+            @if (_googleDriveStatics?.LastSuccessUploadTime != null)
+            {
+                <Text>Last sync time: @DateTimeOffset.FromUnixTimeSeconds(_googleDriveStatics.LastSuccessUploadTime.Value)</Text>
+            }
+        </SpaceItem>
+
+    </Space>
+
+
+</Spin>*@
+@code {
+
+}
