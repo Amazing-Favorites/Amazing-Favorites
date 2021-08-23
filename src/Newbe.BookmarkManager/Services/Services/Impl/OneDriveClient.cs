@@ -9,12 +9,12 @@ public class OneDriveClient : IOneDriveClient
 
     private ILogger<OneDriveClient> _logger;
     public OneDriveClient(
-        //IAuthenticationProvider authenticationProvider
         GraphServiceClient graphServiceClient,
         ILogger<OneDriveClient> logger
         )
     {
         _graphClient = graphServiceClient;
+        _logger = logger;
     }
     public async Task<IEnumerable<DriveItem>> GetDriveContentsAsync()
     {
@@ -86,7 +86,7 @@ public class OneDriveClient : IOneDriveClient
             return null;
         }
     }
-    public async Task<DriveItem> UploadingFileAsync(Stream fileStream)
+    public async Task<DriveItem> UploadingFileAsync(Stream fileStream,string itemPath)
     {
         try
         {
@@ -98,7 +98,6 @@ public class OneDriveClient : IOneDriveClient
                         { "@microsoft.graph.conflictBehavior", "replace" }
                     }
             };
-            var itemPath = "AF/AF";
             var uploadSession = await _graphClient.Me
                 .Drive.Root
                 .ItemWithPath(itemPath)

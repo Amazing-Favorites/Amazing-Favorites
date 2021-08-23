@@ -13,5 +13,5 @@ public interface IOneDriveClient
 
     Task<IEnumerable<DriveItem>> SearchFileFromDriveAsync(string searchString);
 
-    Task<DriveItem> UploadingFileAsync(Stream fileStream);
+    Task<DriveItem> UploadingFileAsync(Stream fileStream, string itemPath);
 }
