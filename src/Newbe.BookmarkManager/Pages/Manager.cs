@@ -18,7 +18,8 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
 using WebExtensions.Net.Tabs;
-
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
@@ -38,6 +39,11 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
         [Inject] public IAfEventHub AfEventHub { get; set; }
         [Inject] public NotificationService NotificationService { get; set; }
+
+        [Inject]
+        public NavigationManager Navigation { get; set; }
+        [Inject]
+        public SignOutSessionStateManager SignOutManager { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -548,6 +554,11 @@ namespace Newbe.BookmarkManager.Pages
             }
 
             await _moduleLoader.DisposeAsync();
+        }
+        private async Task BeginSignOut(MouseEventArgs args)
+        {
+            await SignOutManager.SetSignOutState();
+            Navigation.NavigateTo("authentication/logout");
         }
     }
 }

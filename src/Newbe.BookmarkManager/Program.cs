@@ -14,6 +14,8 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.Services;
+using Newbe.BookmarkManager.Services.Services.Impl;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Refit;
 using TG.Blazor.IndexedDB;
@@ -80,6 +82,34 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<IShowWhatNewJob, ShowWhatNewJob>()
                 .AddSingleton<IShowWelcomeJob, ShowWelcomeJob>()
                 .AddSingleton<IDataFixJob, DataFixJob>();
+
+
+            builder.Services
+            .AddScoped<IOneDriveClient, OneDriveClient>();
+            builder.Services.AddGraphClient(builder.Configuration, new[] {
+                        "https://graph.microsoft.com/User.Read",
+            "https://graph.microsoft.com/Files.Read",
+            "https://graph.microsoft.com/Files.Read.All",
+            "https://graph.microsoft.com/Files.Read.Selected",
+            "https://graph.microsoft.com/Files.ReadWrite",
+            "https://graph.microsoft.com/Files.ReadWrite.All",
+            "https://graph.microsoft.com/Files.ReadWrite.AppFolder",
+            "https://graph.microsoft.com/Files.ReadWrite.Selected",
+                    });
+            //builder.Services.AddMsalAuthentication(options =>
+            //{
+            //    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/User.Read");
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read");
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read.All");
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read.Selected");
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite");
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite.All");
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite.AppFolder");
+            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite.Selected");
+            //});
+
+
 
             builder.Services
                 .AddTransient<IBkEditFormData, BkEditFormData>();

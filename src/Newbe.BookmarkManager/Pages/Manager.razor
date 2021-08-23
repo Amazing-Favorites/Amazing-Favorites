@@ -1,5 +1,7 @@
 ﻿@page "/Manager/index.html"
 @using Newbe.BookmarkManager.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inherits Blazor.BrowserExtension.Pages.IndexPage
 
 <Layout>
@@ -26,6 +28,18 @@
                     <SpaceItem>
                         <LikeProject/>
                     </SpaceItem>
+                    <SpaceItem>
+                        <AuthorizeView>
+                            <Authorized>
+                                Hello, context.User.Identity.Name!
+                                <button class="nav-link btn btn-link" @onclick="BeginSignOut">Sign out</button>
+                            </Authorized>
+                            <NotAuthorized>
+                                <a href="authentication/login">Microsoft Sign in</a>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </SpaceItem>
+
                     <SpaceItem>
                         <Button OnClick="OpenHelp">
                             ❔ Help
@@ -160,6 +174,7 @@
 <ControlPanel OnClickResumeFactorySetting="OnClickResumeFactorySetting"
               OnUserOptionSave="OnUserOptionSave"
               @bind-Visible="_controlPanelVisible"/>
+
 
 @{
     RenderFragment editFormFooter = @<Template>

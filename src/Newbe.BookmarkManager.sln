@@ -1,12 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newbe.BookmarkManager", "Newbe.BookmarkManager\Newbe.BookmarkManager.csproj", "{B31528FE-6EA3-4D8D-8027-334F099B40C9}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31612.314
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Newbe.BookmarkManager", "Newbe.BookmarkManager\Newbe.BookmarkManager.csproj", "{B31528FE-6EA3-4D8D-8027-334F099B40C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newbe.BookmarkManager.Tests", "Newbe.BookmarkManager.Tests\Newbe.BookmarkManager.Tests.csproj", "{C48166D4-5F07-4970-9A16-51BFB049B5DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newbe.BookmarkManager.WebApi", "Newbe.BookmarkManager.WebApi\Newbe.BookmarkManager.WebApi.csproj", "{75BFD2EB-32CA-42E9-877E-BF7303A25821}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Newbe.BookmarkManager.WebApi", "Newbe.BookmarkManager.WebApi\Newbe.BookmarkManager.WebApi.csproj", "{75BFD2EB-32CA-42E9-877E-BF7303A25821}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newbe.BookmarkManager.WebApi.Models", "Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj", "{03B30659-53D7-454E-B0E6-E1960C10C960}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Newbe.BookmarkManager.WebApi.Models", "Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj", "{03B30659-53D7-454E-B0E6-E1960C10C960}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +33,11 @@ Global
 		{03B30659-53D7-454E-B0E6-E1960C10C960}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03B30659-53D7-454E-B0E6-E1960C10C960}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03B30659-53D7-454E-B0E6-E1960C10C960}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BB003E21-A6A3-485A-ADCE-424BCA6BE8BF}
 	EndGlobalSection
 EndGlobal
