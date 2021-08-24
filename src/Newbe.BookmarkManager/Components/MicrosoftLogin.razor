@@ -1,6 +1,17 @@
-﻿@page "/authentication/{action}"
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-<RemoteAuthenticatorView Action="@Action"  />
+﻿@using Newbe.BookmarkManager.Services
+@using System.Text.Json
+<Button OnClick="Callback">Login With MS</Button>
+
 @code {
-    [Parameter] public string Action { get; set; }
+
+    [Inject]
+    public IOneDriveClient OneDriveClient { get; set; }
+
+    private async Task Callback()
+    {
+        await OneDriveClient.LoginAsync(true);
+        var user = await OneDriveClient.GetMeAsync();
+        Console.WriteLine(JsonSerializer.Serialize(user));
+    }
+
 }

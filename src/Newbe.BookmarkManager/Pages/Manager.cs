@@ -42,8 +42,6 @@ namespace Newbe.BookmarkManager.Pages
 
         [Inject]
         public NavigationManager Navigation { get; set; }
-        [Inject]
-        public SignOutSessionStateManager SignOutManager { get; set; }
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -554,11 +552,6 @@ namespace Newbe.BookmarkManager.Pages
             }
 
             await _moduleLoader.DisposeAsync();
-        }
-        private async Task BeginSignOut(MouseEventArgs args)
-        {
-            await SignOutManager.SetSignOutState();
-            Navigation.NavigateTo("authentication/logout");
         }
     }
 }

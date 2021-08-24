@@ -9,13 +9,12 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Graph;
 using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
-using Newbe.BookmarkManager.Services.Services;
-using Newbe.BookmarkManager.Services.Services.Impl;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Refit;
 using TG.Blazor.IndexedDB;
@@ -55,6 +54,7 @@ namespace Newbe.BookmarkManager
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
                 .Configure<DevOptions>(builder.Configuration.GetSection(nameof(DevOptions)))
                 .Configure<GoogleDriveOAuthOptions>(builder.Configuration.GetSection(nameof(GoogleDriveOAuthOptions)))
+                .Configure<OneDriveOAuthOptions>(builder.Configuration.GetSection("AzureAd"))
                 .Configure<StaticUrlOptions>(builder.Configuration.GetSection(nameof(StaticUrlOptions)));
             builder.Services
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
@@ -85,37 +85,10 @@ namespace Newbe.BookmarkManager
 
 
             builder.Services
-            .AddScoped<IOneDriveClient, OneDriveClient>();
-            builder.Services.AddGraphClient(builder.Configuration, new[] {
-                        "https://graph.microsoft.com/User.Read",
-            "https://graph.microsoft.com/Files.Read",
-            "https://graph.microsoft.com/Files.Read.All",
-            "https://graph.microsoft.com/Files.Read.Selected",
-            "https://graph.microsoft.com/Files.ReadWrite",
-            "https://graph.microsoft.com/Files.ReadWrite.All",
-            "https://graph.microsoft.com/Files.ReadWrite.AppFolder",
-            "https://graph.microsoft.com/Files.ReadWrite.Selected",
-                    });
-            //builder.Services.AddMsalAuthentication(options =>
-            //{
-            //    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/User.Read");
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read");
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read.All");
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.Read.Selected");
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite");
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite.All");
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite.AppFolder");
-            //    options.ProviderOptions.DefaultAccessTokenScopes.Add("https://graph.microsoft.com/Files.ReadWrite.Selected");
-            //});
-
-
-
-            builder.Services
                 .AddTransient<IBkEditFormData, BkEditFormData>();
 
             builder.Services
-                .AddTransient<AuthHeaderHandler>();
+                .AddTransient<NewbeApiAuthHeaderHandler>();
             builder.Services
                 .AddRefitClient<IPinyinApi>()
                 .ConfigureHttpClient((sp, client) =>
@@ -124,7 +97,7 @@ namespace Newbe.BookmarkManager
                     client.BaseAddress = new Uri(service?.PinyinFeature?.BaseUrl ??
                                                  sp.GetRequiredService<IOptions<BaseUriOptions>>().Value.PinyinApi);
                 })
-                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .AddHttpMessageHandler<NewbeApiAuthHeaderHandler>()
                 ;
 
             builder.Services
@@ -135,7 +108,7 @@ namespace Newbe.BookmarkManager
                     client.BaseAddress = new Uri(service?.CloudBkFeature?.BaseUrl ??
                                                  sp.GetRequiredService<IOptions<BaseUriOptions>>().Value.CloudBkApi);
                 })
-                .AddHttpMessageHandler<AuthHeaderHandler>();
+                .AddHttpMessageHandler<NewbeApiAuthHeaderHandler>();
 
             builder.Services.AddIndexedDB(dbStore =>
             {
@@ -207,6 +180,8 @@ namespace Newbe.BookmarkManager
             builder.RegisterModule<CloudServiceModule>();
             builder.RegisterModule<EventHubModule>();
             builder.RegisterModule<SimpleObjectStorageModule>();
+            builder.RegisterModule<OneDriveModule>();
+            builder.RegisterModule<GoogleDriveModule>();
 
             void RegisterType<TType, TInterface>()
             {
@@ -216,6 +191,41 @@ namespace Newbe.BookmarkManager
 #pragma warning restore 8714
                     .EnableInterfaceInterceptors()
                     .InterceptedBy(typeof(ApplicationInsightAop));
+            }
+        }
+
+        private class GoogleDriveModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+                builder.RegisterType<GoogleDriveCloudService>()
+                    .Keyed<ICloudService>(CloudBkProviderType.GoogleDrive)
+                    .SingleInstance()
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
+                builder.RegisterType<GoogleDriveClient>()
+                    .As<IGoogleDriveClient>()
+                    .SingleInstance();
+            }
+        }
+
+        private class OneDriveModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+                builder.RegisterType<StaticAuthProvider>()
+                    .As<IAuthenticationProvider>()
+                    .SingleInstance();
+                builder.RegisterType<HttpClientHttpProvider>()
+                    .As<IHttpProvider>();
+                builder.RegisterType<GraphServiceClient>()
+                    .UsingConstructor(() => new GraphServiceClient(default(IAuthenticationProvider), default))
+                    .SingleInstance();
+                builder.RegisterType<OneDriveClient>()
+                    .As<IOneDriveClient>()
+                    .SingleInstance();
             }
         }
 
@@ -230,14 +240,6 @@ namespace Newbe.BookmarkManager
                     .Keyed<ICloudService>(CloudBkProviderType.NewbeApi)
                     .EnableInterfaceInterceptors()
                     .InterceptedBy(typeof(ApplicationInsightAop));
-                builder.RegisterType<GoogleDriveCloudService>()
-                    .Keyed<ICloudService>(CloudBkProviderType.GoogleDrive)
-                    .SingleInstance()
-                    .EnableInterfaceInterceptors()
-                    .InterceptedBy(typeof(ApplicationInsightAop));
-                builder.RegisterType<GoogleDriveClient>()
-                    .As<IGoogleDriveClient>()
-                    .SingleInstance();
             }
         }
 

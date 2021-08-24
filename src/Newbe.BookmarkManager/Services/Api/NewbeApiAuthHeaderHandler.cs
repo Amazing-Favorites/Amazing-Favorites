@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace Newbe.BookmarkManager.Services
 {
-    internal class AuthHeaderHandler : DelegatingHandler
+    internal class NewbeApiAuthHeaderHandler : DelegatingHandler
     {
         private readonly IUserOptionsService _userOptionsService;
 
-        public AuthHeaderHandler(
+        public NewbeApiAuthHeaderHandler(
             IUserOptionsService userOptionsService)
         {
             _userOptionsService = userOptionsService;

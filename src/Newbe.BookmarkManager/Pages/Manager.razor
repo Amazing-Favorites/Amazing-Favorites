@@ -1,7 +1,5 @@
 ﻿@page "/Manager/index.html"
 @using Newbe.BookmarkManager.Services
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inherits Blazor.BrowserExtension.Pages.IndexPage
 
 <Layout>
@@ -29,15 +27,7 @@
                         <LikeProject/>
                     </SpaceItem>
                     <SpaceItem>
-                        <AuthorizeView>
-                            <Authorized>
-                                Hello, context.User.Identity.Name!
-                                <button class="nav-link btn btn-link" @onclick="BeginSignOut">Sign out</button>
-                            </Authorized>
-                            <NotAuthorized>
-                                <a href="authentication/login">Microsoft Sign in</a>
-                            </NotAuthorized>
-                        </AuthorizeView>
+ b                        <MicrosoftLogin></MicrosoftLogin>
                     </SpaceItem>
 
                     <SpaceItem>

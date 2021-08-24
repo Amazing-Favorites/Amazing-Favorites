@@ -64,7 +64,7 @@ namespace Newbe.BookmarkManager.Services
                 if (_authUrl == null)
                 {
                     _authUrl = "https://accounts.google.com/o/oauth2/auth";
-                    var clientId = options.Type == GoogleDriveOAuthClientType.Dev
+                    var clientId = options.Type == OAuth2ClientType.Dev
                         ? options.DevClientId
                         : options.ClientId;
                     _authUrl += $"?client_id={clientId}";
