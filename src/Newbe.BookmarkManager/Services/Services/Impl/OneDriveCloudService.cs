@@ -4,8 +4,8 @@ using Newbe.BookmarkManager.WebApi;
 
 namespace Newbe.BookmarkManager.Services
 {
-    
-    public class OneDriveCloudService: ICloudService
+
+    public class OneDriveCloudService : ICloudService
     {
         private readonly IOneDriveClient _oneDriveClient;
         private readonly ISimpleDataStorage _simpleDataStorage;
@@ -23,7 +23,7 @@ namespace Newbe.BookmarkManager.Services
 
         public async Task<CloudBkStatus> GetCloudAsync(long etagVersion)
         {
-            if(!await _oneDriveClient.TestAsync())
+            if (!await _oneDriveClient.TestAsync())
             {
                 return new CloudBkStatus(false, new GetCloudOutput());
             }
@@ -68,4 +68,3 @@ namespace Newbe.BookmarkManager.Services
         }
     }
 }
-

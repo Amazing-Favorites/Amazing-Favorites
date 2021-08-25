@@ -74,7 +74,7 @@ namespace Newbe.BookmarkManager.Services
         /// Gets or sets the set of known authority host names for the application.
         /// </summary>
         public IList<string> KnownAuthorities { get; set; } = new List<string>();
-    
+
         public string[] DefaultScopes { get; set; }
     }
 }

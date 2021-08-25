@@ -193,10 +193,10 @@ namespace Newbe.BookmarkManager.Services
         public async Task<CloudDataDescription?> GetFileDescriptionAsync()
         {
             Debug.Assert(_graphClient != null, nameof(_graphClient) + " != null");
-            var file = await _graphClient.Me.Drive.Root.ItemWithPath(DataPath+"/"+DataFileName)
+            var file = await _graphClient.Me.Drive.Root.ItemWithPath(DataPath + "/" + DataFileName)
                 .Request()
                 .GetAsync();
-            if(file == null)
+            if (file == null)
             {
                 return null;
             }
@@ -241,7 +241,7 @@ namespace Newbe.BookmarkManager.Services
             await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
             var uploadSession = await _graphClient.Me
                     .Drive.Root
-                    .ItemWithPath(DataPath+"/"+DataFileName)
+                    .ItemWithPath(DataPath + "/" + DataFileName)
                     .CreateUploadSession(uploadProps)
                     .Request()
                     .PostAsync();
