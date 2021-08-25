@@ -39,7 +39,8 @@ namespace Newbe.BookmarkManager.Services
     public enum CloudBkProviderType
     {
         NewbeApi,
-        GoogleDrive
+        GoogleDrive,
+        OneDrive
     }
 
     public record HotTagsFeature

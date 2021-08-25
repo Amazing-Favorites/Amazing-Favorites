@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Graph;
+using Newbe.BookmarkManager.WebApi;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -15,6 +16,11 @@ namespace Newbe.BookmarkManager.Services
         Task<Stream> GetFileStreamByItemId(string id);
         Task<IEnumerable<DriveItem>> SearchFileFromDriveAsync(string searchString);
         Task<DriveItem> UploadingFileAsync(Stream fileStream, string itemPath);
+
+        Task<CloudDataDescription?> GetFileDescriptionAsync();
+        Task<CloudBkCollection?> GetCloudDataAsync();
+        Task UploadAsync(CloudBkCollection cloudBkCollection);
+        Task<bool> TestAsync();
     }
 
     /// <summary>

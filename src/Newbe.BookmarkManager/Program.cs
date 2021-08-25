@@ -215,6 +215,13 @@ namespace Newbe.BookmarkManager
             protected override void Load(ContainerBuilder builder)
             {
                 base.Load(builder);
+
+                builder.RegisterType<OneDriveCloudService>()
+                    .Keyed<ICloudService>(CloudBkProviderType.OneDrive)
+                    .SingleInstance()
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
+
                 builder.RegisterType<StaticAuthProvider>()
                     .As<IAuthenticationProvider>()
                     .SingleInstance();
