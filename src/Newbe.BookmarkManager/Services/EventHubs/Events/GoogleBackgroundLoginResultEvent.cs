@@ -2,7 +2,7 @@
 
 namespace Newbe.BookmarkManager.Services.EventHubs
 {
-    public class GoogleBackgroundLoginResultEvent : IAfEvent
+    public record GoogleBackgroundLoginResultEvent : IAfEvent
     {
         [JsonPropertyName("success")] public bool Success { get; set; }
     }

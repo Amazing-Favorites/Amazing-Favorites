@@ -1,0 +1,19 @@
+﻿@using Newbe.BookmarkManager.Services
+
+<Popover Placement="@PlacementType.Bottom" TitleTemplate="@_text" ContentTemplate="@_content" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+    
+    <Badge Count="await NotificationService.GetUnreadCountAsync()">
+        <Icon Type="bell" Theme="fill"/>
+    </Badge>
+    
+</Popover>
+@code {
+    [Inject]
+    public INotificationService NotificationService { get; set; }  
+    private RenderFragment _text =@<span>Title</span>;
+    private RenderFragment _content =
+        @<div>
+            <p>Content</p>
+            <p>Content</p>
+        </div>;
+}

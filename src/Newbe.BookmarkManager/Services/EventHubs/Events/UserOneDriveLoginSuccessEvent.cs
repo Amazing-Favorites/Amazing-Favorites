@@ -1,8 +1,7 @@
-﻿
-namespace Newbe.BookmarkManager.Services.EventHubs.Events
+﻿namespace Newbe.BookmarkManager.Services.EventHubs.Events
 {
-    public class UserOneDriveLoginSuccessEvent : IAfEvent
+    public record UserOneDriveLoginSuccessEvent : UserNotificationEvent, IAfEvent
     {
+        
     }
-
 }
