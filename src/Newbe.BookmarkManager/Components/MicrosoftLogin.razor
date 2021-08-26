@@ -1,17 +1,99 @@
 ﻿@using Newbe.BookmarkManager.Services
 @using System.Text.Json
-<Button OnClick="Callback">Login With MS</Button>
+@using Microsoft.Extensions.Logging
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Newbe.BookmarkManager.Services.EventHubs.Events
+@using Newbe.BookmarkManager.Services.SimpleData
+<Spin Spinning="@_testing">
+    <Space>
+        <SpaceItem>
+            <Button OnClick="ClickLoginAsync">
+
+                @switch (_loginStatus)
+                {
+                    case LoginStatus.NoTest:
+                        //<AntDesign.Text>Login with One</AntDesign.Text>
+                        <Icon Type="windows" Theme="outline"/>
+                        break;
+                    case LoginStatus.Success:
+                        //<AntDesign.Text Type="success">Login success, it starts to sync some data to One Drive in a while in background.</AntDesign.Text>
+                        <Icon Type="windows" Theme="fill"  TwotoneColor="#00FF00"  />
+                        break;
+                    case LoginStatus.Failed:
+                        <Icon Type="windows" Theme="outline" TwotoneColor="#FF0000" />
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            </Button>
+        </SpaceItem>
+        <SpaceItem>
+            @if (_oneDriveStatics?.LastSuccessUploadTime != null)
+            {
+                <Text>Last sync time: @DateTimeOffset.FromUnixTimeSeconds(_oneDriveStatics.LastSuccessUploadTime.Value)</Text>
+            }
+        </SpaceItem>
+
+    </Space>
+
+
+</Spin>
 
 @code {
 
     [Inject]
     public IOneDriveClient OneDriveClient { get; set; }
 
-    private async Task Callback()
+    [Inject]
+    public ILogger<MicrosoftLogin> Logger { get; set; }
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+
+    [Inject]
+    public ISimpleDataStorage SimpleDataStorage { get; set; }
+
+    private LoginStatus _loginStatus;
+    public enum LoginStatus
     {
-        await OneDriveClient.LoginAsync(true);
-        var user = await OneDriveClient.GetMeAsync();
-        Console.WriteLine(JsonSerializer.Serialize(user));
+        NoTest,
+        Success,
+        Failed
+    }
+    private bool _testing;
+    private OneDriveStatics _oneDriveStatics = null!;
+    private async Task ClickLoginAsync()
+    {
+        
+        try
+        {
+            _testing = true;
+            await OneDriveClient.LoginAsync(true);
+            var user = await OneDriveClient.GetMeAsync();
+            Console.WriteLine(JsonSerializer.Serialize(user));
+            await AfEventHub.PublishAsync(new UserOneDriveLoginSuccessEvent());
+            _loginStatus = LoginStatus.Success;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "failed to login with Microsoft");
+            _loginStatus = LoginStatus.Failed;
+        }
+        finally
+        {
+            _testing = false;
+            StateHasChanged();
+        }
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            _oneDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<OneDriveStatics>();
+            StateHasChanged();
+        }
     }
 
 }
