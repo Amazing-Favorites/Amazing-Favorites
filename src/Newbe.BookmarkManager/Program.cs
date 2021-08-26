@@ -81,7 +81,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<ISyncCloudJob, SyncCloudJob>()
                 .AddSingleton<IShowWhatNewJob, ShowWhatNewJob>()
                 .AddSingleton<IShowWelcomeJob, ShowWelcomeJob>()
-                .AddSingleton<IDataFixJob, DataFixJob>();
+                .AddSingleton<IDataFixJob, DataFixJob>()
+                .AddTransient<INotificationRecordService, NotificationRecordService>();
 
 
             builder.Services

@@ -40,6 +40,7 @@ namespace Newbe.BookmarkManager.Pages
             {
                 AfEventHub.RegisterHandler<UserGoogleDriveLoginSuccessEvent>(HandleUserGoogleLoginAsync);
                 AfEventHub.RegisterHandler<GoogleTryLoginInBackgroundEvent>(HandleGoogleTryLoginInBackgroundEvent);
+                AfEventHub.RegisterHandler<UserOneDriveLoginSuccessEvent,UserOneDriveLoginSuccessHandler>();
                 await AfEventHub.StartAsync();
                 _moduleLoader = new JsModuleLoader(JsRuntime);
                 await _moduleLoader.LoadAsync("/content/background_keyboard.js");

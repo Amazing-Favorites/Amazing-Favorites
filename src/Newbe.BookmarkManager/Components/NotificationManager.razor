@@ -1,19 +1,51 @@
 ﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Newbe.BookmarkManager.Services.EventHubs.Events
 
-<Popover Placement="@PlacementType.Bottom" TitleTemplate="@_text" ContentTemplate="@_content" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+<Popover Placement="@PlacementType.Bottom" TitleTemplate="@_text" ContentTemplate="@MyTemplate(_messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
     
-    <Badge Count="await NotificationService.GetUnreadCountAsync()">
-        <Icon Type="bell" Theme="fill"/>
+    <Badge Count="UnreadCount">
+        <Icon Type="bell" Theme="fill" TwotoneColor="#000000" IconFont="Size:200px"/>
     </Badge>
     
 </Popover>
+
+
 @code {
     [Inject]
-    public INotificationService NotificationService { get; set; }  
-    private RenderFragment _text =@<span>Title</span>;
-    private RenderFragment _content =
-        @<div>
-            <p>Content</p>
-            <p>Content</p>
-        </div>;
+    public INotificationRecordService NotificationRecordService { get; set; }
+    [Inject] 
+    public IAfEventHub AfEventHub { get; set; }
+
+    private int UnreadCount;
+    private RenderFragment _text =@<span>Notification</span>;
+    private List<NotificationRecord> _messages;
+
+    private RenderFragment<List<NotificationRecord>> MyTemplate = (messages) => @<AntList Bordered DataSource="@messages">
+                                                                                   <ChildContent Context="message">
+                                                                                       <ListItem @key="@message.Id">
+                                                                                           <p>@message.Message</p>
+                                                                                           <p>@message.Description</p>
+                                                                                       </ListItem>
+                                                                                   </ChildContent>
+                                                                               </AntList>;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+        _messages = await NotificationRecordService.GetListAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        AfEventHub.RegisterHandler<UserOneDriveLoginSuccessEvent,UserOneDriveLoginSuccessHandler>();
+    }
+    private record NotificationContent
+    {
+        public string Message { get; set; }
+        public string Description { get; set; }
+    }
 }

@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Newbe.BookmarkManager.Services.EventHubs.Events;
 
 namespace Newbe.BookmarkManager.Services.EventHubs
 {
-    public class UserOneDriveLoginSuccessHandler : EventHandlerBase<UserOneDriveLoginSuccessEvent>
+    public class UserNotificationHandler : EventHandlerBase<UserNotificationEvent>
     {
         private readonly INotificationRecordService _notificationService;
         private readonly IClock _clock;
-        private readonly ILogger<UserOneDriveLoginSuccessHandler> _logger;
-        public UserOneDriveLoginSuccessHandler(INotificationRecordService notificationService, IClock clock, ILogger<UserOneDriveLoginSuccessHandler> logger)
+
+        public UserNotificationHandler(INotificationRecordService notificationService, IClock clock)
         {
             _notificationService = notificationService;
             _clock = clock;
-            _logger = logger;
         }
-        public override async Task HandleCoreAsync(UserOneDriveLoginSuccessEvent afEvent)
+        public override async Task HandleCoreAsync(UserNotificationEvent afEvent)
         {
             var entity = new NotificationRecord()
             {
@@ -24,7 +21,6 @@ namespace Newbe.BookmarkManager.Services.EventHubs
                 Message = afEvent.Message,
                 CreatedTime = DateTime.UtcNow
             };
-            _logger.LogDebug("UserOneDriveLoginSuccessEvent:" + entity);
             await _notificationService.AddAsync(entity);
         }
     }

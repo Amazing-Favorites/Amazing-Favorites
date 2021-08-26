@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public interface INotificationService
+    public interface INotificationRecordService
     {
         Task AddAsync(NotificationRecord record);
 
-        Task<List<NotificationRecord>> GetPage();
-         
+        Task<List<NotificationRecord>> GetListAsync();
+        
         Task CompleteAsync(long id);
         Task<int> GetUnreadCountAsync();
     }
