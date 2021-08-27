@@ -2,13 +2,19 @@
 @using Newbe.BookmarkManager.Services.EventHubs
 @using Newbe.BookmarkManager.Services.EventHubs.Events
 
-<Popover Placement="@PlacementType.Bottom" TitleTemplate="@_text" ContentTemplate="@MyTemplate(_messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+<Popover Style="display: flex" Placement="@PlacementType.Bottom" TitleTemplate="@_text" ContentTemplate="@MyTemplate(_messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
     
-    <Badge Count="UnreadCount">
-        <Icon Type="bell" Theme="fill" TwotoneColor="#000000" IconFont="Size:200px"/>
-    </Badge>
-    
+    <div style="margin-right: 5px;position: relative;border-radius: 2px;background-color: #ffffff;border: 1px solid #FEFAFC;display: flex;justify-content: center;align-items: center;width: 50px;height: 32px">
+        <Badge Count="UnreadCount" Style="position: absolute;right: -15px;top: -5px;z-index: 9999">
+            <Icon Type="bell" Theme="outline" Style="font-size: 18px;color: #132321"  />
+        </Badge>
+    </div>
+
 </Popover>
+
+<style>
+    
+</style>
 
 
 @code {
@@ -24,8 +30,10 @@
     private RenderFragment<List<NotificationRecord>> MyTemplate = (messages) => @<AntList Bordered DataSource="@messages">
                                                                                    <ChildContent Context="message">
                                                                                        <ListItem @key="@message.Id">
-                                                                                           <p>@message.Message</p>
-                                                                                           <p>@message.Description</p>
+                                                                                           <Card Title=@message.Message>
+                                                                                              <p>@message.Description</p>
+                                                                                              <p>@message.CreatedTime</p>
+                                                                                           </Card>
                                                                                        </ListItem>
                                                                                    </ChildContent>
                                                                                </AntList>;
@@ -41,11 +49,17 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        AfEventHub.RegisterHandler<UserOneDriveLoginSuccessEvent,UserOneDriveLoginSuccessHandler>();
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationEvent);
+        }
     }
-    private record NotificationContent
+    private async Task HandleUserNotificationEvent(UserNotificationEvent afEvent)
     {
-        public string Message { get; set; }
-        public string Description { get; set; }
+
+        Console.WriteLine("beforeCount:"+UnreadCount);
+        UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+        Console.WriteLine("afterCount:"+UnreadCount);
     }
 }

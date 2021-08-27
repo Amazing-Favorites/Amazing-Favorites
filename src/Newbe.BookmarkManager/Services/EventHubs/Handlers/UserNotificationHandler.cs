@@ -19,6 +19,7 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             {
                 AfNotificationType = afEvent.AfNotificationType,
                 Message = afEvent.Message,
+                Description = afEvent.Description,
                 CreatedTime = DateTime.UtcNow
             };
             await _notificationService.AddAsync(entity);

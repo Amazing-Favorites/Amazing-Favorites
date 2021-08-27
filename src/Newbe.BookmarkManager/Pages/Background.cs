@@ -22,6 +22,8 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IAfEventHub AfEventHub { get; set; }
         [Inject] public IGoogleDriveClient GoogleDriveClient { get; set; }
 
+        [Inject] public INotificationRecordService NotificationRecordService { get; set; }
+
         private JsModuleLoader _moduleLoader;
 
         [JSInvokable]
@@ -40,7 +42,7 @@ namespace Newbe.BookmarkManager.Pages
             {
                 AfEventHub.RegisterHandler<UserGoogleDriveLoginSuccessEvent>(HandleUserGoogleLoginAsync);
                 AfEventHub.RegisterHandler<GoogleTryLoginInBackgroundEvent>(HandleGoogleTryLoginInBackgroundEvent);
-                AfEventHub.RegisterHandler<UserOneDriveLoginSuccessEvent,UserOneDriveLoginSuccessHandler>();
+                AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationAsync);
                 await AfEventHub.StartAsync();
                 _moduleLoader = new JsModuleLoader(JsRuntime);
                 await _moduleLoader.LoadAsync("/content/background_keyboard.js");
@@ -82,6 +84,17 @@ namespace Newbe.BookmarkManager.Pages
         {
             Logger.LogInformation("received {Event}", nameof(UserGoogleDriveLoginSuccessEvent));
             await GoogleDriveClient.LoginAsync(false);
+        }
+        private async Task HandleUserNotificationAsync(UserNotificationEvent afEvent)
+        {
+            var entity = new NotificationRecord()
+            {
+                AfNotificationType = afEvent.AfNotificationType,
+                Message = afEvent.Message,
+                Description = afEvent.Description,
+                CreatedTime = DateTime.UtcNow
+            };
+            await NotificationRecordService.AddAsync(entity);
         }
 
         public async ValueTask DisposeAsync()

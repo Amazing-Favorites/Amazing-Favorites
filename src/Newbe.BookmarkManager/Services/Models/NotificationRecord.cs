@@ -11,6 +11,8 @@ namespace Newbe.BookmarkManager.Services
         public string Message { get; set; }
         public string Description { get; set; }
         public AfNotificationType AfNotificationType { get; set; }
+        
+        public AfNotificationClassify AfNotificationClassify { get; set; }
         public DateTime CreatedTime { get; set; }  
         public DateTime? CompletionTime { get; set; }
     }

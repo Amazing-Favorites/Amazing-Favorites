@@ -71,7 +71,13 @@
             await OneDriveClient.LoginAsync(true);
             var user = await OneDriveClient.GetMeAsync();
             Console.WriteLine(JsonSerializer.Serialize(user));
-            await AfEventHub.PublishAsync(new UserOneDriveLoginSuccessEvent());
+            await AfEventHub.PublishAsync(new UserNotificationEvent
+            {
+                AfNotificationClassify = AfNotificationClassify.MSLogin,
+                AfNotificationType = AfNotificationType.Info,
+                Description = "succeed to login with Microsoft",
+                Message = "Microsoft Login Message"
+            });
             _loginStatus = LoginStatus.Success;
         }
         catch (Exception e)
@@ -95,5 +101,5 @@
             StateHasChanged();
         }
     }
-
+    
 }

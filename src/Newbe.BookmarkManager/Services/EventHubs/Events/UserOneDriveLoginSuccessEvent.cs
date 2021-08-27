@@ -1,7 +1,9 @@
-﻿namespace Newbe.BookmarkManager.Services.EventHubs
+﻿using System;
+using System.Text.Json.Serialization;
+
+namespace Newbe.BookmarkManager.Services.EventHubs
 {
-    public record UserOneDriveLoginSuccessEvent : UserNotificationEvent, IAfEvent
+    public record UserOneDriveLoginSuccessEvent : UserNotificationEvent
     {
-        
     }
 }
