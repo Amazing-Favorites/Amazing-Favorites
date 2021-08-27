@@ -79,6 +79,8 @@ namespace Newbe.BookmarkManager.Services.EventHubs
                     }
 
                     var payload = await JsonHelper.DeserializeAsync(afEventEnvelope.PayloadJson, eventType);
+                    _logger.LogInformation("afEventEnvelope.PayloadJson:{payload}",afEventEnvelope.PayloadJson);
+                    _logger.LogInformation("payload:{payload}",payload);
                     if (payload == null)
                     {
                         _logger.LogError("failed to deserialize event payload: {Payload}",
@@ -108,10 +110,11 @@ namespace Newbe.BookmarkManager.Services.EventHubs
 
         public Task PublishAsync(IAfEvent afEvent)
         {
+            var o = afEvent as object;
             var message = new AfEventEnvelope
             {
                 TypeCode = afEvent.GetType().Name,
-                PayloadJson = JsonSerializer.Serialize(afEvent)
+                PayloadJson = JsonSerializer.Serialize(o)
             };
 #pragma warning disable 4014
             _runtimeApi.SendMessage("", message, new object());
