@@ -18,8 +18,7 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
 using WebExtensions.Net.Tabs;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+
 namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
@@ -38,7 +37,6 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IRecordService RecordService { get; set; }
         [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
         [Inject] public IAfEventHub AfEventHub { get; set; }
-        [Inject] public NotificationService NotificationService { get; set; }
 
         [Inject]
         public NavigationManager Navigation { get; set; }
@@ -63,7 +61,6 @@ namespace Newbe.BookmarkManager.Pages
         private readonly Subject<OnSearchResultClickArgs> _userUrlClickSubject = new();
         private readonly List<IDisposable> _subjectHandlers = new();
         private readonly int _resultLimit = 10;
-        private bool _controlPanelVisible;
         private AutoCompleteSearch _search;
         private string[] _allTags = Array.Empty<string>();
         private string _searchValue;
@@ -267,30 +264,18 @@ namespace Newbe.BookmarkManager.Pages
 
                 await RecentSearchHolder.LoadAsync();
                 await ManagePageNotificationService.RunAsync();
-                AfEventHub.RegisterHandler<GoogleBackgroundLoginResultEvent>(HandleGoogleBackgroundLoginResult);
-                await AfEventHub.StartAsync();
+                AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
+                await AfEventHub.EnsureStartAsync();
             }
         }
 
-
-        private async Task HandleGoogleBackgroundLoginResult(GoogleBackgroundLoginResultEvent afEvent)
+        private Task HandleUserOptionSaveEvent(UserOptionSaveEvent arg)
         {
-            if (afEvent.Success)
+            return InvokeAsync(() =>
             {
-                await AfEventHub.PublishAsync(new UserNotificationEvent
-                {
-                    AfNotificationType = AfNotificationType.Info,
-                    Message = "Google Drive login success, it starts to sync your data to your cloud storage"
-                });
-            }
-            else
-            {
-                await AfEventHub.PublishAsync(new UserNotificationEvent
-                {
-                    AfNotificationType = AfNotificationType.Warning,
-                    Message = "Google Drive login failed, please open control panel to login your account"
-                });
-            }
+                _userOptions = arg.UserOptions;
+                StateHasChanged();
+            });
         }
 
         private static string QueryString(NavigationManager nav, string paramName)
@@ -416,38 +401,6 @@ namespace Newbe.BookmarkManager.Pages
             _allTags = await TagsManager.GetAllTagsAsync();
             await BkManager.AppendTagAsync(bk.Bk.Url, newTags);
             SearchValue = _searchValue;
-        }
-
-        private async Task OpenHelp()
-        {
-            await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.Docs);
-        }
-
-        private async Task OpenWhatsNew()
-        {
-            await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.WhatsNew);
-        }
-
-        private async Task OpenWelcome()
-        {
-            await WebExtensions.Tabs.OpenAsync(StaticUrlOptions.Value.Welcome);
-        }
-
-        private async Task OpenControlPanel()
-        {
-            _controlPanelVisible = true;
-        }
-
-        private async Task OnClickResumeFactorySetting()
-        {
-            await BkManager.RestoreAsync();
-            SearchValue = _searchValue;
-            _controlPanelVisible = false;
-        }
-
-        private void OnUserOptionSave(ControlPanel.OnUserOptionSaveArgs args)
-        {
-            _userOptions = args.Options;
         }
 
         #region Modal

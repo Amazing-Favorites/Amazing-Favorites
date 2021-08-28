@@ -39,12 +39,20 @@ namespace Newbe.BookmarkManager.Services
 
         private static string? _authUrl = null;
 
-        public async Task<bool> LoginAsync(bool interactive)
+        public void LoadToken(string token)
+        {
+            _driveService = new DriveService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = new TokenBaseInitializer(token),
+                GZipEnabled = false,
+            });
+        }
+
+        public async Task<string?> LoginAsync(bool interactive)
         {
             try
             {
-                await LoginCoreAsync();
-                return true;
+                return await LoginCoreAsync();
             }
             catch (Exception e)
             {
@@ -55,9 +63,9 @@ namespace Newbe.BookmarkManager.Services
                 }
             }
 
-            return false;
+            return default;
 
-            async Task LoginCoreAsync()
+            async Task<string?> LoginCoreAsync()
             {
                 var options = _googleDriveOauthOptions.Value;
                 var redirectUrl = await _identityApi.GetRedirectURL("");
@@ -79,13 +87,9 @@ namespace Newbe.BookmarkManager.Services
                     Url = new HttpURL(_authUrl)
                 });
                 var token = callbackUrl.Split("#")[1].Split("&")[0].Split("=")[1];
-
-                _driveService = new DriveService(new BaseClientService.Initializer
-                {
-                    HttpClientInitializer = new TokenBaseInitializer(token),
-                    GZipEnabled = false,
-                });
+                LoadToken(token);
                 _logger.LogInformation("Google Drive login success");
+                return token;
             }
         }
 

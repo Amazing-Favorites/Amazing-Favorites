@@ -1,6 +1,6 @@
 ﻿namespace Newbe.BookmarkManager.Services.EventHubs
 {
-    public record UserGoogleDriveLoginSuccessEvent : IAfEvent
+    public record TriggerCloudSyncEvent : IAfEvent
     {
     }
 }

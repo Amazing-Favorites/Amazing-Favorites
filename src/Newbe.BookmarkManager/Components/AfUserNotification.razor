@@ -14,7 +14,7 @@
         if (firstRender)
         {
             AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationEvent);
-            await AfEventHub.StartAsync();
+            await AfEventHub.EnsureStartAsync();
         }
     }
 

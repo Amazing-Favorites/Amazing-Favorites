@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -17,8 +15,6 @@ namespace Newbe.BookmarkManager.Services
 {
     public class OneDriveClient : IOneDriveClient
     {
-        public const string DataFileName = "af.data.json";
-        public const string DataPath = "appDataFolder";
         private readonly GraphServiceClient _graphClient;
         private readonly ILogger<OneDriveClient> _logger;
         private readonly IOptions<OneDriveOAuthOptions> _oneDriveOAuthOptions;
@@ -39,12 +35,16 @@ namespace Newbe.BookmarkManager.Services
 
         private static string? _authUrl = null;
 
-        public async Task<bool> LoginAsync(bool interactive)
+        public void LoadToken(string token)
+        {
+            StaticAuthProvider.Token = token;
+        }
+
+        public async Task<string?> LoginAsync(bool interactive)
         {
             try
             {
-                await LoginCoreAsync();
-                return true;
+                return await LoginCoreAsync();
             }
             catch (Exception e)
             {
@@ -55,17 +55,15 @@ namespace Newbe.BookmarkManager.Services
                 }
             }
 
-            return false;
+            return default;
 
-
-            async Task LoginCoreAsync()
+            async Task<string?> LoginCoreAsync()
             {
                 var options = _oneDriveOAuthOptions.Value;
                 var redirectUrl = await _identityApi.GetRedirectURL("");
                 if (_authUrl == null)
                 {
-                    //_authUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
-                    _authUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
+                    _authUrl = options.Authority;
                     var clientId = options.Type == OAuth2ClientType.Dev
                         ? options.DevClientId
                         : options.ClientId;
@@ -74,6 +72,7 @@ namespace Newbe.BookmarkManager.Services
                     _authUrl += $"&redirect_uri={WebUtility.UrlEncode(redirectUrl)}";
                     _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(" ", options.DefaultScopes))}";
                 }
+
                 var callbackUrl = await _identityApi.LaunchWebAuthFlow(new LaunchWebAuthFlowDetails
                 {
                     Interactive = interactive,
@@ -81,129 +80,26 @@ namespace Newbe.BookmarkManager.Services
                 });
                 var token = callbackUrl.Split("#")[1].Split("&")[0].Split("=")[1];
 
-                Console.WriteLine(token);
-                StaticAuthProvider.Token = token;
-                _logger.LogInformation("One Drive login success");
-            }
-        }
-
-        public async Task<IEnumerable<DriveItem>> GetDriveContentsAsync()
-        {
-            try
-            {
-                return await _graphClient.Me.Drive.Root.Children.Request().GetAsync();
-            }
-            catch (ServiceException ex)
-            {
-                return null;
-            }
-        }
-
-        public async Task<Stream> GetFileStreamByItemId(string id)
-        {
-            try
-            {
-                return await _graphClient.Me.Drive.Items[id].Content.Request().GetAsync();
-            }
-            catch (ServiceException ex)
-            {
-                return null;
-            }
-        }
-
-        public async Task<User> GetMeAsync()
-        {
-            try
-            {
-                var t1 = await _graphClient.Me.Request().GetAsync();
-
-                _logger.LogInformation(t1.Id);
-                return t1;
-            }
-            catch (ServiceException ex)
-            {
-                _logger.LogInformation(ex.Message);
-                Console.WriteLine(ex);
-                return null;
-            }
-        }
-
-        public async Task<Drive> GetOneDriveAsync()
-        {
-            try
-            {
-                // GET /me
-                return await _graphClient.Me.Drive.Request().GetAsync();
-            }
-            catch (ServiceException ex)
-            {
-                return null;
-            }
-        }
-
-        public async Task<IEnumerable<DriveItem>> SearchFileFromDriveAsync(string searchKey)
-        {
-            try
-            {
-                var itemList = await _graphClient.Me.Drive.Root.Search("searchKey")
-                    .Request()
-                    .GetAsync();
-                return itemList;
-            }
-            catch (ServiceException ex)
-            {
-                return null;
-            }
-        }
-
-        public async Task<DriveItem> UploadingFileAsync(Stream fileStream, string itemPath)
-        {
-            try
-            {
-                var uploadProps = new DriveItemUploadableProperties
-                {
-                    ODataType = null,
-                    AdditionalData = new Dictionary<string, object>
-                    {
-                        { "@microsoft.graph.conflictBehavior", "replace" }
-                    },
-                };
-                var uploadSession = await _graphClient.Me
-                    .Drive.Root
-                    .ItemWithPath(itemPath)
-                    .CreateUploadSession(uploadProps)
-                    .Request()
-                    .PostAsync();
-                int maxSliceSize = 320 * 1024;
-                var fileUploadTask =
-                    new LargeFileUploadTask<DriveItem>(uploadSession, fileStream, maxSliceSize, _graphClient);
-                IProgress<long> progress = new Progress<long>(prog =>
-                {
-                    Console.WriteLine($"Uploaded {prog} bytes of {fileStream.Length} bytes");
-                });
-                var uploadResult = await fileUploadTask.UploadAsync(progress);
-                return uploadResult.ItemResponse;
-            }
-            catch (ServiceException ex)
-            {
-                return null;
+                LoadToken(token);
+                _logger.LogInformation("OneDrive login success");
+                return token;
             }
         }
 
         public async Task<CloudDataDescription?> GetFileDescriptionAsync()
         {
-            Debug.Assert(_graphClient != null, nameof(_graphClient) + " != null");
-            var file = await _graphClient.Me.Drive.Root.ItemWithPath(DataPath + "/" + DataFileName)
+            var file = await _graphClient.Me.Drive.Special.AppRoot
+                .ItemWithPath(Consts.Cloud.CloudDataFileName)
                 .Request()
                 .GetAsync();
             if (file == null)
             {
                 return null;
             }
+
             _fileId = file.Id;
             var cloudDataDescription = await JsonHelper.DeserializeAsync<CloudDataDescription>(file.Description);
             return cloudDataDescription;
-
         }
 
         public async Task<CloudBkCollection?> GetCloudDataAsync()
@@ -212,8 +108,8 @@ namespace Newbe.BookmarkManager.Services
             {
                 return default;
             }
-            Debug.Assert(_graphClient != null, nameof(_graphClient) + " != null");
-            using var stream = await _graphClient.Me.Drive.Items[_fileId]
+
+            await using var stream = await _graphClient.Me.Drive.Items[_fileId]
                 .Content
                 .Request()
                 .GetAsync();
@@ -223,15 +119,14 @@ namespace Newbe.BookmarkManager.Services
 
         public async Task UploadAsync(CloudBkCollection cloudBkCollection)
         {
-            Debug.Assert(_graphClient != null, nameof(_graphClient) + " != null");
             var uploadProps = new DriveItemUploadableProperties
             {
                 ODataType = null,
                 AdditionalData = new Dictionary<string, object>
-                    {
-                        { "@microsoft.graph.conflictBehavior", "replace" }
-                    },
-                Name = DataFileName,
+                {
+                    { "@microsoft.graph.conflictBehavior", "replace" }
+                },
+                Name = Consts.Cloud.CloudDataFileName,
                 Description = JsonSerializer.Serialize(new CloudDataDescription
                 {
                     EtagVersion = cloudBkCollection.EtagVersion,
@@ -239,20 +134,15 @@ namespace Newbe.BookmarkManager.Services
                 })
             };
             await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
-            var uploadSession = await _graphClient.Me
-                    .Drive.Root
-                    .ItemWithPath(DataPath + "/" + DataFileName)
-                    .CreateUploadSession(uploadProps)
-                    .Request()
-                    .PostAsync();
-            int maxSliceSize = 320 * 1024;
+            var uploadSession = await _graphClient.Me.Drive.Special.AppRoot
+                .ItemWithPath(Consts.Cloud.CloudDataFileName)
+                .CreateUploadSession(uploadProps)
+                .Request()
+                .PostAsync();
+            const int maxSliceSize = 320 * 1024;
             var fileUploadTask =
                 new LargeFileUploadTask<DriveItem>(uploadSession, stream, maxSliceSize, _graphClient);
-            IProgress<long> progress = new Progress<long>(prog =>
-            {
-                Console.WriteLine($"Uploaded {prog} bytes of {stream.Length} bytes");
-            });
-            var uploadResult = await fileUploadTask.UploadAsync(progress);
+            var uploadResult = await fileUploadTask.UploadAsync();
             _fileId = uploadResult.ItemResponse.Id;
         }
 
@@ -260,24 +150,19 @@ namespace Newbe.BookmarkManager.Services
         {
             try
             {
-                return await TestCoreAsync();
+                return TestCoreAsync();
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "error when One Drive test");
                 return false;
             }
-            async Task<bool> TestCoreAsync()
-            {
-                if (_graphClient == null)
-                {
-                    return false;
-                }
 
+            bool TestCoreAsync()
+            {
                 try
                 {
-                    var listRequest = _graphClient.Me.Drive.Root.ItemWithPath(DataPath)
-                        .ListItem
+                    _graphClient.Me.Drive
                         .Request()
                         .GetAsync();
                     return true;

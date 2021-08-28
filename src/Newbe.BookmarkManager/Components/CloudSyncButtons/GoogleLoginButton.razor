@@ -1,0 +1,46 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.Extensions.Logging
+@using Newbe.BookmarkManager.Services.EventHubs
+<Spin Spinning="@_loading">
+    <Button OnClick="ClickLoginAsync">
+        <AntDesign.Text>Sync data to GoogleDrive</AntDesign.Text>
+    </Button>
+</Spin>
+
+
+@code {
+
+    [Inject]
+    public IGoogleDriveClient GoogleDriveClient { get; set; }
+
+    [Inject]
+    public ILogger<GoogleLoginButton> Logger { get; set; }
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+
+    private bool _loading;
+
+    private async Task ClickLoginAsync()
+    {
+        try
+        {
+            _loading = true;
+            var token = await GoogleDriveClient.LoginAsync(true);
+            if (!string.IsNullOrEmpty(token))
+            {
+                await AfEventHub.PublishAsync(new UserLoginSuccessEvent(CloudBkProviderType.GoogleDrive, token));
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "failed to login with Google");
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+}

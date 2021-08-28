@@ -5,7 +5,8 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface IGoogleDriveClient
     {
-        Task<bool> LoginAsync(bool interactive);
+        void LoadToken(string token);
+        Task<string?> LoginAsync(bool interactive);
         Task<CloudDataDescription?> GetFileDescriptionAsync();
         Task<CloudBkCollection?> GetCloudDataAsync();
         Task UploadAsync(CloudBkCollection cloudBkCollection);

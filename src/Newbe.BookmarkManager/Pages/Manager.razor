@@ -12,35 +12,7 @@
                 </Title>
             </Col>
             <Col Style="text-align: right" Span="8">
-                <Space>
-                    <SpaceItem>
-                        <Button OnClick="OpenWelcome">
-                            🌟 Welcome
-                        </Button>
-                    </SpaceItem>
-                    <SpaceItem>
-                        <Button OnClick="OpenWhatsNew">
-                            🆕 What`s New
-                        </Button>
-                    </SpaceItem>
-                    <SpaceItem>
-                        <LikeProject/>
-                    </SpaceItem>
-                    <SpaceItem>
-                        <MicrosoftLogin/>
-                    </SpaceItem>
-
-                    <SpaceItem>
-                        <Button OnClick="OpenHelp">
-                            ❔ Help
-                        </Button>
-                    </SpaceItem>
-                    <SpaceItem>
-                        <Button OnClick="OpenControlPanel">
-                            ⚙
-                        </Button>
-                    </SpaceItem>
-                </Space>
+                <ManagerButton></ManagerButton>
             </Col>
         </Row>
     </Header>
@@ -161,9 +133,7 @@
         </Space>
     </Footer>
 </Layout>
-<ControlPanel OnClickResumeFactorySetting="OnClickResumeFactorySetting"
-              OnUserOptionSave="OnUserOptionSave"
-              @bind-Visible="_controlPanelVisible"/>
+
 
 
 @{

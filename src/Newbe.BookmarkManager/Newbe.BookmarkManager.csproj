@@ -14,7 +14,7 @@
         <PackageReference Include="AntDesign" Version="0.9.2" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
         <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.0" />
-        <PackageReference Include="Blazor.BrowserExtension" Version="0.5.2" />
+        <PackageReference Include="Blazor.BrowserExtension" Version="0.6.1" />
         <PackageReference Include="BlazorApplicationInsights" Version="1.2.1" />
         <PackageReference Include="Castle.Core.AsyncInterceptor" Version="2.0.0" />
         <PackageReference Include="Google.Apis.Drive.v3" Version="1.54.0.2397" />
@@ -35,11 +35,7 @@
     <ItemGroup>
         <None Include="wwwroot\**\*" CopyToOutputDirectory="Always" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Content Remove="wwwroot\content\Microsoft.Authentication.WebAssembly.Msal\AuthenticationService.js" />
-    </ItemGroup>
-
+    
     <ItemGroup>
       <ProjectReference Include="..\Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj" />
     </ItemGroup>

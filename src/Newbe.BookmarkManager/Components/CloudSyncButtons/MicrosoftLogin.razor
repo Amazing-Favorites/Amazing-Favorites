@@ -1,0 +1,46 @@
+﻿@using Newbe.BookmarkManager.Services
+@using System.Text.Json
+@using Microsoft.Extensions.Logging
+@using Newbe.BookmarkManager.Services.EventHubs
+<Spin Spinning="@_loading">
+    <Button OnClick="Callback">
+        <AntDesign.Text>Sync data to OneDrive</AntDesign.Text>
+    </Button>
+</Spin>
+
+@code {
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+
+    [Inject]
+    public ILogger<GoogleLoginButton> Logger { get; set; }
+
+    [Inject]
+    public IOneDriveClient OneDriveClient { get; set; }
+
+    private bool _loading;
+
+    private async Task Callback()
+    {
+        try
+        {
+            _loading = true;
+            var token = await OneDriveClient.LoginAsync(true);
+            if (!string.IsNullOrEmpty(token))
+            {
+                await AfEventHub.PublishAsync(new UserLoginSuccessEvent(CloudBkProviderType.OneDrive, token));
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "failed to login with Microsoft");
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+}

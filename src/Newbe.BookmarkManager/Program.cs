@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Autofac;
@@ -18,6 +20,7 @@ using Newbe.BookmarkManager.Services.EventHubs;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Refit;
 using TG.Blazor.IndexedDB;
+using WebExtensions.Net;
 using WebExtensions.Net.Bookmarks;
 using WebExtensions.Net.Identity;
 using WebExtensions.Net.Runtime;
@@ -54,19 +57,19 @@ namespace Newbe.BookmarkManager
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
                 .Configure<DevOptions>(builder.Configuration.GetSection(nameof(DevOptions)))
                 .Configure<GoogleDriveOAuthOptions>(builder.Configuration.GetSection(nameof(GoogleDriveOAuthOptions)))
-                .Configure<OneDriveOAuthOptions>(builder.Configuration.GetSection("AzureAd"))
+                .Configure<OneDriveOAuthOptions>(builder.Configuration.GetSection(nameof(OneDriveOAuthOptions)))
                 .Configure<StaticUrlOptions>(builder.Configuration.GetSection(nameof(StaticUrlOptions)));
             builder.Services
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
             builder.Services
                 .AddAntDesign()
                 .AddBrowserExtensionServices(options => { options.ProjectNamespace = typeof(Program).Namespace; })
-                .AddTransient<IBookmarksApi, BookmarksApi>()
-                .AddTransient<ITabsApi, TabsApi>()
-                .AddTransient<IWindowsApi, WindowsApi>()
-                .AddTransient<IStorageApi, StorageApi>()
-                .AddTransient<IIdentityApi, IdentityApi>()
-                .AddTransient<IRuntimeApi, RuntimeApi>()
+                .AddTransient<IBookmarksApi>(p => p.GetRequiredService<IWebExtensionsApi>().Bookmarks)
+                .AddTransient<ITabsApi>(p => p.GetRequiredService<IWebExtensionsApi>().Tabs)
+                .AddTransient<IWindowsApi>(p => p.GetRequiredService<IWebExtensionsApi>().Windows)
+                .AddTransient<IStorageApi>(p => p.GetRequiredService<IWebExtensionsApi>().Storage)
+                .AddTransient<IIdentityApi>(p => p.GetRequiredService<IWebExtensionsApi>().Identity)
+                .AddTransient<IRuntimeApi>(p => p.GetRequiredService<IWebExtensionsApi>().Runtime)
                 .AddTransient<IManagePageNotificationService, ManagePageNotificationService>()
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<ITagsManager, TagsManager>()
@@ -74,14 +77,7 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddSingleton<IAfCodeService, AfCodeService>()
                 .AddSingleton<IRecordService, RecordService>()
-                .AddSingleton<ISyncBookmarkJob, SyncBookmarkJob>()
-                .AddSingleton<ISyncAliasJob, SyncAliasJob>()
-                .AddSingleton<ISyncTagRelatedBkCountJob, SyncTagRelatedBkCountJob>()
-                .AddTransient<ITextAliasProvider, PinyinTextAliasProvider>()
-                .AddSingleton<ISyncCloudJob, SyncCloudJob>()
-                .AddSingleton<IShowWhatNewJob, ShowWhatNewJob>()
-                .AddSingleton<IShowWelcomeJob, ShowWelcomeJob>()
-                .AddSingleton<IDataFixJob, DataFixJob>();
+                .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>();
 
 
             builder.Services
@@ -182,6 +178,7 @@ namespace Newbe.BookmarkManager
             builder.RegisterModule<SimpleObjectStorageModule>();
             builder.RegisterModule<OneDriveModule>();
             builder.RegisterModule<GoogleDriveModule>();
+            builder.RegisterModule<JobModule>();
 
             void RegisterType<TType, TInterface>()
             {
@@ -258,8 +255,6 @@ namespace Newbe.BookmarkManager
                 builder.RegisterType<AfEventHub>()
                     .As<IAfEventHub>()
                     .SingleInstance();
-
-                builder.RegisterType<FuncEventHandler>().AsSelf();
             }
         }
 
@@ -271,6 +266,40 @@ namespace Newbe.BookmarkManager
                 builder.RegisterType<SimpleDataStorage>()
                     .As<ISimpleDataStorage>()
                     .SingleInstance();
+            }
+        }
+
+        private class JobModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+                builder.RegisterType<JobHost>()
+                    .As<IJobHost>()
+                    .SingleInstance();
+                foreach (var jobType in GetJobTypes())
+                {
+                    Register(jobType);
+                }
+
+                void Register(Type jobType)
+                {
+                    builder.RegisterType(jobType)
+                        .AsImplementedInterfaces()
+                        .SingleInstance();
+                }
+
+                IEnumerable<Type> GetJobTypes()
+                {
+                    yield return typeof(DataFixJob);
+                    yield return typeof(ShowWelcomeJob);
+                    yield return typeof(ShowWhatNewJob);
+                    yield return typeof(SyncBookmarkJob);
+                    yield return typeof(SyncAliasJob);
+                    yield return typeof(SyncTagRelatedBkCountJob);
+                    yield return typeof(SyncCloudJob);
+                    yield return typeof(SyncCloudStatusCheckJob);
+                }
             }
         }
     }

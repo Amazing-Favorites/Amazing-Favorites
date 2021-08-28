@@ -1,10 +1,9 @@
-﻿
+﻿using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Newbe.BookmarkManager.WebApi;
 
 namespace Newbe.BookmarkManager.Services
 {
-
     public class OneDriveCloudService : ICloudService
     {
         private readonly IOneDriveClient _oneDriveClient;
@@ -27,6 +26,7 @@ namespace Newbe.BookmarkManager.Services
             {
                 return new CloudBkStatus(false, new GetCloudOutput());
             }
+
             var fileDescription = await _oneDriveClient.GetFileDescriptionAsync();
             if (fileDescription == null)
             {
@@ -36,6 +36,7 @@ namespace Newbe.BookmarkManager.Services
                     LastUpdateTime = 0
                 });
             }
+
             var cloudBkCollection = await _oneDriveClient.GetCloudDataAsync();
             return new CloudBkStatus(etagVersion != fileDescription.EtagVersion, new GetCloudOutput
             {
@@ -57,9 +58,9 @@ namespace Newbe.BookmarkManager.Services
             }
 
             await _oneDriveClient.UploadAsync(cloudBkCollection);
-            var googleDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
-            googleDriveStatics.LastSuccessUploadTime = _clock.UtcNow;
-            await _simpleDataStorage.SaveAsync(googleDriveStatics);
+            var oneDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<OneDriveStatics>();
+            oneDriveStatics.LastSuccessUploadTime = _clock.UtcNow;
+            await _simpleDataStorage.SaveAsync(oneDriveStatics);
             var re = new SaveToCloudOutput
             {
                 IsOk = true
