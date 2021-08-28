@@ -5,6 +5,7 @@ namespace Newbe.BookmarkManager.Services
 {
     public static class Consts
     {
+        public const string AppName = "Amazing Favorites";
         public const string CurrentVersion = "0.6.1";
         public const string PrivacyAgreementVersionDate = "2021/08/17";
 
@@ -20,8 +21,13 @@ namespace Newbe.BookmarkManager.Services
             public const string OpenManager = "open-manager-ui";
         }
 
-        public const string ManagerTabTitle = "Amazing Favorites";
-        public const string AmazingFavoriteFolderName = "Amazing Favorites";
+        public static class Cloud
+        {
+            public const string CloudDataFileName = "af.data.json";
+        }
+
+        public const string ManagerTabTitle = AppName;
+        public const string AmazingFavoriteFolderName = AppName;
 
         public const string AfCodeSchemaPrefix = "af://";
         public const string DbName = "Amazing Favorites";

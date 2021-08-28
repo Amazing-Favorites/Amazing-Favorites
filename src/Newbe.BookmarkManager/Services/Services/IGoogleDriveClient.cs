@@ -5,7 +5,8 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface IGoogleDriveClient
     {
-        Task<bool> LoginAsync(bool interactive);
+        void LoadToken(string token);
+        Task<string?> LoginAsync(bool interactive);
         Task<CloudDataDescription?> GetFileDescriptionAsync();
         Task<CloudBkCollection?> GetCloudDataAsync();
         Task UploadAsync(CloudBkCollection cloudBkCollection);
@@ -14,13 +15,13 @@ namespace Newbe.BookmarkManager.Services
 
     public record GoogleDriveOAuthOptions
     {
-        public GoogleDriveOAuthClientType Type { get; set; }
+        public OAuth2ClientType Type { get; set; }
         public string ClientId { get; set; }
         public string DevClientId { get; set; }
         public string[] Scopes { get; set; }
     }
 
-    public enum GoogleDriveOAuthClientType
+    public enum OAuth2ClientType
     {
         Prod,
         Dev

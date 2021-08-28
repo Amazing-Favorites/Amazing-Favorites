@@ -1,0 +1,65 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Autofac
+@if (_userOptions is {
+    CloudBkFeature : {
+        Enabled:true,
+        }
+    })
+{
+    switch (_userOptions.CloudBkFeature.CloudBkProviderType)
+    {
+        case CloudBkProviderType.NewbeApi:
+            break;
+        case CloudBkProviderType.GoogleDrive:
+            <GoogleLoginButton/>
+            break;
+        case CloudBkProviderType.OneDrive:
+            <MicrosoftLogin/>
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
+}
+
+@code {
+
+    [Inject]
+    public IUserOptionsService UserOptionsService { get; set; }
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+
+    [Inject]
+    public IClock Clock { get; set; }
+
+    private UserOptions? _userOptions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _userOptions = await UserOptionsService.GetOptionsAsync();
+        StateHasChanged();
+        AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
+        AfEventHub.RegisterHandler<SyncToCloudSuccessEvent>(HandleSyncToCloudSuccessEvent);
+        await AfEventHub.EnsureStartAsync();
+    }
+
+    private Task HandleUserOptionSaveEvent(UserOptionSaveEvent evt)
+    {
+        return InvokeAsync(() =>
+        {
+            _userOptions = evt.UserOptions;
+            StateHasChanged();
+        });
+    }
+
+    private Task HandleSyncToCloudSuccessEvent(SyncToCloudSuccessEvent evt)
+    {
+        return AfEventHub.PublishAsync(new UserNotificationEvent
+        {
+            AfNotificationType = AfNotificationType.Info,
+            Message = $"Success to sync your data to cloud at {Clock.UtcNow.ToLocalTime()}"
+        });
+    }
+}

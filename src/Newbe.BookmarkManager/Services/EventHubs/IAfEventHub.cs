@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Autofac;
 
 namespace Newbe.BookmarkManager.Services.EventHubs
 {
     public interface IAfEventHub
     {
-        Task StartAsync();
+        Task EnsureStartAsync();
 
-        void RegisterHandler<TEventType, THandlerType>()
-            where TEventType : class, IAfEvent
-            where THandlerType : class, IAfEventHandler;
-
-        void RegisterHandler<TEventType, THandlerType>(THandlerType eventHandler)
-            where TEventType : class, IAfEvent
-            where THandlerType : class, IAfEventHandler;
+        void RegisterHandler<TEventType>(Action<ILifetimeScope, IAfEvent> action);
 
         Task PublishAsync(IAfEvent afEvent);
     }
@@ -23,8 +18,7 @@ namespace Newbe.BookmarkManager.Services.EventHubs
         public static void RegisterHandler<TEventType>(this IAfEventHub afEventHub, Func<TEventType, Task> handler)
             where TEventType : class, IAfEvent
         {
-            afEventHub.RegisterHandler<TEventType, FuncEventHandler>(new FuncEventHandler(e =>
-                handler.Invoke((TEventType)e)));
+            afEventHub.RegisterHandler<TEventType>((scope, e) => { handler.Invoke((TEventType)e); });
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Extensions.Logging;
@@ -14,8 +15,8 @@ namespace Newbe.BookmarkManager.Services.EventHubs
         private readonly IRuntimeApi _runtimeApi;
         private readonly ILifetimeScope _lifetimeScope;
 
-        private readonly Dictionary<string, (Type eventType, Type handlerType, IAfEventHandler? instance)>
-            _handlerTypeDict = new();
+        private readonly Dictionary<string, (Type eventType, List<Action<ILifetimeScope, IAfEvent>> handler)>
+            _handlersDict = new();
 
         public AfEventHub(
             ILogger<AfEventHub> logger,
@@ -27,92 +28,91 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             _lifetimeScope = lifetimeScope;
         }
 
-        public async Task StartAsync()
+        private int _locker;
+
+        public async Task EnsureStartAsync()
         {
-            await _runtimeApi.OnMessage.AddListener((o, sender, arg3) =>
+            if (Interlocked.Increment(ref _locker) != 1)
             {
-                Task.Run(async () =>
-                {
-                    var afEventEnvelope =
-                        await JsonHelper.DeserializeAsync<AfEventEnvelope>(JsonSerializer.Serialize(o));
-                    if (afEventEnvelope == null)
-                    {
-                        _logger.LogInformation("Not af event");
-                        return;
-                    }
+                _logger.LogInformation("AfEventHub already started");
+                return;
+            }
 
-                    if (string.IsNullOrEmpty(afEventEnvelope.TypeCode))
-                    {
-                        _logger.LogInformation("empty af event code");
-                        return;
-                    }
+            _logger.LogInformation("Start to run AfEventHub");
 
-                    if (!_handlerTypeDict.TryGetValue(afEventEnvelope.TypeCode, out var registration))
-                    {
-                        _logger.LogDebug("registration not found");
-                        return;
-                    }
-
-                    var (eventType, handlerType, instance) = registration;
-                    IAfEventHandler handler;
-                    if (instance == null)
-                    {
-                        if (!_lifetimeScope.TryResolve(handlerType, out var handlerObj))
-                        {
-                            _logger.LogError("failed to find handler from container for type: {Type}",
-                                handlerType);
-                            return;
-                        }
-
-                        if (handlerObj is not IAfEventHandler foundHandler)
-                        {
-                            _logger.LogError("handler type error: {HandlerObj}",
-                                handlerObj);
-                            return;
-                        }
-
-                        handler = foundHandler;
-                    }
-                    else
-                    {
-                        handler = instance;
-                    }
-
-                    var payload = await JsonHelper.DeserializeAsync(afEventEnvelope.PayloadJson, eventType);
-                    if (payload == null)
-                    {
-                        _logger.LogError("failed to deserialize event payload: {Payload}",
-                            payload);
-                        return;
-                    }
-
-                    await handler.HandleAsync((IAfEvent)payload);
-                    _logger.LogInformation("event handled success: {AfEvent}", afEventEnvelope);
-                });
-                return true;
-            });
+            await _runtimeApi.OnMessage.AddListener(OnReceivedMessage);
         }
 
-        public void RegisterHandler<TEventType, THandlerType>()
-            where TEventType : class, IAfEvent
-            where THandlerType : class, IAfEventHandler
+        private bool OnReceivedMessage(object o, MessageSender sender, Action arg3)
         {
-            _handlerTypeDict[typeof(TEventType).Name] = (typeof(TEventType), typeof(THandlerType), default);
+            var afEventEnvelope = JsonSerializer.Deserialize<AfEventEnvelope>(JsonSerializer.Serialize(o));
+            if (afEventEnvelope == null)
+            {
+                _logger.LogInformation("Not af event");
+                return false;
+            }
+
+            var typeCode = afEventEnvelope.TypeCode;
+            if (string.IsNullOrEmpty(typeCode))
+            {
+                _logger.LogInformation("empty af event code");
+                return false;
+            }
+
+            if (!_handlersDict.TryGetValue(typeCode, out var registration))
+            {
+                _logger.LogInformation("registration not found for {TypeCode}", typeCode);
+                return false;
+            }
+
+            var (eventType, handlers) = registration;
+            var payload = JsonSerializer.Deserialize(afEventEnvelope.PayloadJson, eventType);
+            if (payload == null)
+            {
+                _logger.LogError("failed to deserialize event payload: {Payload}", payload);
+                return false;
+            }
+
+            foreach (var handler in handlers)
+            {
+                handler.Invoke(_lifetimeScope, (IAfEvent)payload);
+            }
+
+
+            _logger.LogInformation("event handled success: {AfEvent}",
+                afEventEnvelope with { PayloadJson = string.Empty });
+            return true;
         }
 
-        public void RegisterHandler<TEventType, THandlerType>(THandlerType eventHandler)
-            where TEventType : class, IAfEvent where THandlerType : class, IAfEventHandler
+        public void RegisterHandler<TEventType>(Action<ILifetimeScope, IAfEvent> action)
         {
-            _handlerTypeDict[typeof(TEventType).Name] = (typeof(TEventType), typeof(THandlerType), eventHandler);
+            var eventName = typeof(TEventType).Name;
+            List<Action<ILifetimeScope, IAfEvent>> handlers;
+            if (!_handlersDict.TryGetValue(eventName, out var registration))
+            {
+                handlers = new List<Action<ILifetimeScope, IAfEvent>>();
+                registration = (typeof(TEventType), handlers);
+            }
+            else
+            {
+                handlers = registration.handler;
+            }
+
+            handlers.Add(action);
+            _handlersDict[eventName] = registration;
         }
 
         public Task PublishAsync(IAfEvent afEvent)
         {
+            var typeCode = afEvent.GetType().Name;
             var message = new AfEventEnvelope
             {
-                TypeCode = afEvent.GetType().Name,
-                PayloadJson = JsonSerializer.Serialize(afEvent)
+                TypeCode = typeCode,
+                PayloadJson = JsonSerializer.Serialize((object)afEvent)
             };
+            _logger.LogInformation("Event published {TypeCode}", typeCode);
+            // current page can not receive runtime message
+            OnReceivedMessage(message, default!, default!);
 #pragma warning disable 4014
             _runtimeApi.SendMessage("", message, new object());
 #pragma warning restore 4014

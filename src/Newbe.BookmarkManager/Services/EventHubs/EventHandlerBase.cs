@@ -4,9 +4,9 @@ namespace Newbe.BookmarkManager.Services.EventHubs
 {
     public abstract class EventHandlerBase<TEvent> : IAfEventHandler
     {
-        public Task HandleAsync(IAfEvent afEvent)
+        public void Handle(IAfEvent afEvent)
         {
-            return HandleCoreAsync((TEvent)afEvent);
+            HandleCoreAsync((TEvent)afEvent);
         }
 
         public abstract Task HandleCoreAsync(TEvent afEvent);

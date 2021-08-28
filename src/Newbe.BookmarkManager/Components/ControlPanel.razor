@@ -5,6 +5,8 @@
 @using System.Text
 @using Microsoft.Extensions.Options
 @using Newbe.BookmarkManager.Services.Configuration
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Newbe.BookmarkManager.Services.SimpleData
 <Modal Title="@("Control Panel")"
        Visible="@Visible"
        OnOk="@HandleUserOptionsOk"
@@ -67,7 +69,8 @@
             {
                 <FormItem Label="Cloud Storage Provider">
                     <RadioGroup @bind-Value="context.CloudBkFeature.CloudBkProviderType" ButtonStyle="solid">
-                        <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> Google Drive</Radio>
+                        <Radio RadioButton Value="@(CloudBkProviderType.OneDrive)"><Icon Type="windows" Theme="outline"/> OneDrive</Radio>
+                        <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> GoogleDrive</Radio>
                         <Radio RadioButton Value="@(CloudBkProviderType.NewbeApi)">☁ Newbe API</Radio>
                     </RadioGroup>
                 </FormItem>
@@ -104,9 +107,25 @@
                             <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
                         </FormItem>
                         break;
+                    case CloudBkProviderType.OneDrive:
+                        <FormItem Label="OneDrive">
+                            <Text>
+                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via OneDrive to synchronize your Tag data across multiple devices.
+                            </Text>
+                            <Text>
+                                Last upload success time: @_oneDriveStatics.LastSuccessUploadTime.ToLocalTime()
+                            </Text>
+                        </FormItem>
+                        break;
                     case CloudBkProviderType.GoogleDrive:
-                        <FormItem Label="Google Drive">
-                            <GoogleLogin/>
+                        <FormItem Label="GoogleDrive">
+                            <Text>
+
+                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via GoogleDrive to synchronize your Tag data across multiple devices.
+                            </Text>
+                            <Text>
+                                Last upload success time: @_googleDriveStatics.LastSuccessUploadTime.ToLocalTime()
+                            </Text>
                         </FormItem>
                         break;
                     default:
@@ -165,6 +184,9 @@
     public ITabsApi TabsApi { get; set; }
 
     [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+
+    [Inject]
     public IIndexedDbRepo<Bk, string> BkRepo { get; set; }
 
     [Inject]
@@ -179,8 +201,13 @@
     [Inject]
     public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
 
+    [Inject]
+    public ISimpleDataStorage SimpleDataStorage { get; set; }
+
     private ModalModel _modal = new();
     private bool _visible;
+    private OneDriveStatics _oneDriveStatics = new();
+    private GoogleDriveStatics _googleDriveStatics = new();
 
     [Parameter]
     public bool Visible
@@ -260,7 +287,12 @@
     private async Task HandleUserOptionsOk(MouseEventArgs e)
     {
         var userOptions = MapToUserOptions();
+
         await UserOptionsService.SaveAsync(userOptions);
+        await AfEventHub.PublishAsync(new UserOptionSaveEvent
+        {
+            UserOptions = userOptions,
+        });
         await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
         await CloseControlPanel();
     }
@@ -299,6 +331,9 @@
         _modal.HotTagsFeature = options.HotTagsFeature;
         _modal.ApplicationInsightFeature = options.ApplicationInsightFeature;
         _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement;
+
+        _googleDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
+        _oneDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<OneDriveStatics>();
     }
 
     protected override async Task OnInitializedAsync()

@@ -51,11 +51,8 @@ namespace Newbe.BookmarkManager.Components
                         }
 
                         break;
-                    case CloudBkProviderType.GoogleDrive:
-                        await _afEventHub.PublishAsync(new GoogleTryLoginInBackgroundEvent());
-                        break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        break;
                 }
             }
 

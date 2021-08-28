@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newbe.BookmarkManager.Services.EventHubs;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -12,6 +14,9 @@ namespace Newbe.BookmarkManager.Services
         private readonly IBkManager _bkManager;
         private readonly IUserOptionsService _userOptionsService;
         private readonly ICloudServiceFactory _cloudServiceFactory;
+        private readonly IAfEventHub _afEventHub;
+        private readonly IClock _clock;
+        private Subject<long> _eventSubject = new();
 
         // ReSharper disable once NotAccessedField.Local
         private IDisposable _jobHandler;
@@ -20,18 +25,24 @@ namespace Newbe.BookmarkManager.Services
             ILogger<SyncCloudJob> logger,
             IBkManager bkManager,
             IUserOptionsService userOptionsService,
-            ICloudServiceFactory cloudServiceFactory)
+            ICloudServiceFactory cloudServiceFactory,
+            IAfEventHub afEventHub,
+            IClock clock)
         {
             _logger = logger;
             _bkManager = bkManager;
             _userOptionsService = userOptionsService;
             _cloudServiceFactory = cloudServiceFactory;
+            _afEventHub = afEventHub;
+            _clock = clock;
         }
 
         public async ValueTask StartAsync()
         {
-            await Task.Delay(TimeSpan.FromSeconds(5));
-            _jobHandler = new[] { 1L }.ToObservable()
+            _afEventHub.RegisterHandler<TriggerCloudSyncEvent>(HandleTriggerCloudSyncEvent);
+            await _afEventHub.EnsureStartAsync();
+            _eventSubject.OnNext(_clock.UtcNow);
+            _jobHandler = _eventSubject
                 .Concat(Observable.Interval(TimeSpan.FromMinutes(10)))
                 .Buffer(TimeSpan.FromSeconds(5), 50)
                 .Where(x => x.Count > 0)
@@ -49,6 +60,12 @@ namespace Newbe.BookmarkManager.Services
                 }))
                 .Concat()
                 .Subscribe();
+        }
+
+        private Task HandleTriggerCloudSyncEvent(TriggerCloudSyncEvent arg)
+        {
+            _eventSubject.OnNext(_clock.UtcNow);
+            return Task.CompletedTask;
         }
 
         private async Task RunSyncAsync()
@@ -83,6 +100,7 @@ namespace Newbe.BookmarkManager.Services
                         if (cloudBkCollection.Bks.Count > 0)
                         {
                             await cloudService.SaveToCloudAsync(cloudBkCollection);
+                            await _afEventHub.PublishAsync(new SyncToCloudSuccessEvent());
                             LogSyncToCloud(
                                 cloudBkCollection.EtagVersion,
                                 cloudBkCollection.LastUpdateTime);

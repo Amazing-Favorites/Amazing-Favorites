@@ -16,7 +16,7 @@
   "web_accessible_resources": [
     "framework/*",
     "BrowserExtensionScripts/*",
-    "WebExtensionsScripts/*"
+    "content/*"
   ],
   "permissions": [
     "tabs",

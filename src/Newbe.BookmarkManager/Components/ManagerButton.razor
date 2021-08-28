@@ -1,0 +1,30 @@
+﻿<Space>
+    <SpaceItem>
+        <ManualySync></ManualySync>
+    </SpaceItem>
+    <SpaceItem>
+        <Button OnClick="OpenWelcome">
+            🌟 Welcome
+        </Button>
+    </SpaceItem>
+    <SpaceItem>
+        <Button OnClick="OpenWhatsNew">
+            🆕 What`s New
+        </Button>
+    </SpaceItem>
+    <SpaceItem>
+        <LikeProject/>
+    </SpaceItem>
+    <SpaceItem>
+        <Button OnClick="OpenHelp">
+            ❔ Help
+        </Button>
+    </SpaceItem>
+    <SpaceItem>
+        <Button OnClick="OpenControlPanel">
+            ⚙
+        </Button>
+    </SpaceItem>
+</Space>
+<ControlPanel OnClickResumeFactorySetting="OnClickResumeFactorySetting"
+              @bind-Visible="_controlPanelVisible"/>

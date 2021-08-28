@@ -1,51 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Google.Apis.Drive.v3;
-using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Graph;
 using Microsoft.Toolkit.HighPerformance;
 using Newbe.BookmarkManager.WebApi;
 using WebExtensions.Net.Identity;
 using WebExtensions.Net.Manifest;
-using File = Google.Apis.Drive.v3.Data.File;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class GoogleDriveClient : IGoogleDriveClient
+    public class OneDriveClient : IOneDriveClient
     {
-        public const string DataFileName = "af.data.json";
-        private readonly ILogger<GoogleDriveClient> _logger;
+        private readonly GraphServiceClient _graphClient;
+        private readonly ILogger<OneDriveClient> _logger;
+        private readonly IOptions<OneDriveOAuthOptions> _oneDriveOAuthOptions;
         private readonly IIdentityApi _identityApi;
-        private readonly IOptions<GoogleDriveOAuthOptions> _googleDriveOauthOptions;
-        private DriveService? _driveService;
         private string? _fileId;
 
-        public GoogleDriveClient(
-            ILogger<GoogleDriveClient> logger,
-            IIdentityApi identityApi,
-            IOptions<GoogleDriveOAuthOptions> googleDriveOauthOptions)
+        public OneDriveClient(
+            GraphServiceClient graphServiceClient,
+            ILogger<OneDriveClient> logger,
+            IOptions<OneDriveOAuthOptions> oneDriveOAuthOptions,
+            IIdentityApi identityApi)
         {
+            _graphClient = graphServiceClient;
             _logger = logger;
+            _oneDriveOAuthOptions = oneDriveOAuthOptions;
             _identityApi = identityApi;
-            _googleDriveOauthOptions = googleDriveOauthOptions;
         }
 
         private static string? _authUrl = null;
 
         public void LoadToken(string token)
         {
-            _driveService = new DriveService(new BaseClientService.Initializer
-            {
-                HttpClientInitializer = new TokenBaseInitializer(token),
-                GZipEnabled = false,
-            });
+            StaticAuthProvider.Token = token;
         }
 
         public async Task<string?> LoginAsync(bool interactive)
@@ -56,7 +48,7 @@ namespace Newbe.BookmarkManager.Services
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "failed to login Google Drive");
+                _logger.LogError(e, "failed to login One Drive");
                 if (interactive)
                 {
                     throw;
@@ -67,18 +59,18 @@ namespace Newbe.BookmarkManager.Services
 
             async Task<string?> LoginCoreAsync()
             {
-                var options = _googleDriveOauthOptions.Value;
+                var options = _oneDriveOAuthOptions.Value;
                 var redirectUrl = await _identityApi.GetRedirectURL("");
                 if (_authUrl == null)
                 {
-                    _authUrl = "https://accounts.google.com/o/oauth2/auth";
+                    _authUrl = options.Authority;
                     var clientId = options.Type == OAuth2ClientType.Dev
                         ? options.DevClientId
                         : options.ClientId;
                     _authUrl += $"?client_id={clientId}";
                     _authUrl += "&response_type=token";
                     _authUrl += $"&redirect_uri={WebUtility.UrlEncode(redirectUrl)}";
-                    _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(" ", options.Scopes))}";
+                    _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(" ", options.DefaultScopes))}";
                 }
 
                 var callbackUrl = await _identityApi.LaunchWebAuthFlow(new LaunchWebAuthFlowDetails
@@ -87,20 +79,19 @@ namespace Newbe.BookmarkManager.Services
                     Url = new HttpURL(_authUrl)
                 });
                 var token = callbackUrl.Split("#")[1].Split("&")[0].Split("=")[1];
+
                 LoadToken(token);
-                _logger.LogInformation("Google Drive login success");
+                _logger.LogInformation("OneDrive login success");
                 return token;
             }
         }
 
         public async Task<CloudDataDescription?> GetFileDescriptionAsync()
         {
-            Debug.Assert(_driveService != null, nameof(_driveService) + " != null");
-            var listRequest = _driveService.Files.List();
-            listRequest.Spaces = "appDataFolder";
-            listRequest.Fields = "files(id, name, description)";
-            var fileList = await listRequest.ExecuteAsync();
-            var file = fileList.Files.FirstOrDefault(x => x.Name == DataFileName);
+            var file = await _graphClient.Me.Drive.Special.AppRoot
+                .ItemWithPath(Consts.Cloud.CloudDataFileName)
+                .Request()
+                .GetAsync();
             if (file == null)
             {
                 return null;
@@ -118,21 +109,24 @@ namespace Newbe.BookmarkManager.Services
                 return default;
             }
 
-            Debug.Assert(_driveService != null, nameof(_driveService) + " != null");
-            var getRequest = _driveService.Files.Get(_fileId);
-            await using var memoryStream = new MemoryStream();
-            await getRequest.DownloadAsync(memoryStream);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-            var re = await JsonSerializer.DeserializeAsync<CloudBkCollection>(memoryStream);
+            await using var stream = await _graphClient.Me.Drive.Items[_fileId]
+                .Content
+                .Request()
+                .GetAsync();
+            var re = await JsonSerializer.DeserializeAsync<CloudBkCollection>(stream);
             return re;
         }
 
         public async Task UploadAsync(CloudBkCollection cloudBkCollection)
         {
-            Debug.Assert(_driveService != null, nameof(_driveService) + " != null");
-            var file = new File()
+            var uploadProps = new DriveItemUploadableProperties
             {
-                Name = DataFileName,
+                ODataType = null,
+                AdditionalData = new Dictionary<string, object>
+                {
+                    { "@microsoft.graph.conflictBehavior", "replace" }
+                },
+                Name = Consts.Cloud.CloudDataFileName,
                 Description = JsonSerializer.Serialize(new CloudDataDescription
                 {
                     EtagVersion = cloudBkCollection.EtagVersion,
@@ -140,52 +134,42 @@ namespace Newbe.BookmarkManager.Services
                 })
             };
             await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
-            if (_fileId == null)
-            {
-                file.Parents = new List<string>
-                {
-                    "appDataFolder"
-                };
-                var updateRequest = _driveService.Files.Create(file, stream, "application/json");
-                await updateRequest.UploadAsync();
-                _fileId = updateRequest.ResponseBody.Id;
-            }
-            else
-            {
-                var updateRequest = _driveService.Files.Update(file, _fileId, stream, "application/json");
-                await updateRequest.UploadAsync();
-            }
+            var uploadSession = await _graphClient.Me.Drive.Special.AppRoot
+                .ItemWithPath(Consts.Cloud.CloudDataFileName)
+                .CreateUploadSession(uploadProps)
+                .Request()
+                .PostAsync();
+            const int maxSliceSize = 320 * 1024;
+            var fileUploadTask =
+                new LargeFileUploadTask<DriveItem>(uploadSession, stream, maxSliceSize, _graphClient);
+            var uploadResult = await fileUploadTask.UploadAsync();
+            _fileId = uploadResult.ItemResponse.Id;
         }
 
         public async Task<bool> TestAsync()
         {
             try
             {
-                return await TestCoreAsync();
+                return TestCoreAsync();
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "error when google drive test");
+                _logger.LogError(e, "error when One Drive test");
                 return false;
             }
 
-            async Task<bool> TestCoreAsync()
+            bool TestCoreAsync()
             {
-                if (_driveService == null)
-                {
-                    return false;
-                }
-
                 try
                 {
-                    var listRequest = _driveService.Files.List();
-                    listRequest.Spaces = "appDataFolder";
-                    await listRequest.ExecuteAsync();
+                    _graphClient.Me.Drive
+                        .Request()
+                        .GetAsync();
                     return true;
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "failed to test Google Drive api");
+                    _logger.LogError(e, "failed to test One Drive api");
                 }
 
                 return false;

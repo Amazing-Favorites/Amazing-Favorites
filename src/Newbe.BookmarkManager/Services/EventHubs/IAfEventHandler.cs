@@ -4,6 +4,6 @@ namespace Newbe.BookmarkManager.Services.EventHubs
 {
     public interface IAfEventHandler
     {
-        Task HandleAsync(IAfEvent afEvent);
+        void Handle(IAfEvent afEvent);
     }
 }
