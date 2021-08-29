@@ -1,0 +1,68 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.AspNetCore.Components
+<Panel Header="🔥 Enable Hot Tags"
+       Key="🔥 Enable Hot Tags"
+       @ref="_panel">
+    <ExtraTemplate>
+        <Switch @bind-Value="@UserOptions.HotTagsFeature.Enabled"
+                CheckedChildren="Enabled"
+                UnCheckedChildren="Disabled"
+                OnChange="OnEnableChange"/>
+    </ExtraTemplate>
+    <ChildContent>
+        @if (FeatureEnabled)
+        {
+            <Form Model="UserOptions"
+                  LabelColSpan="4"
+                  WrapperColSpan="20"
+                  Size="Default">
+                <FormItem Label="List Count">
+                    <AntDesign.InputNumber @bind-Value="@context.HotTagsFeature.ListCount"
+                                           Min="1"
+                                           Max="100"
+                                           DefaultValue="10"/>
+                </FormItem>
+            </Form>
+        }
+        else
+        {
+            <Paragraph>When you enable this feature, the most recently clicked Hot Tags will be displayed below the search bar in the Manager UI.</Paragraph>
+        }
+    </ChildContent>
+</Panel>
+
+@code {
+
+    [Parameter]
+    public ControlPanel.ModalModel UserOptions { get; set; }= new();
+
+    private Panel _panel = null!;
+
+    private bool FeatureEnabled => UserOptions?.HotTagsFeature?.Enabled == true;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _panel.Disabled = !FeatureEnabled;
+        if (!FeatureEnabled)
+        {
+            _panel.Active = true;
+        }
+    }
+
+    private void OnEnableChange(bool oldEnabled)
+    {
+        if (!oldEnabled)
+        {
+            _panel.Disabled = false;
+            _panel.Active = true;
+        }
+        else
+        {
+            _panel.Disabled = true;
+            _panel.Active = false;
+        }
+        StateHasChanged();
+    }
+
+}

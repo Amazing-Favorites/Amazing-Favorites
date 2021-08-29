@@ -13,129 +13,19 @@
        OnCancel="@HandleUserOptionsCancel"
        AfterClose="OnAfterClose"
        MaskClosable="false"
+       DestroyOnClose="true"
        Width="1200">
-    <Form Model="@_modal"
-          LabelColSpan="4"
-          WrapperColSpan="20"
-          Size="Default">
-        @if (context.AcceptPrivacyAgreement)
+    <Collapse ExpandIcon="caret-right" Bordered="false">
+        @if (_modal.AcceptPrivacyAgreement)
         {
-            <FormItem Label="">
-                <Divider Plain Orientation="left"><Switch @bind-Value="@context.ApplicationInsightFeature.Enabled"/> 👋 Anonymous Improving</Divider>
-            </FormItem>
-            <FormItem Label="👋 Recommended to enable">
-                <p>Collecting fully anonymous application performance and error logs helps us to continually strive to provide you with better applications. When enabled, we will collect information about the application's errors, the time spent on each operation, and other data that is not related to personal information. </p>
-                <p>Modifying the options will only take effect after you restart your browser</p>.
-            </FormItem>
-            <FormItem Label="">
-                <Divider Plain Orientation="left"><Switch @bind-Value="@context.PinyinFeature.Enabled"/> 🌏 Enable Pinyin</Divider>
-            </FormItem>
-            @if (context.PinyinFeature.Enabled)
-            {
-                <FormItem Label="Access Token">
-                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken"  OnChange="OnChangePinyinFeatureAccessToken"/>
-                    <p>
-                        <Icon Type="question" Theme="outline"/>
-                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
-                    </p>
-
-                    <FormItem Label="Token Expiration Date">
-                        @(context.PinyinFeature.ExpireDate != null ? $"{context.PinyinFeature.ExpireDate:d}" : "")
-                        @if (context.PinyinFeature.ExpireDate.HasValue)
-                        {
-                            if (context.PinyinFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-                            {
-                                <Alert
-                                    Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
-                                    Type="@AlertType.Warning"/>
-                            }
-                            else if (context.PinyinFeature.ExpireDate <= DateTime.Now)
-                            {
-                                <Alert
-                                    Message=@($"Your token has been expired, please try to create a new one.")
-                                    Type="@AlertType.Error"/>
-                            }
-                        }
-                    </FormItem>
-                </FormItem>
-                <FormItem Label="Pinyin Api BaseUrl">
-                    <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
-                </FormItem>
-            }
-            <FormItem Label="">
-                <Divider Plain Orientation="left"><Switch @bind-Value="@context.CloudBkFeature.Enabled"/> ☁ Enable Cloud Sync</Divider>
-            </FormItem>
-            @if (context.CloudBkFeature.Enabled)
-            {
-                <FormItem Label="Cloud Storage Provider">
-                    <RadioGroup @bind-Value="context.CloudBkFeature.CloudBkProviderType" ButtonStyle="solid">
-                        <Radio RadioButton Value="@(CloudBkProviderType.OneDrive)"><Icon Type="windows" Theme="outline"/> OneDrive</Radio>
-                        <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> GoogleDrive</Radio>
-                        <Radio RadioButton Value="@(CloudBkProviderType.NewbeApi)">☁ Newbe API</Radio>
-                    </RadioGroup>
-                </FormItem>
-                @switch (context.CloudBkFeature.CloudBkProviderType)
-                {
-                    case CloudBkProviderType.NewbeApi:
-                        <FormItem Label="Access Token">
-                            <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" OnChange="OnChangeCloudBkFeatureAccessToken" />
-                            <p>
-                                <Icon Type="question" Theme="outline"/>
-                                You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
-                            </p>
-                            <FormItem Label="Token Expiration Date">
-                                @(context.CloudBkFeature.ExpireDate != null ? $"{context.CloudBkFeature.ExpireDate:d}" : "")
-                                @if (context.CloudBkFeature.ExpireDate.HasValue &&
-                                     context.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-                                {
-                                    if (context.CloudBkFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-                                    {
-                                        <Alert
-                                            Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
-                                            Type="@AlertType.Warning"/>
-                                    }
-                                    else if (context.CloudBkFeature.ExpireDate <= DateTime.Now)
-                                    {
-                                        <Alert
-                                            Message=@($"Your token has been expired, please try to create a new one.")
-                                            Type="@AlertType.Error"/>
-                                    }
-                                }
-                            </FormItem>
-                        </FormItem>
-                        <FormItem Label="Cloud Sync Api BaseUrl">
-                            <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
-                        </FormItem>
-                        break;
-                    case CloudBkProviderType.OneDrive:
-                        <FormItem Label="OneDrive">
-                            <Text>
-                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via OneDrive to synchronize your Tag data across multiple devices.
-                            </Text>
-                            <Text>
-                                Last upload success time: @_oneDriveStatics.LastSuccessUploadTime.ToLocalTime()
-                            </Text>
-                        </FormItem>
-                        break;
-                    case CloudBkProviderType.GoogleDrive:
-                        <FormItem Label="GoogleDrive">
-                            <Text>
-
-                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via GoogleDrive to synchronize your Tag data across multiple devices.
-                            </Text>
-                            <Text>
-                                Last upload success time: @_googleDriveStatics.LastSuccessUploadTime.ToLocalTime()
-                            </Text>
-                        </FormItem>
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
+            <ApplicationInsightPanel UserOptions="_modal"></ApplicationInsightPanel>
+            <CloudBkPanel UserOptions="_modal"></CloudBkPanel>
+            <PinyinPanel UserOptions="_modal"></PinyinPanel>
         }
         else
         {
-            <FormItem Label="User Privacy Agreement">
+            <Panel Header="User Privacy Agreement"
+                   Active="true">
                 <p>The following features may transfer some data to cloud servers, so please <a href="@StaticUrlOptions.Value.PrivacyAgreement" target="_blank">click here</a>, read and understand our User Privacy Agreement. After you confirm and agree to the content of the agreement click the button below to enable the advanced features.</p>
                 <p>Feature shows as below:</p>
                 <ul>
@@ -143,36 +33,11 @@
                     <li>Tags Cloud Sync. You could sync your bookmark tags in multiple device</li>
                 </ul>
                 <Button OnClick="OnClickAgreeUserPrivacyAgreement" Type="primary">I agree to the User Privacy Agreement</Button>
-            </FormItem>
+            </Panel>
         }
-        <FormItem Label="">
-            <Divider Plain Orientation="left"><Switch @bind-Value="@context.HotTagsFeature.Enabled"/> 🔥 Enable Hot Tags</Divider>
-
-        </FormItem>
-        @if (context.HotTagsFeature.Enabled)
-        {
-            <FormItem Label="List Count">
-                <AntDesign.InputNumber @bind-Value="@context.HotTagsFeature.ListCount"
-                                       Min="1"
-                                       Max="100"
-                                       DefaultValue="10"/>
-            </FormItem>
-        }
-        <FormItem Label="">
-            <Divider Plain>System Actions</Divider>
-        </FormItem>
-        <FormItem Label="">
-            <Space>
-                <SpaceItem>
-                    <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
-                </SpaceItem>
-                <SpaceItem>
-                    <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting of Amazing Favirotes</Button>
-                </SpaceItem>
-            </Space>
-            <DevButtons></DevButtons>
-        </FormItem>
-    </Form>
+        <HotTagsPanel UserOptions="_modal"></HotTagsPanel>
+        <SystemActionsPanel></SystemActionsPanel>
+    </Collapse>
 </Modal>
 
 @code {
@@ -181,28 +46,10 @@
     public IUserOptionsService UserOptionsService { get; set; }
 
     [Inject]
-    public ITabsApi TabsApi { get; set; }
-
-    [Inject]
     public IAfEventHub AfEventHub { get; set; }
 
     [Inject]
-    public IIndexedDbRepo<Bk, string> BkRepo { get; set; }
-
-    [Inject]
-    public IIndexedDbRepo<UserOptions, string> UserOptionsRepo { get; set; }
-
-    [Inject]
-    public IIndexedDbRepo<BkTag, string> BkTagRepo { get; set; }
-
-    [Inject]
-    public IIndexedDbRepo<BkMetadata, string> BkMetadataRepo { get; set; }
-
-    [Inject]
     public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
-
-    [Inject]
-    public ISimpleDataStorage SimpleDataStorage { get; set; }
 
     private ModalModel _modal = new();
     private bool _visible;
@@ -241,35 +88,6 @@
         public CloudBkFeature CloudBkFeature { get; set; }
         public HotTagsFeature HotTagsFeature { get; set; }
         public ApplicationInsightFeature ApplicationInsightFeature { get; set; }
-    }
-
-    private async Task OnClickDumpDataAsync()
-    {
-        var bks = await BkRepo.GetAllAsync();
-        var tags = await BkTagRepo.GetAllAsync();
-        var userOptions = await UserOptionsRepo.GetAllAsync();
-        var bkMetadata = await BkMetadataRepo.GetAllAsync();
-        var dumpData = new DumpData
-        {
-            Bks = bks,
-            Tags = tags,
-            UserOptions = userOptions,
-            BkMetadata = bkMetadata
-        };
-        var json = JsonSerializer.Serialize(dumpData, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-        var base64String = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
-        await TabsApi.ActiveOrOpenAsync($"data:application/octet-stream;name=data.json;base64,{base64String}");
-    }
-
-    public record DumpData
-    {
-        public List<Bk> Bks { get; init; }
-        public List<BkTag> Tags { get; init; }
-        public List<UserOptions> UserOptions { get; init; }
-        public List<BkMetadata> BkMetadata { get; init; }
     }
 
     private async Task OnClickAgreeUserPrivacyAgreement()
@@ -331,9 +149,6 @@
         _modal.HotTagsFeature = options.HotTagsFeature;
         _modal.ApplicationInsightFeature = options.ApplicationInsightFeature;
         _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement;
-
-        _googleDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
-        _oneDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<OneDriveStatics>();
     }
 
     protected override async Task OnInitializedAsync()
@@ -342,30 +157,5 @@
         await LoadUserOptions();
     }
 
-    private Task OnChangePinyinFeatureAccessToken(string accessToken)
-    {
-        try
-        {
-            _modal.PinyinFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
-        }
-        catch (Services.Common.AccessTokenInvalidException)
-        {
-    // ignored
-        }
-        return Task.CompletedTask;
-    }
-
-    private Task OnChangeCloudBkFeatureAccessToken(string accessToken)
-    {
-        try
-        {
-            _modal.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
-        }
-        catch (Services.Common.AccessTokenInvalidException)
-        {
-    // ignored
-        }
-        return Task.CompletedTask;
-    }
 
 }

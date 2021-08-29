@@ -1,0 +1,74 @@
+﻿@using Newbe.BookmarkManager.Services
+@using WebExtensions.Net.Tabs
+@using System.Text.Json
+@using System.Text
+@using Newbe.BookmarkManager.Services.EventHubs
+<Panel Header="System Actions" Key="System Actions">
+    <ChildContent>
+        <Space>
+            <SpaceItem>
+                <Button OnClick="OnClickDumpDataAsync">Dump data to console</Button>
+            </SpaceItem>
+            <SpaceItem>
+                <Button OnClick="OnClickResumeFactorySetting" Danger>Resume factory setting of Amazing Favirotes</Button>
+            </SpaceItem>
+        </Space>
+        <DevButtons></DevButtons>
+    </ChildContent>
+</Panel>
+
+@code {
+
+    [Inject]
+    public IIndexedDbRepo<Bk, string> BkRepo { get; set; }
+    
+    [Inject]
+    public IIndexedDbRepo<BkTag, string> BkTagRepo { get; set; }
+    
+    [Inject]
+    public IIndexedDbRepo<UserOptions, string> UserOptionsRepo { get; set; }
+    
+    [Inject]
+    public IIndexedDbRepo<BkMetadata, string> BkMetadataRepo { get; set; }
+    
+    [Inject]
+    public ITabsApi TabsApi { get; set; }
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+    
+    public record DumpData
+    {
+        public List<Bk> Bks { get; init; }
+        public List<BkTag> Tags { get; init; }
+        public List<UserOptions> UserOptions { get; init; }
+        public List<BkMetadata> BkMetadata { get; init; }
+    }
+    
+    private async Task OnClickDumpDataAsync()   
+    {
+        var bks = await BkRepo.GetAllAsync();
+        var tags = await BkTagRepo.GetAllAsync();
+        var userOptions = await UserOptionsRepo.GetAllAsync();
+        var bkMetadata = await BkMetadataRepo.GetAllAsync();
+        var dumpData = new DumpData
+        {
+            Bks = bks,
+            Tags = tags,
+            UserOptions = userOptions,
+            BkMetadata = bkMetadata
+        };
+        var json = JsonSerializer.Serialize(dumpData, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        var base64String = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+        await TabsApi.ActiveOrOpenAsync($"data:application/octet-stream;name=data.json;base64,{base64String}");
+    }
+
+    private Task OnClickResumeFactorySetting()
+    {
+        return AfEventHub.PublishAsync(new TriggerResumeFactorySettingEvent());
+    }
+
+}

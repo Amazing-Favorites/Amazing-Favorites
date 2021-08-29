@@ -62,6 +62,16 @@ namespace Newbe.BookmarkManager.Pages
         private readonly List<IDisposable> _subjectHandlers = new();
         private readonly int _resultLimit = 10;
         private AutoCompleteSearch _search;
+
+        private IEnumerable<string> SearchOptions
+        {
+            get
+            {
+                return RecentSearchHolder?.RecentSearch?.Items?.Select(x => x.Text)
+                       ?? Array.Empty<string>();
+            }
+        }
+
         private string[] _allTags = Array.Empty<string>();
         private string _searchValue;
         private bool _modalVisible;
@@ -87,6 +97,7 @@ namespace Newbe.BookmarkManager.Pages
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
+            await RecentSearchHolder.LoadAsync();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -262,7 +273,6 @@ namespace Newbe.BookmarkManager.Pages
                     }
                 }
 
-                await RecentSearchHolder.LoadAsync();
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
                 await AfEventHub.EnsureStartAsync();

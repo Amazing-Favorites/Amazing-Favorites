@@ -1,0 +1,53 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.AspNetCore.Components
+<Panel Header="👋 Anonymous Improving"
+       Key="👋 Anonymous Improving"
+       @ref="_panel">
+    <ExtraTemplate>
+        👋 Recommended to enable
+        <Switch @bind-Value="@UserOptions.ApplicationInsightFeature.Enabled"
+                CheckedChildren="Enabled"
+                UnCheckedChildren="Disabled"
+                OnChange="OnEnableChange"/>
+    </ExtraTemplate>
+    <ChildContent>
+        <Paragraph>Collecting fully anonymous application performance and error logs helps us to continually strive to provide you with better applications. When enabled, we will collect information about the application's errors, the time spent on each operation, and other data that is not related to personal information. </Paragraph>
+        <Paragraph>Modifying the options will only take effect after you restart your browser</Paragraph>.
+    </ChildContent>
+</Panel>
+
+@code {
+
+    [Parameter]
+    public ControlPanel.ModalModel UserOptions { get; set; } = new();
+
+    private bool FeatureEnabled => UserOptions?.ApplicationInsightFeature?.Enabled == true;
+
+    private Panel _panel = null!;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _panel.Disabled = !FeatureEnabled;
+        if (!FeatureEnabled)
+        {
+            _panel.Active = true;
+        }
+    }
+
+    private void OnEnableChange(bool oldEnabled)
+    {
+        if (!oldEnabled)
+        {
+            _panel.Disabled = false;
+            _panel.Active = true;
+        }
+        else
+        {
+            _panel.Disabled = true;
+            _panel.Active = false;
+        }
+        StateHasChanged();
+    }
+
+}
