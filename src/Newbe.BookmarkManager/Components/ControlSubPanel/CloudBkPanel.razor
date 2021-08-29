@@ -76,23 +76,24 @@
                         break;
                     case CloudBkProviderType.OneDrive:
                         <FormItem Label="OneDrive">
-                            <Text>
+                            <Paragraph>
                                 When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via OneDrive to synchronize your Tag data across multiple devices.
-                            </Text>
-                            <Text>
+                            </Paragraph>
+                            <Paragraph>
                                 Last upload success time: @_oneDriveStatics.LastSuccessUploadTime.ToLocalTime()
-                            </Text>
+                            </Paragraph>
+                            <MicrosoftLogin></MicrosoftLogin>
                         </FormItem>
                         break;
                     case CloudBkProviderType.GoogleDrive:
                         <FormItem Label="GoogleDrive">
-                            <Text>
-
+                            <Paragraph>
                                 When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via GoogleDrive to synchronize your Tag data across multiple devices.
-                            </Text>
-                            <Text>
+                            </Paragraph>
+                            <Paragraph>
                                 Last upload success time: @_googleDriveStatics.LastSuccessUploadTime.ToLocalTime()
-                            </Text>
+                            </Paragraph>
+                            <GoogleLoginButton></GoogleLoginButton>
                         </FormItem>
                         break;
                     default:
