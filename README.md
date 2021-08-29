@@ -1,12 +1,17 @@
 # Amazing Favorites
 
+[![CodeFactor](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites/badge)](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites)
+
 Amazing Favorites help you to manage you bookmarks efficiently.
 
 Please feel free to add your idea to issues.
 
 You can find the user manual at [af.newbe.pro](https://af.newbe.pro/docs/)
 
-[![CodeFactor](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites/badge)](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites)
+You can install this extension from stores below:
+
+- [Microsoft Edge Store](https://microsoftedge.microsoft.com/addons/detail/amazing-favorites/bknjgbpkaloajcphccpcnahegfglfiei)
+- [Chrome Store](https://chrome.google.com/webstore/detail/amazing-favorites/podhpclhgkdeiechkdceginfehfanhcb)
 
 ## Screenshots
 
