@@ -24,6 +24,11 @@ namespace Newbe.BookmarkManager.Services
 
         public async Task AddAsync(string text)
         {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return;
+            }
+
             var items = RecentSearch.Items;
             var item = items.Find(item => item.Text == text);
             if (item == null)

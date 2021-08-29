@@ -2,7 +2,7 @@
 @using Newbe.BookmarkManager.Services
 @inherits Blazor.BrowserExtension.Pages.IndexPage
 
-<Layout>
+<Layout Class="site-layout-background">
     <Header>
         <Row>
             <Col Span="16">
@@ -27,7 +27,7 @@
                             </Col>
                             <Col Span="24">
                                 <Spin Spinning="@_searchInputLoading">
-                                    <AutoComplete Options="RecentSearchHolder.RecentSearch.Items.Select(x => x.Text)">
+                                    <AutoComplete Options="@SearchOptions">
                                         <ChildContent>
                                             <AutoCompleteSearch EnterButton="true"
                                                                 AutoFocus="true"

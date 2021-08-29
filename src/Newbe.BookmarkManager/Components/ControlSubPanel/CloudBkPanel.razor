@@ -1,0 +1,172 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.AspNetCore.Components
+@using Newbe.BookmarkManager.Services.SimpleData
+<Panel Header="☁ Enable Cloud Sync"
+       Key="☁ Enable Cloud Sync"
+       @ref="_panel">
+    <ExtraTemplate>
+        @if (FeatureEnabled)
+        {
+            switch (UserOptions.CloudBkFeature.CloudBkProviderType)
+            {
+                case CloudBkProviderType.NewbeApi:
+                    <Text>Newbe Api </Text>
+                    break;
+                case CloudBkProviderType.GoogleDrive:
+                    <Text>@_googleDriveStatics.LastSuccessUploadTime.ToLocalTime() GoogleDrive </Text>
+                    break;
+                case CloudBkProviderType.OneDrive:
+                    <Text>@_oneDriveStatics.LastSuccessUploadTime.ToLocalTime() OneDrive </Text>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        <Switch @bind-Value="@UserOptions.CloudBkFeature.Enabled"
+                CheckedChildren="Enabled"
+                UnCheckedChildren="Disabled"
+                OnChange="OnEnableChange"/>
+    </ExtraTemplate>
+    <ChildContent>
+        @if (FeatureEnabled)
+        {
+            <Form Model="UserOptions"
+                  LabelColSpan="4"
+                  WrapperColSpan="20"
+                  Size="Default">
+                <FormItem Label="Cloud Storage Provider">
+                    <RadioGroup @bind-Value="context.CloudBkFeature.CloudBkProviderType" ButtonStyle="solid">
+                        <Radio RadioButton Value="@(CloudBkProviderType.OneDrive)"><Icon Type="windows" Theme="outline"/> OneDrive</Radio>
+                        <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> GoogleDrive</Radio>
+                        <Radio RadioButton Value="@(CloudBkProviderType.NewbeApi)">☁ Newbe API</Radio>
+                    </RadioGroup>
+                </FormItem>
+                @switch (context.CloudBkFeature.CloudBkProviderType)
+                {
+                    case CloudBkProviderType.NewbeApi:
+                        <FormItem Label="Access Token">
+                            <TextArea @bind-Value="@context.CloudBkFeature.AccessToken" OnChange="OnChangeCloudBkFeatureAccessToken" />
+                            <p>
+                                <Icon Type="question" Theme="outline"/>
+                                You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                            </p>
+                            <FormItem Label="Token Expiration Date">
+                                @(context.CloudBkFeature.ExpireDate != null ? $"{context.CloudBkFeature.ExpireDate:d}" : "")
+                                @if (context.CloudBkFeature.ExpireDate.HasValue &&
+                                     context.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                                {
+                                    if (context.CloudBkFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                                    {
+                                        <Alert
+                                            Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
+                                            Type="@AlertType.Warning"/>
+                                    }
+                                    else if (context.CloudBkFeature.ExpireDate <= DateTime.Now)
+                                    {
+                                        <Alert
+                                            Message=@($"Your token has been expired, please try to create a new one.")
+                                            Type="@AlertType.Error"/>
+                                    }
+                                }
+                            </FormItem>
+                        </FormItem>
+                        <FormItem Label="Cloud Sync Api BaseUrl">
+                            <Input @bind-Value="@context.CloudBkFeature.BaseUrl"/>
+                        </FormItem>
+                        break;
+                    case CloudBkProviderType.OneDrive:
+                        <FormItem Label="OneDrive">
+                            <Paragraph>
+                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via OneDrive to synchronize your Tag data across multiple devices.
+                            </Paragraph>
+                            <Paragraph>
+                                Last upload success time: @_oneDriveStatics.LastSuccessUploadTime.ToLocalTime()
+                            </Paragraph>
+                            <MicrosoftLogin></MicrosoftLogin>
+                        </FormItem>
+                        break;
+                    case CloudBkProviderType.GoogleDrive:
+                        <FormItem Label="GoogleDrive">
+                            <Paragraph>
+                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via GoogleDrive to synchronize your Tag data across multiple devices.
+                            </Paragraph>
+                            <Paragraph>
+                                Last upload success time: @_googleDriveStatics.LastSuccessUploadTime.ToLocalTime()
+                            </Paragraph>
+                            <GoogleLoginButton></GoogleLoginButton>
+                        </FormItem>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            </Form>
+        }
+        else
+        {
+            <Paragraph>Do you have a problem with synchronizing your Tags data across multiple devices? Then enabling this feature can help you.</Paragraph>
+            <Paragraph>With this feature enabled, you can sync your data across multiple devices through providers like GoogleDrive, OneDrive, etc. to ensure they are all up to date.</Paragraph>
+        }
+
+    </ChildContent>
+</Panel>
+
+@code {
+
+    [Parameter]
+    public ControlPanel.ModalModel UserOptions { get; set; } = new();
+
+    [Inject]
+    public ISimpleDataStorage SimpleDataStorage { get; set; }
+
+    private Panel _panel = null!;
+    private OneDriveStatics _oneDriveStatics = new();
+    private GoogleDriveStatics _googleDriveStatics = new();
+
+    private bool FeatureEnabled => UserOptions?.CloudBkFeature?.Enabled == true;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _panel.Disabled = !FeatureEnabled;
+        if (!FeatureEnabled)
+        {
+            _panel.Active = true;
+        }
+    }
+
+    private void OnEnableChange(bool oldEnabled)
+    {
+        if (!oldEnabled)
+        {
+            _panel.Disabled = false;
+            _panel.Active = true;
+        }
+        else
+        {
+            _panel.Disabled = true;
+            _panel.Active = false;
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _googleDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
+        _oneDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<OneDriveStatics>();
+    }
+
+    private Task OnChangeCloudBkFeatureAccessToken(string accessToken)
+    {
+        try
+        {
+            UserOptions.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
+        }
+        catch (Services.Common.AccessTokenInvalidException)
+        {
+    // ignored
+        }
+        return Task.CompletedTask;
+    }
+
+}

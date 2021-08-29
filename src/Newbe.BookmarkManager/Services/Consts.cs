@@ -6,8 +6,8 @@ namespace Newbe.BookmarkManager.Services
     public static class Consts
     {
         public const string AppName = "Amazing Favorites";
-        public const string CurrentVersion = "0.6.1";
-        public const string PrivacyAgreementVersionDate = "2021/08/17";
+        public const string CurrentVersion = "0.6.2";
+        public const string PrivacyAgreementVersionDate = "2021/08/29";
 
         public static readonly string[] Versions =
         {

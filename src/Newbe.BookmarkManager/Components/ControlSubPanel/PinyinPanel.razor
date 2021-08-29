@@ -1,0 +1,106 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.AspNetCore.Components
+<Panel Header="🌏 Enable Pinyin"
+       Key="🌏 Enable Pinyin"
+       @ref="_panel">
+    <ExtraTemplate>
+        <Switch @bind-Value="@UserOptions.PinyinFeature.Enabled"
+                CheckedChildren="Enabled"
+                UnCheckedChildren="Disabled"
+                OnChange="OnEnableChange"/>
+    </ExtraTemplate>
+    <ChildContent>
+        @if (FeatureEnabled)
+        {
+            <Form Model="UserOptions"
+                  LabelColSpan="4"
+                  WrapperColSpan="20"
+                  Size="Default">
+                <FormItem Label="Access Token">
+                    <TextArea @bind-Value="@context.PinyinFeature.AccessToken"  OnChange="OnChangePinyinFeatureAccessToken"/>
+                    <p>
+                        <Icon Type="question" Theme="outline"/>
+                        You can get an access token from <a href="https://user.newbe.pro/Identity/Account/Manage/AccessToken" target="_blank">user.newbe.pro</a>.
+                    </p>
+
+                    <FormItem Label="Token Expiration Date">
+                        @(context.PinyinFeature.ExpireDate != null ? $"{context.PinyinFeature.ExpireDate:d}" : "")
+                        @if (context.PinyinFeature.ExpireDate.HasValue)
+                        {
+                            if (context.PinyinFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                            {
+                                <Alert
+                                    Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
+                                    Type="@AlertType.Warning"/>
+                            }
+                            else if (context.PinyinFeature.ExpireDate <= DateTime.Now)
+                            {
+                                <Alert
+                                    Message=@($"Your token has been expired, please try to create a new one.")
+                                    Type="@AlertType.Error"/>
+                            }
+                        }
+                    </FormItem>
+                </FormItem>
+                <FormItem Label="Pinyin Api BaseUrl">
+                    <Input @bind-Value="@context.PinyinFeature.BaseUrl"/>
+                </FormItem>
+            </Form>
+        }
+        else
+        {
+            <Paragraph>If you are a Chinese user, this feature will be very helpful for you.</Paragraph>
+            <Paragraph>Enabling this feature will allow you to search your collection by pinyin.</Paragraph>
+        }
+    </ChildContent>
+</Panel>
+
+@code {
+
+    [Parameter]
+    public ControlPanel.ModalModel UserOptions { get; set; } = new();
+
+    private Panel _panel = null!;
+
+    private bool FeatureEnabled => UserOptions?.PinyinFeature?.Enabled == true;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _panel.Disabled = !FeatureEnabled;
+        if (!FeatureEnabled)
+        {
+            _panel.Active = true;
+        }
+    }
+
+    private void OnEnableChange(bool oldEnabled)
+    {
+        if (!oldEnabled)
+        {
+            _panel.Disabled = false;
+            _panel.Active = true;
+        }
+        else
+        {
+            _panel.Disabled = true;
+            _panel.Active = false;
+        }
+        StateHasChanged();
+    }
+
+    private Task OnChangePinyinFeatureAccessToken(string accessToken)
+    {
+        try
+        {
+            UserOptions.PinyinFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
+        }
+        catch (Services.Common.AccessTokenInvalidException)
+        {
+    // ignored
+        }
+        return Task.CompletedTask;
+    }
+
+
+}
