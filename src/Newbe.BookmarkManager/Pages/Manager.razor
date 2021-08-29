@@ -2,21 +2,27 @@
 @using Newbe.BookmarkManager.Services
 @inherits Blazor.BrowserExtension.Pages.IndexPage
 
-<Layout Class="site-layout-background">
-    <Header>
-        <Row>
-            <Col Span="16">
-                <Title Style="color: white">
-                    <Image Src="/icons/32icon.png" Height="32" Preview="false"></Image>
-                    Amazing Favorites
-                </Title>
+<Layout Class="site-layout-background" Style="min-height: 100vh">
+    <Header >
+        <Row Type="flex" Align="middle" Style="width: 1200px;margin: 0 auto">
+            <Col Span="14">
+                <Space Style="align-items: flex-end">
+                    <SpaceItem>
+                        <Image Src="/icons/32icon.png" Height="32" Preview="false"></Image>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <H1 Style="color: white">
+                            Amazing Favorites
+                        </H1>
+                    </SpaceItem>
+                </Space>
             </Col>
             <Col Style="text-align: right" Span="8">
                 <ManagerButton></ManagerButton>
             </Col>
         </Row>
     </Header>
-    <Content>
+    <Content Style="width: 1200px;margin: 20px auto">
         <Row>
             <Col Span="24">
                 <AntList Bordered DataSource="@_targetBks">
@@ -50,18 +56,13 @@
                     <ChildContent Context="bk">
                         <ListItem @key="@bk.Bk.Url">
                             <Col Span="24">
-                                <Space>
+                                <Space Wrap="true">
                                     <SpaceItem>
                                         @if (bk.ShowIndex && bk.LineIndex < 10)
                                         {
                                             <code>alt + </code>
                                         }
                                         @bk.LineIndex
-                                    </SpaceItem>
-                                    <SpaceItem>
-                                        <Button Shape="circle"
-                                                Icon="edit"
-                                                OnClick="e => OnClickEdit(bk.Bk.Url, bk.Bk.Title)"/>
                                     </SpaceItem>
                                     <SpaceItem>
                                         <Button Type="link"
@@ -109,6 +110,12 @@
                                     </SpaceItem>
                                     <SpaceItem>
                                         <Button Shape="circle"
+                                                Icon="edit"
+                                                Size="small"
+                                                OnClick="e => OnClickEdit(bk.Bk.Url, bk.Bk.Title)"/>
+                                    </SpaceItem>
+                                    <SpaceItem>
+                                        <Button Shape="circle"
                                                 Icon="share-alt"
                                                 Size="small"
                                                 OnClick="e => OnClickSharing(bk.Bk.Url)"/>
@@ -124,8 +131,8 @@
             </Col>
         </Row>
     </Content>
-    <Footer>
-        <Space>
+    <Footer Style="text-align: center;">
+        <Space Direction="DirectionVHType.Vertical">
             <SpaceItem>Welcome to submit you suggestion at <a href="https://github.com/newbe36524/Amazing-Favorites/issues" target="_blank">github.com</a></SpaceItem>
             <SpaceItem>
                 <a href="@StaticUrlOptions.Value.PrivacyAgreement" target="_blank">Privacy Agreement</a>
@@ -133,7 +140,6 @@
         </Space>
     </Footer>
 </Layout>
-
 
 
 @{
