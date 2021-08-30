@@ -2,14 +2,12 @@
 @using Newbe.BookmarkManager.Services.EventHubs
 
 <Popover Placement="@PlacementType.Bottom"
-         TitleTemplate="@_text" ContentTemp="" Trigger="@(new[] {AntDesign.TriggerType.Click})">
-    
-    <NotificationList NotificationRecords="_messages" OnClick="ClickToRead"></NotificationList>
-    <Badge Count="UnreadCount" Class="badge" >
-            <Button Class="noticeButton">
-                <Icon Type="bell" Theme="outline" Width="2em" Height="2em" />
-            </Button>
-        </Badge>
+         TitleTemplate="@_text" ContentTemplate="@Mytemplate2(@_messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+    <Badge Count="@UnreadCount" Class="badge" >
+        <Button Class="noticeButton">
+            <Icon Type="bell" Theme="outline" Width="2em" Height="2em" />
+        </Button>
+    </Badge>
 
 </Popover>
 
@@ -33,8 +31,7 @@
     .badge {
       font-size: 16px;
     }
-    
-
+   
 </style>
 
 
@@ -48,29 +45,9 @@
     private RenderFragment _text =@<span>Notification</span>;
     public List<NotificationRecord> _messages { get; set; }
 
-    private RenderFragment<MessageModel> Mytemplate2 =(messages)=> @<NotificationList NotificationRecords="@messages.NotificationRecords" OnClick="messages.Action" ></NotificationList>;
-    private RenderFragment<MessageModel> MyTemplate = (messages) => @<AntList Bordered DataSource="@messages.NotificationRecords"
-                                                                              TItem="NotificationRecord" >
-                                                                                   <ChildContent Context="message">
-                                                                                       <ListItem @key="@message.Id">
-                                                                                           <Card Title=@message.Message>
-                                                                                              <p>@message.Description</p>
-                                                                                              <p>@message.CreatedTime</p>
-                                                                                           </Card>
-                                                                                       </ListItem>
-                                                                                   </ChildContent>
-                                                                               </AntList>;
+    private RenderFragment<List<NotificationRecord>> Mytemplate2 =(messages)=> 
+        @<NotificationList NotificationRecords="@messages"></NotificationList>;
 
-    public class MessageModel
-    {
-        public List<NotificationRecord> NotificationRecords { get; set; }
-        public EventCallback<NotificationRecord> Action { get; set; }
-    }
-    private  void ClickToRead(NotificationRecord entity)
-    {
-        //NotificationRecordService.CompleteAsync(entity.Id);
-    }
-    
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();

@@ -24,7 +24,8 @@ namespace Newbe.BookmarkManager.Services
         public async Task<List<NotificationRecord>> GetListAsync()
         {
             return (await _notificationRepo.GetAllAsync())
-                .Where(a => !a.CompletionTime.HasValue)
+                .OrderBy(a=>a.CreatedTime)
+                .ThenBy(a=>a.Read)
                 .ToList();
         }
 
