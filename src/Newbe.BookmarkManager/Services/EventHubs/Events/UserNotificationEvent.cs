@@ -9,11 +9,20 @@ namespace Newbe.BookmarkManager.Services.EventHubs
 
         [JsonPropertyName("afNotificationType")]
         public AfNotificationType AfNotificationType { get; set; }
+
+        public AfNotificationClassify AfNotificationClassify { get; set; }
     }
 
     public enum AfNotificationType
     {
         Info,
         Warning
+    }
+
+    public enum AfNotificationClassify
+    {
+        MSLogin,
+        GoogleLogin,
+        
     }
 }

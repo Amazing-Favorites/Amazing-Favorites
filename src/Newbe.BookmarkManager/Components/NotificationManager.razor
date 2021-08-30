@@ -1,0 +1,65 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Newbe.BookmarkManager.Services.EventHubs.Events
+
+<Popover Style="display: flex" Placement="@PlacementType.Bottom" TitleTemplate="@_text" ContentTemplate="@MyTemplate(_messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+    
+    <div style="margin-right: 5px;position: relative;border-radius: 2px;background-color: #ffffff;border: 1px solid #FEFAFC;display: flex;justify-content: center;align-items: center;width: 50px;height: 32px">
+        <Badge Count="UnreadCount" Style="position: absolute;right: -15px;top: -5px;z-index: 9999">
+            <Icon Type="bell" Theme="outline" Style="font-size: 18px;color: #132321"  />
+        </Badge>
+    </div>
+
+</Popover>
+
+<style>
+    
+</style>
+
+
+@code {
+    [Inject]
+    public INotificationRecordService NotificationRecordService { get; set; }
+    [Inject] 
+    public IAfEventHub AfEventHub { get; set; }
+
+    private int UnreadCount;
+    private RenderFragment _text =@<span>Notification</span>;
+    private List<NotificationRecord> _messages;
+
+    private RenderFragment<List<NotificationRecord>> MyTemplate = (messages) => @<AntList Bordered DataSource="@messages">
+                                                                                   <ChildContent Context="message">
+                                                                                       <ListItem @key="@message.Id">
+                                                                                           <Card Title=@message.Message>
+                                                                                              <p>@message.Description</p>
+                                                                                              <p>@message.CreatedTime</p>
+                                                                                           </Card>
+                                                                                       </ListItem>
+                                                                                   </ChildContent>
+                                                                               </AntList>;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+        _messages = await NotificationRecordService.GetListAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationEvent);
+        }
+    }
+    private async Task HandleUserNotificationEvent(UserNotificationEvent afEvent)
+    {
+
+        Console.WriteLine("beforeCount:"+UnreadCount);
+        UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+        Console.WriteLine("afterCount:"+UnreadCount);
+    }
+}
