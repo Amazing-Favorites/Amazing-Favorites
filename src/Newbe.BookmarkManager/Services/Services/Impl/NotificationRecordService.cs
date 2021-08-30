@@ -34,6 +34,7 @@ namespace Newbe.BookmarkManager.Services
             if (record != null)
             {
                 record.CompletionTime = DateTime.UtcNow;
+                record.Read = true;
                 await _notificationRepo.UpsertAsync(record);
             }
         }

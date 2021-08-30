@@ -1,0 +1,20 @@
+﻿@using Newbe.BookmarkManager.Services
+<AntList Bordered DataSource="@NotificationRecords"
+          TItem="NotificationRecord" OnItemClick="OnClick">
+    <ChildContent Context="message">
+        <ListItem @key="@message.Id">
+            <Card Title=@message.Message>
+                <p>@message.Description</p>
+                <p>@message.CreatedTime</p>
+            </Card>
+        </ListItem>
+    </ChildContent>
+</AntList>;
+
+@code
+{
+    [Parameter]
+    public List<NotificationRecord> NotificationRecords { get; set; }
+    [Parameter] 
+    public EventCallback<NotificationRecord> OnClick { get; set; }
+}
