@@ -41,10 +41,7 @@ namespace Newbe.BookmarkManager.Pages
 
         [Inject]
         public NavigationManager Navigation { get; set; }
-
-        [Inject]
-        public NavigationManager Navigation { get; set; }
-
+        
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
         private string SearchValue
