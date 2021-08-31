@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,19 +30,22 @@ namespace Newbe.BookmarkManager.Services
         public virtual async Task<SearchResultItem[]> Search(string searchText, int limit)
         {
             var sw = Stopwatch.StartNew();
-            var result = await SearchCore();
+            var result = await SearchCore(searchText,limit);
             var time = sw.ElapsedMilliseconds;
             _logger.LogInformation("Search cost: {Time} ms", time);
             return result;
 
-            async Task<SearchResultItem[]> SearchCore()
+            
+        }
+        private async Task<SearchResultItem[]> SearchCore(string searchText, int limit,bool lastClick = false)
             {
                 var source = await _bkRepo.GetAllAsync();
                 if (string.IsNullOrWhiteSpace(searchText))
                 {
                     return source
-                        .OrderByDescending(x => x.LastClickTime)
-                        .ThenByDescending(x => x.ClickedCount)
+                        // .OrderByDescending(x => x.LastClickTime)
+                        // .ThenByDescending(x => x.ClickedCount)
+                        .GetEmptySearchTextFilter(lastClick)
                         .Take(limit)
                         .Select(x =>
                         {
@@ -77,8 +81,9 @@ namespace Newbe.BookmarkManager.Services
                 var re = source
                     .Select(MatchBk)
                     .Where(x => x.Matched)
-                    .OrderByDescending(x => x.Score)
-                    .ThenByDescending(x => x.ClickCount)
+                    // .OrderByDescending(x => x.Score)
+                    // .ThenByDescending(x => x.ClickCount)
+                    .GetSearchTextFilter(lastClick)
                     .Take(limit)
                     .ToArray();
 
@@ -117,6 +122,51 @@ namespace Newbe.BookmarkManager.Services
                 {
                     return !string.IsNullOrWhiteSpace(a) && a.Contains(target, StringComparison.OrdinalIgnoreCase);
                 }
+
+
+                
+            }
+
+        public async Task<SearchResultItem[]> RecentClicked(string searchText, int limit)
+        {
+            var sw = Stopwatch.StartNew();
+            var result = await SearchCore(searchText,limit,true);
+            var time = sw.ElapsedMilliseconds;
+            _logger.LogInformation("Search cost: {Time} ms", time);
+            return result;
+
+            
+        }
+    }
+
+    static class BkExtension
+    {
+        public static IEnumerable<SearchResultItem> GetSearchTextFilter(this IEnumerable<SearchResultItem> source,bool recentClickMode)
+        {
+            if (recentClickMode == true)
+            {
+                return source
+                    .OrderByDescending(x => x.LastClickTime);
+            }
+            else
+            {
+                return source
+                    .OrderByDescending(x => x.Score)
+                    .ThenByDescending(x => x.ClickCount);
+            }
+        }
+        public static IEnumerable<Bk> GetEmptySearchTextFilter(this IEnumerable<Bk> source,bool recentClickMode)
+        {
+            if (recentClickMode == true)
+            {
+                return source
+                    .OrderByDescending(x => x.LastClickTime);
+            }
+            else
+            {
+                return source
+                    .OrderByDescending(x => x.LastClickTime)
+                    .ThenByDescending(x => x.ClickedCount);
             }
         }
     }
