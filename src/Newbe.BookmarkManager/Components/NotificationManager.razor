@@ -2,7 +2,8 @@
 @using Newbe.BookmarkManager.Services.EventHubs
 
 <Popover Placement="@PlacementType.Bottom"
-         TitleTemplate="@_text" ContentTemplate="@ContentTemplate(@Messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+         TitleTemplate="@_text" ContentTemplate="@ContentTemplate2(new NotificationParameter{
+                                                     NotificationRecords = Messages,Update = Update})" Trigger="@(new[] {AntDesign.TriggerType.Click})">
     <Badge Count="@UnreadCount" Class="badge" >
         <Button Class="noticeButton">
             <Icon Type="bell" Theme="outline" Width="2em" Height="2em" />
@@ -47,27 +48,45 @@
 
     private RenderFragment<List<NotificationRecord>> ContentTemplate =(messages)=> 
         @<NotificationList NotificationRecords="@messages"></NotificationList>;
+    
+    private RenderFragment<NotificationParameter> ContentTemplate2 =(messages)=> 
+        @<NotificationList NotificationRecords="@messages.NotificationRecords" Update="@messages.Update"></NotificationList>;
 
+    public class NotificationParameter
+    {
+        public List<NotificationRecord> NotificationRecords { get; set; }
+        public Action Update { get; set; }
+    }
+    
+    
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationEvent);
+        await UpdateAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (firstRender)
-        {
-            UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
-            Messages = await NotificationRecordService.GetListAsync();
-        }
     }
     
     private async Task HandleUserNotificationEvent(UserNotificationEvent afEvent)
     {
-        
+        await UpdateAsync();
+
+    }
+
+    public void Update()
+    {
+        UpdateAsync().Wait();
+        Console.WriteLine();
+    }
+
+    private async Task UpdateAsync()
+    {
         UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+        Messages = await NotificationRecordService.GetListAsync();
         StateHasChanged();
     }
 }
