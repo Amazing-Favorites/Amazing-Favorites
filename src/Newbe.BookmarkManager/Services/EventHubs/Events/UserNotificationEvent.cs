@@ -16,4 +16,5 @@ namespace Newbe.BookmarkManager.Services.EventHubs
         Info,
         Warning
     }
+
 }

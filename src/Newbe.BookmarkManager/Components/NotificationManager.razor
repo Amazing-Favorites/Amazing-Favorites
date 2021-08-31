@@ -1,0 +1,87 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
+
+<Popover Placement="@PlacementType.Bottom"
+         TitleTemplate="@_text" ContentTemplate="@ContentTemplate(new NotificationParameter{
+                                                     NotificationRecords = Messages,Update = Update})" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+    <Badge Count="@UnreadCount" Class="badge" >
+        <Button Class="noticeButton">
+            <Icon Type="bell" Theme="outline" Width="2em" Height="2em" />
+        </Button>
+    </Badge>
+
+</Popover>
+
+<style>
+    .popover {
+      position: relative;
+      width: 336px;
+    }
+    
+    .noticeButton {
+      display: inline-block;
+      cursor: pointer;
+      transition: all 0.3s;
+      padding: 4px 4px;
+    }
+    .icon {
+      padding: 4px;
+      vertical-align: middle;
+    }
+    
+    .badge {
+      font-size: 16px;
+    }
+   
+</style>
+
+
+@code {
+    [Inject]
+    public INotificationRecordService NotificationRecordService { get; set; }
+    [Inject] 
+    public IAfEventHub AfEventHub { get; set; }
+
+    private int UnreadCount;
+    private RenderFragment _text =@<span>Notification</span>;
+    public List<NotificationRecord> Messages { get; set; }
+    private RenderFragment<NotificationParameter> ContentTemplate =(messages)=> 
+        @<NotificationList NotificationRecords="@messages.NotificationRecords" Update="@messages.Update"></NotificationList>;
+
+    public class NotificationParameter
+    {
+        public List<NotificationRecord> NotificationRecords { get; set; }
+        public Action Update { get; set; }
+    }
+    
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationEvent);
+        await AfEventHub.EnsureStartAsync();
+        await UpdateAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private Task HandleUserNotificationEvent(UserNotificationEvent afEvent)
+    {
+        return UpdateAsync();
+    }
+
+    public void Update()
+    {
+        UpdateAsync().Wait();
+    }
+
+    private async Task UpdateAsync()
+    {
+        UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+        Messages = await NotificationRecordService.GetListAsync();
+        StateHasChanged();
+    }
+}

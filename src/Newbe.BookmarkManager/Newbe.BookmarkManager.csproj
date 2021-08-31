@@ -37,6 +37,10 @@
     </ItemGroup>
     
     <ItemGroup>
+      <Content Remove="wwwroot\content\Microsoft.Authentication.WebAssembly.Msal\AuthenticationService.js" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj" />
     </ItemGroup>
 

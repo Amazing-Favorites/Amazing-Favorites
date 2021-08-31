@@ -44,6 +44,7 @@ namespace Newbe.BookmarkManager.Services
             public const string SearchRecord = "SearchRecord";
             [Obsolete("use simple data")] public const string RecentSearch = "RecentSearch";
             public const string SimpleData = "SimpleData";
+            public const string NotificationRecord = "NotificationRecord";
         }
 
         private static readonly HashSet<string> ReservedBookmarkFolder = new()

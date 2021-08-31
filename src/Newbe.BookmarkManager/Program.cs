@@ -77,7 +77,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddSingleton<IAfCodeService, AfCodeService>()
                 .AddSingleton<IRecordService, RecordService>()
-                .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>();
+                .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>()
+                .AddSingleton<INotificationRecordService, NotificationRecordService>();
 
 
             builder.Services
@@ -109,7 +110,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
-                dbStore.Version = 5;
+                dbStore.Version = 6;
 
                 dbStore.Stores.Add(new StoreSchema
                 {
@@ -149,6 +150,11 @@ namespace Newbe.BookmarkManager
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.SimpleData,
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.NotificationRecord,
                     PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
             });
