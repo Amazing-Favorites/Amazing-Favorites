@@ -18,14 +18,16 @@ namespace Newbe.BookmarkManager.Services
 
         public async Task AddAsync(NotificationRecord record)
         {
+            record.Id = _clock.UtcNow;
             await _notificationRepo.UpsertAsync(record);
         }
 
         public async Task<List<NotificationRecord>> GetListAsync()
         {
             return (await _notificationRepo.GetAllAsync())
-                .OrderBy(a=>a.CreatedTime)
+                .OrderByDescending(a=>a.CreatedTime)
                 .ThenBy(a=>a.Read)
+                .Take(5)
                 .ToList();
         }
 
@@ -45,7 +47,7 @@ namespace Newbe.BookmarkManager.Services
             try
             {
                 var result = (await _notificationRepo.GetAllAsync())
-                    .Count(a => !a.CompletionTime.HasValue);
+                    .Count(a => !a.Read);
                 return result;
             }
             catch (Exception e)

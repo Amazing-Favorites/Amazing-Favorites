@@ -2,7 +2,7 @@
 @using Newbe.BookmarkManager.Services.EventHubs
 
 <Popover Placement="@PlacementType.Bottom"
-         TitleTemplate="@_text" ContentTemplate="@Mytemplate2(@_messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+         TitleTemplate="@_text" ContentTemplate="@ContentTemplate(@Messages)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
     <Badge Count="@UnreadCount" Class="badge" >
         <Button Class="noticeButton">
             <Icon Type="bell" Theme="outline" Width="2em" Height="2em" />
@@ -43,16 +43,15 @@
 
     private int UnreadCount;
     private RenderFragment _text =@<span>Notification</span>;
-    public List<NotificationRecord> _messages { get; set; }
+    public List<NotificationRecord> Messages { get; set; }
 
-    private RenderFragment<List<NotificationRecord>> Mytemplate2 =(messages)=> 
+    private RenderFragment<List<NotificationRecord>> ContentTemplate =(messages)=> 
         @<NotificationList NotificationRecords="@messages"></NotificationList>;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
-        _messages = await NotificationRecordService.GetListAsync();
+        AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationEvent);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -60,13 +59,15 @@
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
-            AfEventHub.RegisterHandler<UserLoginSuccessEvent>(HandleUserNotificationEvent);
+            UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+            Messages = await NotificationRecordService.GetListAsync();
         }
     }
     
-    private async Task HandleUserNotificationEvent(UserLoginSuccessEvent afEvent)
+    private async Task HandleUserNotificationEvent(UserNotificationEvent afEvent)
     {
         
         UnreadCount = await NotificationRecordService.GetUnreadCountAsync();
+        StateHasChanged();
     }
 }

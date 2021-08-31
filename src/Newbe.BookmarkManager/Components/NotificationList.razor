@@ -1,4 +1,5 @@
 ﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
 <AntList Bordered DataSource="@NotificationRecords"
           TItem="NotificationRecord" OnItemClick="ClickToReadAsync">
     <ChildContent Context="message">
@@ -19,10 +20,10 @@
     public List<NotificationRecord> NotificationRecords { get; set; }
     [Inject]
     public INotificationRecordService NotificationRecordService { get; set; }
-    
     private  async Task ClickToReadAsync(NotificationRecord entity)
     {
         await NotificationRecordService.CompleteAsync(entity.Id);
+        StateHasChanged();
     }
     
 }
