@@ -2,7 +2,7 @@
 @using Newbe.BookmarkManager.Services.EventHubs
 
 <Popover Placement="@PlacementType.Bottom"
-         TitleTemplate="@_text" ContentTemplate="@ContentTemplate2(new NotificationParameter{
+         TitleTemplate="@_text" ContentTemplate="@ContentTemplate(new NotificationParameter{
                                                      NotificationRecords = Messages,Update = Update})" Trigger="@(new[] {AntDesign.TriggerType.Click})">
     <Badge Count="@UnreadCount" Class="badge" >
         <Button Class="noticeButton">
@@ -45,11 +45,7 @@
     private int UnreadCount;
     private RenderFragment _text =@<span>Notification</span>;
     public List<NotificationRecord> Messages { get; set; }
-
-    private RenderFragment<List<NotificationRecord>> ContentTemplate =(messages)=> 
-        @<NotificationList NotificationRecords="@messages"></NotificationList>;
-    
-    private RenderFragment<NotificationParameter> ContentTemplate2 =(messages)=> 
+    private RenderFragment<NotificationParameter> ContentTemplate =(messages)=> 
         @<NotificationList NotificationRecords="@messages.NotificationRecords" Update="@messages.Update"></NotificationList>;
 
     public class NotificationParameter
