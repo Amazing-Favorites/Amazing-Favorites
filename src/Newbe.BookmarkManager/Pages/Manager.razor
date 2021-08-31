@@ -3,24 +3,22 @@
 @inherits Blazor.BrowserExtension.Pages.IndexPage
 
 <Layout Class="site-layout-background" Style="min-height: 100vh">
-    <Header >
-        <Row Type="flex" Align="middle" Style="width: 1200px;margin: 0 auto">
-            <Col Span="14">
-                <Space Style="align-items: flex-end">
-                    <SpaceItem>
-                        <Image Src="/icons/32icon.png" Height="32" Preview="false"></Image>
-                    </SpaceItem>
-                    <SpaceItem>
-                        <H1 Style="color: white">
-                            Amazing Favorites
-                        </H1>
-                    </SpaceItem>
-                </Space>
-            </Col>
-            <Col Style="text-align: right" Span="8">
+    <Header>
+        <PageHeader BackIcon="@false" Ghost="true" Style="width: 1200px;height: 64px;margin: 0 auto">
+            <PageHeaderAvatar>
+                <Avatar Src="/icons/32icon.png"/>
+            </PageHeaderAvatar>
+            <PageHeaderTitle>
+                <Text Style="color: white">Amazing Favorites</Text>
+            </PageHeaderTitle>
+            <PageHeaderTags>
+                <Tag PresetColor="@PresetColor.Blue">@Consts.CurrentVersion</Tag>
+            </PageHeaderTags>
+            <PageHeaderSubtitle></PageHeaderSubtitle>
+            <PageHeaderExtra>
                 <ManagerButton></ManagerButton>
-            </Col>
-        </Row>
+            </PageHeaderExtra>
+        </PageHeader>
     </Header>
     <Content Style="width: 1200px;margin: 20px auto">
         <Row>
@@ -28,9 +26,6 @@
                 <AntList Bordered DataSource="@_targetBks">
                     <Header>
                         <Row Gutter="(16,24)">
-                            <Col Span="24">
-                                <TipsAlert/>
-                            </Col>
                             <Col Span="24">
                                 <Spin Spinning="@_searchInputLoading">
                                     <AutoComplete Options="@SearchOptions">
@@ -56,7 +51,7 @@
                     <ChildContent Context="bk">
                         <ListItem @key="@bk.Bk.Url">
                             <Col Span="24">
-                                <Space Wrap="true">
+                                <Space>
                                     <SpaceItem>
                                         @if (bk.ShowIndex && bk.LineIndex < 10)
                                         {
@@ -133,6 +128,9 @@
     </Content>
     <Footer Style="text-align: center;">
         <Space Direction="DirectionVHType.Vertical">
+            <SpaceItem>
+                <TipsAlert/>
+            </SpaceItem>
             <SpaceItem>Welcome to submit you suggestion at <a href="https://github.com/newbe36524/Amazing-Favorites/issues" target="_blank">github.com</a></SpaceItem>
             <SpaceItem>
                 <a href="@StaticUrlOptions.Value.PrivacyAgreement" target="_blank">Privacy Agreement</a>

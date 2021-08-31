@@ -35,17 +35,8 @@
     <ItemGroup>
         <None Include="wwwroot\**\*" CopyToOutputDirectory="Always" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <Content Remove="wwwroot\content\Microsoft.Authentication.WebAssembly.Msal\AuthenticationService.js" />
-    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\popup\index.html" />
-    </ItemGroup>
-
 </Project>

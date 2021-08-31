@@ -6,35 +6,11 @@
                                                      NotificationRecords = Messages,Update = Update})" Trigger="@(new[] {AntDesign.TriggerType.Click})">
     <Badge Count="@UnreadCount" Class="badge" >
         <Button Class="noticeButton">
-            <Icon Type="bell" Theme="outline" Width="2em" Height="2em" />
+            <Icon Type="bell" Theme="outline" />
         </Button>
     </Badge>
 
 </Popover>
-
-<style>
-    .popover {
-      position: relative;
-      width: 336px;
-    }
-    
-    .noticeButton {
-      display: inline-block;
-      cursor: pointer;
-      transition: all 0.3s;
-      padding: 4px 4px;
-    }
-    .icon {
-      padding: 4px;
-      vertical-align: middle;
-    }
-    
-    .badge {
-      font-size: 16px;
-    }
-   
-</style>
-
 
 @code {
     [Inject]
