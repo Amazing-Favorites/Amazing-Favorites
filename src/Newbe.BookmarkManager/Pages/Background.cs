@@ -22,6 +22,7 @@ namespace Newbe.BookmarkManager.Pages
                 WebExtensions.Tabs.ActiveOrOpenManagerAsync();
             }
         }
+        
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {

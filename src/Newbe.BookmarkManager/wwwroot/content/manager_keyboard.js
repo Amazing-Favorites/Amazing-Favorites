@@ -19,4 +19,15 @@
         await global.DotNet.DotNetReference.invokeMethodAsync('OnSearchInputKeyup', e.code, e.altKey);
     };
     console.info("keyboard event loaded");
+    chrome.tabs.onCreated.addListener(async (tab)=>{
+        console.log(`tabs onCreated id:${tab.id},bookmarkInfo.url:${tab.url}`);
+        console.log(`pendingUrl:${tab.pendingUrl}`);
+        console.log(`title:${tab.title}`);
+        //await global.DotNet.DotNetReference.invokeMethodAsync('OpenNewTab',tab.id,tab.url);
+    });
+    chrome.tabs.onUpdated.addListener(async (tabId,changeInfo,tab)=>{
+        console.log(`tabs onChanged id:${tabId},url:${changeInfo.url}`);
+        console.log(`title:${changeInfo.title}`);
+        //await global.DotNet.DotNetReference.invokeMethodAsync('OpenNewTab',tab.id,tab.url);
+    });
 })();
