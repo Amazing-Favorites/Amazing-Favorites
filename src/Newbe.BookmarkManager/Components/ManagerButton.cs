@@ -40,7 +40,7 @@ namespace Newbe.BookmarkManager.Components
             await BkManager.RestoreAsync();
             _controlPanelVisible = false;
         }
-        
+
         private bool _visible = false;
 
         private void OnClickLike()
