@@ -28,6 +28,8 @@
     chrome.tabs.onUpdated.addListener(async (tabId,changeInfo,tab)=>{
         console.log(`tabs onChanged id:${tabId},url:${changeInfo.url}`);
         console.log(`title:${changeInfo.title}`);
-        //await global.DotNet.DotNetReference.invokeMethodAsync('OpenNewTab',tab.id,tab.url);
+        if(changeInfo.url){
+            await global.DotNet.DotNetReference.invokeMethodAsync('OpenNewTab',tabId,changeInfo.url);
+        }
     });
 })();
