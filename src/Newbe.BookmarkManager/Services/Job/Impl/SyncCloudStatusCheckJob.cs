@@ -53,7 +53,12 @@ namespace Newbe.BookmarkManager.Services
                     throw new ArgumentOutOfRangeException();
             }
             await SaveAsync(cloudBkProviderType);
-
+            await _afEventHub.PublishAsync(new UserNotificationEvent()
+            {
+                AfNotificationType = AfNotificationType.Info,
+                Message = $"{Enum.GetName(typeof(CloudBkProviderType), cloudBkProviderType)} login message",
+                Description = "Login Succeed",
+            });
             Task TriggerSync()
             {
                 return _afEventHub.PublishAsync(new TriggerCloudSyncEvent());
@@ -68,6 +73,7 @@ namespace Newbe.BookmarkManager.Services
                     Description = "Login Succeed",
                     CreatedTime = DateTime.UtcNow
                 };
+                
                 return _notificationRecord.AddAsync(entity);
             }
         }

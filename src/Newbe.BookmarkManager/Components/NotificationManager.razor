@@ -63,6 +63,7 @@
     {
         await base.OnInitializedAsync();
         AfEventHub.RegisterHandler<UserNotificationEvent>(HandleUserNotificationEvent);
+        await AfEventHub.EnsureStartAsync();
         await UpdateAsync();
     }
 
@@ -71,16 +72,14 @@
         await base.OnAfterRenderAsync(firstRender);
     }
     
-    private async Task HandleUserNotificationEvent(UserNotificationEvent afEvent)
+    private Task HandleUserNotificationEvent(UserNotificationEvent afEvent)
     {
-        await UpdateAsync();
-
+        return UpdateAsync();
     }
 
     public void Update()
     {
         UpdateAsync().Wait();
-        Console.WriteLine();
     }
 
     private async Task UpdateAsync()
