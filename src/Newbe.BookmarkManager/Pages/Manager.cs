@@ -370,10 +370,9 @@ namespace Newbe.BookmarkManager.Pages
         }
 
         [JSInvokable]
-        public Task OpenNewTab(int id, string url)
+        public async Task OpenNewTab(int id, string url)
         {
-
-            return Task.CompletedTask;
+            await BkManager.UpdateLastClickTimeAsync(url);
         }
 
         private async Task OnClickUrl(BkViewItem bk, MouseEventArgs? e)

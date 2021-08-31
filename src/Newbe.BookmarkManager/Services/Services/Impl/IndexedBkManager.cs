@@ -44,7 +44,6 @@ namespace Newbe.BookmarkManager.Services
             bk.ClickedCount += moreCount;
             await _bkRepo.UpsertAsync(bk);
         }
-
         public async Task RestoreAsync()
         {
             await _bkRepo.DeleteAllAsync();
@@ -296,6 +295,16 @@ namespace Newbe.BookmarkManager.Services
             if (bk != null)
             {
                 bk.Title = title;
+                await _bkRepo.UpsertAsync(bk);
+            }
+        }
+
+        public async Task UpdateLastClickTimeAsync(string url)
+        {
+            var bk = await _bkRepo.GetAsync(url);
+            if (bk != null)
+            {
+                bk.LastClickTime = _clock.UtcNow;
                 await _bkRepo.UpsertAsync(bk);
             }
         }
