@@ -1,0 +1,111 @@
+﻿@using Newbe.BookmarkManager.Services
+@using System.Reactive.Subjects
+@using System.Reactive.Linq
+@using Microsoft.Extensions.Logging
+
+<Popover Placement="@PlacementType.Bottom"
+         TitleTemplate="@_text" ContentTemplate="@ContentTemplate(_targetBks)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
+    <Button>
+        BkHistory
+    </Button>
+</Popover>
+
+
+
+
+@code {
+    [Inject] public IBkSearcher BkSearcher { get; set; }
+    
+    private SearchResultItem[] _targetBks { get; set; }
+    
+    private  string _searchValue { get; set; }
+    
+    private readonly Subject<string?> _searchSubject = new();
+    private bool _searchInputLoading;
+    private RenderFragment _text =@<span>BkHistory</span>;
+
+    private RenderFragment<SearchResultItem[]> ContentTemplate = (bks)=> 
+                                             @<AntList  Bordered DataSource="@bks">
+                                                 <ChildContent Context="bk">
+                                                     <ListItem @key="bk.Bk.Id">
+                                                         <p>@bk.Bk.Title</p>
+                                                     </ListItem>
+                                                 </ChildContent>
+                                             </AntList>;
+    
+    private string SearchValue
+    {
+        get => _searchValue;
+        set
+        {
+            _searchValue = value;
+            _searchSubject?.OnNext(value);
+        }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            _searchSubject
+                .Throttle(TimeSpan.FromMilliseconds(100))
+                .Select(x => x?.Trim())
+                .Subscribe(async args =>
+                {
+                    _searchInputLoading = true;
+                    StateHasChanged();
+                    try
+                    {
+                        // Logger.LogInformation("Search: {Args}", args!);
+                        // if (!string.IsNullOrWhiteSpace(args))
+                        // {
+                        //     var afCode = args;
+                        //     if (await AfCodeService.TryParseAsync(afCode, out var afCodeResult))
+                        //     {
+                        //         if (afCodeResult != null)
+                        //         {
+                        //             await OnClickEdit(afCodeResult.Url, afCodeResult.Title, afCodeResult.Tags);
+                        //             SearchValue = string.Empty;
+                        //             return;
+                        //         }
+                        //     }
+                        // }
+
+                        var target = await BkSearcher.History(args!, 10);
+                        _targetBks = target;
+                    }
+                    catch (Exception e)
+                    {
+                        // Logger.LogError(e, "Error when search");
+                    }
+                    finally
+                    {
+                        _searchInputLoading = false;
+                    }
+                    StateHasChanged();
+                });
+            _searchValue = string.Empty;
+            SearchValue = _searchValue;
+        }
+    }
+    
+    
+    private BkViewItem[] Map(SearchResultItem[] items)
+    {
+        var re = CreateItem().ToArray();
+        return re;
+
+        IEnumerable<BkViewItem> CreateItem()
+        {
+            for (int i = 0; i < items.Length; i++)
+            {
+                var item = items[i];
+                yield return new BkViewItem(item.Bk)
+                {
+                    LineIndex = i + 1
+                };
+            }
+        }
+    }
+
+}

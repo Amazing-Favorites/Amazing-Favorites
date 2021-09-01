@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,27 +30,41 @@ namespace Newbe.BookmarkManager.Services
         public virtual async Task<SearchResultItem[]> Search(string searchText, int limit)
         {
             var sw = Stopwatch.StartNew();
-            var result = await SearchCore();
+            var source = await SearchCore(searchText);
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                source = source
+                    .OrderByDescending(x => x.LastClickTime)
+                    .ThenByDescending(x => x.ClickCount)
+                    .Take(limit)
+                    .ToArray();
+            }
+            else
+            {
+                source = source
+                    .OrderByDescending(x => x.Score)
+                    .ThenByDescending(x => x.ClickCount)
+                    .Take(limit)
+                    .ToArray();
+            }
             var time = sw.ElapsedMilliseconds;
             _logger.LogInformation("Search cost: {Time} ms", time);
-            return result;
+            return source.ToArray();
 
-            async Task<SearchResultItem[]> SearchCore()
+            
+        }
+        private async Task<IEnumerable<SearchResultItem>> SearchCore(string searchText)
             {
                 var source = await _bkRepo.GetAllAsync();
                 if (string.IsNullOrWhiteSpace(searchText))
                 {
                     return source
-                        .OrderByDescending(x => x.LastClickTime)
-                        .ThenByDescending(x => x.ClickedCount)
-                        .Take(limit)
                         .Select(x =>
                         {
                             var r = new SearchResultItem(x);
                             r.AddScore(ScoreReason.Const, 10);
                             return r;
-                        })
-                        .ToArray();
+                        });
                 }
 
                 var input = SearchInput.Parse(searchText);
@@ -76,11 +91,7 @@ namespace Newbe.BookmarkManager.Services
 
                 var re = source
                     .Select(MatchBk)
-                    .Where(x => x.Matched)
-                    .OrderByDescending(x => x.Score)
-                    .ThenByDescending(x => x.ClickCount)
-                    .Take(limit)
-                    .ToArray();
+                    .Where(x => x.Matched);
 
                 return re;
 
@@ -118,6 +129,18 @@ namespace Newbe.BookmarkManager.Services
                     return !string.IsNullOrWhiteSpace(a) && a.Contains(target, StringComparison.OrdinalIgnoreCase);
                 }
             }
+
+        public async Task<SearchResultItem[]> History(string searchText, int limit)
+        {
+            var sw = Stopwatch.StartNew();
+            var source = (await SearchCore(searchText))
+                .OrderByDescending(x => x.Score)
+                .ThenByDescending(x => x.LastClickTime)
+                .ThenByDescending(x => x.ClickCount)
+                .Take(limit);
+            var time = sw.ElapsedMilliseconds;
+            _logger.LogInformation("Search cost: {Time} ms", time);
+            return source.ToArray();
         }
     }
 }
