@@ -1,6 +1,6 @@
 ﻿namespace Newbe.BookmarkManager.Services.EventHubs
 {
-    public record SyncToCloudSuccessEvent : IAfEvent
+    public record NewNotificationEvent : IAfEvent
     {
     }
 }

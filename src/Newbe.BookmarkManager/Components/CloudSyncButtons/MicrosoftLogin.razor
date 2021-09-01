@@ -2,10 +2,13 @@
 @using System.Text.Json
 @using Microsoft.Extensions.Logging
 @using Newbe.BookmarkManager.Services.EventHubs
+
 <Spin Spinning="@_loading">
-    <Button OnClick="Callback">
-        <AntDesign.Text>Sync data to OneDrive</AntDesign.Text>
-    </Button>
+    <Tooltip Placement="@PlacementType.Bottom" Title="@("Sync data to OneDrive")">
+        <Button OnClick="Callback">
+            <Icon Type="cloud-sync" Theme="outline"/>
+        </Button>
+    </Tooltip>
 </Spin>
 
 @code {

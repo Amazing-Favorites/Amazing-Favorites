@@ -1,7 +1,7 @@
 ﻿{
   "manifest_version": 2,
   "name": "Amazing Favorites",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Amazing Favorites help you to manage you bookmarks efficiently",
   "background": {
     "page": "index.html?path=background",

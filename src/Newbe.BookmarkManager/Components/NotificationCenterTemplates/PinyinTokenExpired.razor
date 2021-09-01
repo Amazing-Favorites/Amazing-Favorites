@@ -1,0 +1,33 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
+<ListItemMeta >
+    <TitleTemplate>
+        @NotificationItem.Title
+    </TitleTemplate>
+    <DescriptionTemplate>
+        @NotificationItem.CreatedTime.ToLocalTime()
+    </DescriptionTemplate>
+</ListItemMeta>
+<Paragraph>
+    @NotificationItem.Message
+</Paragraph>
+<Button OnClick="ClickOpenControlPanel">
+    Go to Control Panel to renew one
+</Button>
+
+@code {
+
+    [Parameter]
+    public NotificationRecord Record { get; set; } = null!;
+
+    MsgItem NotificationItem => Record.Items.First();
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; } = null!;
+
+    private void ClickOpenControlPanel()
+    {
+        AfEventHub.PublishAsync(new TriggerOpenControlPanelEvent());
+    }
+
+}

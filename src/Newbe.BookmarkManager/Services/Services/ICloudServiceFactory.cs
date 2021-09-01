@@ -4,6 +4,11 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface ICloudServiceFactory
     {
-        Task<ICloudService> CreateAsync();
+        Task<ServiceItem> CreateAsync();
+    }
+
+    public record ServiceItem(CloudBkProviderType CloudBkProviderType,
+        ICloudService CloudService)
+    {
     }
 }

@@ -3,12 +3,15 @@
         <ManualySync></ManualySync>
     </SpaceItem>
     <SpaceItem>
-        <NotificationManager></NotificationManager>
+        <NotificationCenter></NotificationCenter>
     </SpaceItem>
     <SpaceItem>
-        <DropdownButton OnClick="OpenHelp">
+        <DropdownButton OnClick="OpenControlPanel">
             <Overlay>
                 <Menu>
+                    <MenuItem Key="4" OnClick="OpenHelp">
+                        ❔ Help
+                    </MenuItem>
                     <MenuItem Key="1" OnClick="OpenWhatsNew">
                         🆕 What`s New
                     </MenuItem>
@@ -21,14 +24,9 @@
                 </Menu>
             </Overlay>
             <ChildContent>
-                ❔ Help
+                ⚙
             </ChildContent>
         </DropdownButton>
-    </SpaceItem>
-    <SpaceItem>
-        <Button OnClick="OpenControlPanel">
-            ⚙
-        </Button>
     </SpaceItem>
 </Space>
 <ControlPanel OnClickResumeFactorySetting="OnClickResumeFactorySetting"

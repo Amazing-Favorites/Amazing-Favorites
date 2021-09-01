@@ -71,6 +71,8 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IIdentityApi>(p => p.GetRequiredService<IWebExtensionsApi>().Identity)
                 .AddTransient<IRuntimeApi>(p => p.GetRequiredService<IWebExtensionsApi>().Runtime)
                 .AddTransient<IManagePageNotificationService, ManagePageNotificationService>()
+                .AddTransient<INotificationCenterCore, NotificationCenterCore>()
+                .AddTransient<INewNotification, NewNotification>()
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<ITagsManager, TagsManager>()
                 .AddSingleton<IRecentSearchHolder, RecentSearchHolder>()
@@ -300,6 +302,7 @@ namespace Newbe.BookmarkManager
                     yield return typeof(DataFixJob);
                     yield return typeof(ShowWelcomeJob);
                     yield return typeof(ShowWhatNewJob);
+                    yield return typeof(InviteAcceptPrivacyAgreementJob);
                     yield return typeof(SyncBookmarkJob);
                     yield return typeof(SyncAliasJob);
                     yield return typeof(SyncTagRelatedBkCountJob);

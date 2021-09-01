@@ -5,11 +5,9 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface INotificationRecordService
     {
-        Task AddAsync(NotificationRecord record);
-
+        Task AddAsync(MsgItem item);
         Task<List<NotificationRecord>> GetListAsync();
-        
-        Task CompleteAsync(long id);
-        Task<int> GetUnreadCountAsync();
+        Task MakeAsReadAsync();
+        Task<bool> GetNewMessageStatusAsync();
     }
 }

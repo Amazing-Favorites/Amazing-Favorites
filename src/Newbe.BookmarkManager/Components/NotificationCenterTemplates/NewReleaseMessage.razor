@@ -1,0 +1,35 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.Extensions.Options
+@using Newbe.BookmarkManager.Services.Configuration
+@using System.Text.Json
+@{
+    var arg = JsonSerializer.Deserialize<NewReleaseInput>(NotificationItem.ArgsJson)!;
+}
+<ListItemMeta >
+    <TitleTemplate>
+        @NotificationItem.Title
+    </TitleTemplate>
+    <DescriptionTemplate>
+        @NotificationItem.CreatedTime.ToLocalTime()
+    </DescriptionTemplate>
+</ListItemMeta>
+<Paragraph>
+    @NotificationItem.Message
+</Paragraph>
+<Paragraph>
+    <a href="@arg.WhatsNewUrl"
+       target="_blank">
+        click here to see what is new about @arg.Version
+    </a>
+</Paragraph>
+
+@code {
+
+    [Parameter]
+    public NotificationRecord Record { get; set; } = null!;
+
+    [Inject]
+    public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
+
+    MsgItem NotificationItem => Record.Items.First();
+}

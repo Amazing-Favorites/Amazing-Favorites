@@ -113,9 +113,14 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             _logger.LogInformation("Event published {TypeCode}", typeCode);
             // current page can not receive runtime message
             OnReceivedMessage(message, default!, default!);
-#pragma warning disable 4014
-            _runtimeApi.SendMessage("", message, new object());
-#pragma warning restore 4014
+            try
+            {
+                _runtimeApi.SendMessage("", message, new object());
+            }
+            catch (Exception ex)
+            {
+                // ignore
+            }
             return Task.CompletedTask;
         }
     }

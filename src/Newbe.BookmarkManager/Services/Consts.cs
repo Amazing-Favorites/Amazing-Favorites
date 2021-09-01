@@ -6,12 +6,14 @@ namespace Newbe.BookmarkManager.Services
     public static class Consts
     {
         public const string AppName = "Amazing Favorites";
-        public const string CurrentVersion = "0.6.2";
+        public const string CurrentVersion = "0.6.3";
         public const string PrivacyAgreementVersionDate = "2021/08/29";
 
         public static readonly string[] Versions =
         {
-            CurrentVersion
+            CurrentVersion,
+            "0.6.2",
+            "0.6.1"
         };
 
         public const int JwtExpiredWarningDays = 7;
