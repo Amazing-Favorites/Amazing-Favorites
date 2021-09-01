@@ -279,10 +279,17 @@ namespace Newbe.BookmarkManager.Pages
 
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
+                AfEventHub.RegisterHandler<RefreshManagerPageEvent>(HandleRefreshPageEvent);
                 await AfEventHub.EnsureStartAsync();
             }
         }
 
+        private Task HandleRefreshPageEvent(RefreshManagerPageEvent arg)
+        {
+            SearchValue = _searchValue;
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
         private Task HandleUserOptionSaveEvent(UserOptionSaveEvent arg)
         {
             return InvokeAsync(() =>
@@ -373,6 +380,7 @@ namespace Newbe.BookmarkManager.Pages
         public async Task OpenNewTab(int id, string url)
         {
             await BkManager.UpdateLastClickTimeAsync(url);
+            await AfEventHub.PublishAsync(new RefreshManagerPageEvent());
         }
 
         private async Task OnClickUrl(BkViewItem bk, MouseEventArgs? e)
