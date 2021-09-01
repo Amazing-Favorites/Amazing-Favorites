@@ -146,11 +146,7 @@ namespace Newbe.BookmarkManager.Pages
                                 }
                             }
 
-                            var target = await BkSearcher.RecentClicked(args!, _resultLimit);
-                            foreach (var item in target)
-                            {
-                                Console.WriteLine($"BK:{item.Bk}  Time:{new DateTime(item.LastClickTime)}");
-                            }
+                            var target = await BkSearcher.Search(args!, _resultLimit);
                             _targetBks = Map(target);
                         }
                         catch (Exception e)
