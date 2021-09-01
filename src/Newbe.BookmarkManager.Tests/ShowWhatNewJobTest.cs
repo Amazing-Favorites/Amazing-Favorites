@@ -23,7 +23,7 @@ namespace Newbe.BookmarkManager.Tests
         {
             using var mocker = AutoMock.GetLoose();
             mocker.Mock<INewNotification>()
-                .Setup(x=>x.NewReleaseAsync(It.IsAny<NewReleaseInput>()))
+                .Setup(x => x.NewReleaseAsync(It.IsAny<NewReleaseInput>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
