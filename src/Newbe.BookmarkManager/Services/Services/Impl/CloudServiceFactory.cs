@@ -21,13 +21,13 @@ namespace Newbe.BookmarkManager.Services
             _lifetimeScope = lifetimeScope;
         }
 
-        public async Task<ICloudService> CreateAsync()
+        public async Task<ServiceItem> CreateAsync()
         {
             var options = await _userOptionsService.GetOptionsAsync();
             var cloudBkProviderType = options.CloudBkFeature!.CloudBkProviderType;
             _logger.LogInformation("current provider: {CloudBkProviderType}", cloudBkProviderType);
             var service = _lifetimeScope.ResolveKeyed<ICloudService>(cloudBkProviderType);
-            return service;
+            return new ServiceItem(cloudBkProviderType, service);
         }
     }
 }

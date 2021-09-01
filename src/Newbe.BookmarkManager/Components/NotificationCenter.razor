@@ -1,0 +1,68 @@
+﻿@using Newbe.BookmarkManager.Services
+<Popover Placement="@PlacementType.Bottom"
+         Trigger="@(Array.Empty<TriggerType>())" Visible="@NotificationCenterCore.NewMessage">
+    <ContentTemplate>
+        👋 new message
+    </ContentTemplate>
+    <ChildContent>
+        <Popover Placement="@PlacementType.Bottom"
+                 Trigger="@(new[] { AntDesign.TriggerType.Click })">
+            <ChildContent>
+                <Badge Dot="NotificationCenterCore.RedDot">
+                    <Button OnClick="ClickNotificationCenterAsync">
+                        <Icon Type="notification"/>
+                    </Button>
+                </Badge>
+            </ChildContent>
+            <ContentTemplate>
+                @if (NotificationCenterCore?.Records?.Count > 0)
+                {
+                    <AntList DataSource="@NotificationCenterCore.Records"
+                             TItem="NotificationRecord"
+                             ItemLayout="@ListItemLayout.Vertical"
+                             Style="width: 400px">
+                        <ChildContent Context="item">
+                            <ListItem NoFlex="@true" @key="@(item.Id + item.UpdateTime)">
+                                @switch (item.Group)
+                                {
+                                    case nameof(UserNotificationType.Normal):
+                                        <NormalMessage Record="item"></NormalMessage>
+                                        break;
+                                    case nameof(UserNotificationType.Welcome):
+                                        <WelcomeMessage Record="item"></WelcomeMessage>
+                                        break;
+                                    case nameof(UserNotificationType.NewRelease):
+                                        <NewReleaseMessage Record="item"></NewReleaseMessage>
+                                        break;
+                                    case nameof(UserNotificationType.SyncDataWithCloud):
+                                        <SyncDataWithCloud Record="item"></SyncDataWithCloud>
+                                        break;
+                                    case nameof(UserNotificationType.PrivacyAgreementUpdated):
+                                        <PrivacyAgreementUpdatedMessage Record="item"></PrivacyAgreementUpdatedMessage>
+                                        break;
+                                    case nameof(UserNotificationType.PinyinTokenExpired):
+                                        <PinyinTokenExpired Record="item"></PinyinTokenExpired>
+                                        break;
+                                    case nameof(UserNotificationType.CloudBkTokenExpired):
+                                        <CloudBkTokenExpired Record="item"></CloudBkTokenExpired>
+                                        break;
+                                    case nameof(UserNotificationType.SuccessToSyncBkWithCloud):
+                                        <SuccessToSyncBkWithCloud Record="item"></SuccessToSyncBkWithCloud>
+                                        break;
+                                    default:
+                                        <NormalMessage Record="item"></NormalMessage>
+                                        break;
+                                }
+                            </ListItem>
+                        </ChildContent>
+                    </AntList>
+                }
+                else
+                {
+                    <Empty/>
+                }
+
+            </ContentTemplate>
+        </Popover>
+    </ChildContent>
+</Popover>

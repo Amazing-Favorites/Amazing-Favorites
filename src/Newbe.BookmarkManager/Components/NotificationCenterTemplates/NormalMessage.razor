@@ -1,0 +1,21 @@
+﻿@using Newbe.BookmarkManager.Services
+<ListItemMeta >
+    <TitleTemplate>
+        @NotificationItem.Title
+    </TitleTemplate>
+    <DescriptionTemplate>
+        @NotificationItem.CreatedTime.ToLocalTime()
+    </DescriptionTemplate>
+</ListItemMeta>
+<Paragraph>
+    @NotificationItem.Message
+</Paragraph>
+
+@code {
+
+    [Parameter]
+    public NotificationRecord Record { get; set; } = null!;
+
+    MsgItem NotificationItem => Record.Items.First();
+
+}

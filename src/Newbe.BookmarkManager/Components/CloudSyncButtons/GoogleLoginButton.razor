@@ -2,9 +2,11 @@
 @using Microsoft.Extensions.Logging
 @using Newbe.BookmarkManager.Services.EventHubs
 <Spin Spinning="@_loading">
-    <Button OnClick="ClickLoginAsync">
-        <AntDesign.Text>Sync data to GoogleDrive</AntDesign.Text>
-    </Button>
+    <Tooltip Placement="@PlacementType.Bottom" Title="@("Sync data to GoogleDrive")">
+        <Button OnClick="ClickLoginAsync">
+            <Icon Type="cloud-sync" Theme="outline"/>
+        </Button>
+    </Tooltip>
 </Spin>
 
 

@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services;
-using Newbe.BookmarkManager.Services.EventHubs;
 
 namespace Newbe.BookmarkManager.Components
 {
     public class ManagePageNotificationService : IManagePageNotificationService
     {
         private readonly IUserOptionsService _userOptionsService;
-        private readonly IAfEventHub _afEventHub;
+        private readonly INewNotification _newNotification;
 
         public ManagePageNotificationService(
             IUserOptionsService userOptionsService,
-            IAfEventHub afEventHub)
+            INewNotification newNotification)
         {
             _userOptionsService = userOptionsService;
-            _afEventHub = afEventHub;
+            _newNotification = newNotification;
         }
 
         public async Task RunAsync()
@@ -23,12 +22,19 @@ namespace Newbe.BookmarkManager.Components
             var userOptions = await _userOptionsService.GetOptionsAsync();
             await Task.Delay(TimeSpan.FromSeconds(5));
 
-
+            var now = DateTime.Now;
             if (userOptions?.PinyinFeature?.Enabled == true &&
                 userOptions.PinyinFeature?.ExpireDate.HasValue == true &&
-                userOptions.PinyinFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                userOptions.PinyinFeature.ExpireDate < now.AddDays(Consts.JwtExpiredWarningDays))
             {
-                await NoticeWarning("PinyinAccessToken");
+                var days = (userOptions.PinyinFeature.ExpireDate.Value - now).Days;
+                if (Math.Abs(days) < Consts.JwtExpiredWarningDays)
+                {
+                    await _newNotification.PinyinTokenExpiredAsync(new PinyinTokenExpiredInput
+                    {
+                        LeftDays = days
+                    });
+                }
             }
 
             if (userOptions is
@@ -45,41 +51,22 @@ namespace Newbe.BookmarkManager.Components
                 {
                     case CloudBkProviderType.NewbeApi:
                         if (cloudBkFeature.ExpireDate.HasValue &&
-                            cloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                            cloudBkFeature.ExpireDate < now.AddDays(Consts.JwtExpiredWarningDays))
                         {
-                            await NoticeWarning("CloudBkAccessToken");
+                            var days = (cloudBkFeature.ExpireDate.Value - now).Days;
+                            if (Math.Abs(days) < Consts.JwtExpiredWarningDays)
+                            {
+                                await _newNotification.CloudBkTokenExpiredAsync(new CloudBkTokenExpiredInput
+                                {
+                                    LeftDays = days
+                                });
+                            }
                         }
 
                         break;
                     default:
                         break;
                 }
-            }
-
-            if (userOptions is
-                {
-                    AcceptPrivacyAgreement: false
-                })
-            {
-                var msg = userOptions.AcceptPrivacyAgreementBefore
-                    ? "Privacy Agreement has been updated recently, please check it out in control panel"
-                    : "We invite you to read our privacy agreement to enable more features in control panel";
-                await _afEventHub.PublishAsync(new UserNotificationEvent
-                {
-                    AfNotificationType = AfNotificationType.Info,
-                    Message = msg
-                });
-            }
-
-            async Task NoticeWarning(string tokenName)
-            {
-                await _afEventHub.PublishAsync(new UserNotificationEvent
-                {
-                    AfNotificationType = AfNotificationType.Warning,
-                    Message = $"{tokenName} is about to expire",
-                    Description =
-                        $"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.",
-                });
             }
         }
     }

@@ -1,0 +1,32 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Microsoft.Extensions.Options
+@using Newbe.BookmarkManager.Services.Configuration
+<ListItemMeta >
+    <TitleTemplate>
+        @NotificationItem.Title
+    </TitleTemplate>
+    <DescriptionTemplate>
+        @NotificationItem.CreatedTime.ToLocalTime()
+    </DescriptionTemplate>
+</ListItemMeta>
+<Paragraph>
+    @NotificationItem.Message
+</Paragraph>
+<Paragraph>
+    <a href="@StaticUrlOptions.Value.Welcome"
+       target="_blank">
+        click here to see how to use this extension
+    </a>
+</Paragraph>
+
+@code {
+
+    [Parameter]
+    public NotificationRecord Record { get; set; } = null!;
+
+    [Inject]
+    public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
+
+    MsgItem NotificationItem => Record.Items.First();
+
+}

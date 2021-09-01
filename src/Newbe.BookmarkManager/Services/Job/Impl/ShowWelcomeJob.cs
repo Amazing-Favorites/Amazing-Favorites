@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
-using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -13,21 +12,21 @@ namespace Newbe.BookmarkManager.Services
         private readonly ILogger<ShowWelcomeJob> _logger;
         private readonly IApplicationInsights _applicationInsights;
         private readonly IIndexedDbRepo<AfMetadata, string> _afMetadataRepo;
-        private readonly ITabsApi _tabsApi;
         private readonly IOptions<StaticUrlOptions> _staticUrlOptions;
+        private readonly INewNotification _newNotification;
 
         public ShowWelcomeJob(
             ILogger<ShowWelcomeJob> logger,
             IApplicationInsights applicationInsights,
             IIndexedDbRepo<AfMetadata, string> afMetadataRepo,
-            ITabsApi tabsApi,
-            IOptions<StaticUrlOptions> staticUrlOptions)
+            IOptions<StaticUrlOptions> staticUrlOptions,
+            INewNotification newNotification)
         {
             _logger = logger;
             _applicationInsights = applicationInsights;
             _afMetadataRepo = afMetadataRepo;
-            _tabsApi = tabsApi;
             _staticUrlOptions = staticUrlOptions;
+            _newNotification = newNotification;
         }
 
         public async ValueTask StartAsync()
@@ -40,7 +39,7 @@ namespace Newbe.BookmarkManager.Services
                 if (!string.IsNullOrEmpty(welcomeUrl))
                 {
                     await _applicationInsights.TrackEvent(Events.AfWelcomeShown);
-                    await _tabsApi.ActiveOrOpenAsync(welcomeUrl);
+                    await _newNotification.WelcomeAsync();
                     _logger.LogInformation("Welcome shown");
                 }
 

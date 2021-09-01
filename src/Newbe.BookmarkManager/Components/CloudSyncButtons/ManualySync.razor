@@ -41,7 +41,6 @@
         _userOptions = await UserOptionsService.GetOptionsAsync();
         StateHasChanged();
         AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
-        AfEventHub.RegisterHandler<SyncToCloudSuccessEvent>(HandleSyncToCloudSuccessEvent);
         await AfEventHub.EnsureStartAsync();
     }
 
@@ -54,12 +53,4 @@
         });
     }
 
-    private Task HandleSyncToCloudSuccessEvent(SyncToCloudSuccessEvent evt)
-    {
-        return AfEventHub.PublishAsync(new UserNotificationEvent
-        {
-            AfNotificationType = AfNotificationType.Info,
-            Message = $"Success to sync your data to cloud at {Clock.UtcNow.ToLocalTime()}"
-        });
-    }
 }

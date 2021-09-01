@@ -6,12 +6,14 @@ namespace Newbe.BookmarkManager.Services
     public static class Consts
     {
         public const string AppName = "Amazing Favorites";
-        public const string CurrentVersion = "0.6.2";
+        public const string CurrentVersion = "0.6.3";
         public const string PrivacyAgreementVersionDate = "2021/08/29";
 
         public static readonly string[] Versions =
         {
-            CurrentVersion
+            CurrentVersion,
+            "0.6.2",
+            "0.6.1"
         };
 
         public const int JwtExpiredWarningDays = 7;
@@ -44,6 +46,7 @@ namespace Newbe.BookmarkManager.Services
             public const string SearchRecord = "SearchRecord";
             [Obsolete("use simple data")] public const string RecentSearch = "RecentSearch";
             public const string SimpleData = "SimpleData";
+            public const string NotificationRecord = "NotificationRecord";
         }
 
         private static readonly HashSet<string> ReservedBookmarkFolder = new()

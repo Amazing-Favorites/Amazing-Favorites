@@ -18,7 +18,8 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
 using WebExtensions.Net.Tabs;
-
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
