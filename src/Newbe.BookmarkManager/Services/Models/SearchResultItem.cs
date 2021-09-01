@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Newbe.BookmarkManager.Services
@@ -7,8 +6,6 @@ namespace Newbe.BookmarkManager.Services
     public record SearchResultItem(Bk Bk)
     {
         public int ClickCount { get; init; }
-
-        public long LastClickTime { get; set; }
         public bool Matched => Score > 0;
         public double Score => MatchedDetails.Values.Sum();
         public Dictionary<ScoreReason, int> MatchedDetails { get; set; } = new();
