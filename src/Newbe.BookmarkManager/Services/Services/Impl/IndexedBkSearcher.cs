@@ -43,6 +43,7 @@ namespace Newbe.BookmarkManager.Services
             {
                 source = source
                     .OrderByDescending(x => x.Score)
+                    .ThenByDescending(x=>x.LastClickTime)
                     .ThenByDescending(x => x.ClickCount)
                     .Take(limit)
                     .ToArray();
@@ -61,7 +62,10 @@ namespace Newbe.BookmarkManager.Services
                     return source
                         .Select(x =>
                         {
-                            var r = new SearchResultItem(x);
+                            var r = new SearchResultItem(x)
+                            {
+                                LastClickTime = x.LastClickTime
+                            };
                             r.AddScore(ScoreReason.Const, 10);
                             return r;
                         });
@@ -99,7 +103,8 @@ namespace Newbe.BookmarkManager.Services
                 {
                     var result = new SearchResultItem(item)
                     {
-                        ClickCount = item.ClickedCount
+                        ClickCount = item.ClickedCount,
+                        LastClickTime = item.LastClickTime
                     };
 
                     result.AddScore(ScoreReason.Title, input.Keywords.Any(x => StringContains(item.Title, x)));
@@ -133,11 +138,22 @@ namespace Newbe.BookmarkManager.Services
         public async Task<SearchResultItem[]> History(string searchText, int limit)
         {
             var sw = Stopwatch.StartNew();
-            var source = (await SearchCore(searchText))
-                .OrderByDescending(x => x.Score)
-                .ThenByDescending(x => x.LastClickTime)
-                .ThenByDescending(x => x.ClickCount)
-                .Take(limit);
+            var source = await SearchCore(searchText);
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                source = source
+                    .OrderByDescending(x => x.LastClickTime)
+                    .ThenByDescending(x => x.ClickCount);
+                //.Take(limit);
+            }
+            else
+            {
+                source = source
+                    .OrderByDescending(x => x.Score)
+                    .ThenByDescending(x => x.LastClickTime)
+                    .ThenByDescending(x => x.ClickCount);
+                //.Take(limit);
+            }
             var time = sw.ElapsedMilliseconds;
             _logger.LogInformation("Search cost: {Time} ms", time);
             return source.ToArray();

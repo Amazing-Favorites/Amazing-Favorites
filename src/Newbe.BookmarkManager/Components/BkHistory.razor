@@ -3,35 +3,64 @@
 @using System.Reactive.Linq
 @using Microsoft.Extensions.Logging
 
-<Popover Placement="@PlacementType.Bottom"
-         TitleTemplate="@_text" ContentTemplate="@ContentTemplate(_targetBks)" Trigger="@(new[] {AntDesign.TriggerType.Click})">
-    <Button>
-        BkHistory
-    </Button>
-</Popover>
-
+<Button OnClick="_=>visible = true">
+    <Icon Type="history"/>
+</Button>
+<Drawer Visible="@visible" OnClose="_=>visible = false">
+    <AutoComplete Options="@SearchOptions">
+        <ChildContent>
+            <AutoCompleteSearch EnterButton="true"
+                                AutoFocus="true"
+                                Placeholder="input keyword to search"
+                                @bind-Value="SearchValue">
+            </AutoCompleteSearch>
+        </ChildContent>
+    </AutoComplete>
+    <Collapse>
+        <AntList DataSource="@_dateGroup">
+            <ChildContent Context="group">
+                <Panel Header="@(group.Date > new DateTime(1970,1,1)?group.Date.ToShortDateString():"Unclick")" Key="@group.Date.ToShortDateString()">
+                    <AntList DataSource="@group.List">
+                        <ChildContent Context="item">
+                            <Paragraph>
+                                @item.LastClickTime.ToLocalTime().ToShortTimeString()
+                            </Paragraph>
+                            <Paragraph>
+                                <a href="@item.Bk.Url">@item.Bk.Title</a>
+                            </Paragraph>
+                        </ChildContent>
+                    </AntList>
+                </Panel>
+            </ChildContent>
+        </AntList>
+    </Collapse>
+</Drawer>
 
 
 
 @code {
     [Inject] public IBkSearcher BkSearcher { get; set; }
     
+    [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
+    
     private SearchResultItem[] _targetBks { get; set; }
+    
+    private IEnumerable<ViewModel> _dateGroup { get; set; }
     
     private  string _searchValue { get; set; }
     
     private readonly Subject<string?> _searchSubject = new();
     private bool _searchInputLoading;
-    private RenderFragment _text =@<span>BkHistory</span>;
 
-    private RenderFragment<SearchResultItem[]> ContentTemplate = (bks)=> 
-                                             @<AntList  Bordered DataSource="@bks">
-                                                 <ChildContent Context="bk">
-                                                     <ListItem @key="bk.Bk.Id">
-                                                         <p>@bk.Bk.Title</p>
-                                                     </ListItem>
-                                                 </ChildContent>
-                                             </AntList>;
+    private bool visible;
+
+    private record ViewModel
+    {
+        public DateTime Date { get; set; }
+
+        public IEnumerable<SearchResultItem> List { get; set; }
+    }
+    
     
     private string SearchValue
     {
@@ -40,6 +69,14 @@
         {
             _searchValue = value;
             _searchSubject?.OnNext(value);
+        }
+    }
+    private IEnumerable<string> SearchOptions
+    {
+        get
+        {
+            return RecentSearchHolder?.RecentSearch?.Items?.Select(x => x.Text)
+                   ?? Array.Empty<string>();
         }
     }
     protected override void OnAfterRender(bool firstRender)
@@ -73,6 +110,12 @@
 
                         var target = await BkSearcher.History(args!, 10);
                         _targetBks = target;
+                        _dateGroup = target.GroupBy(x => x.LastClickTime.ToLocalTime().Date)
+                            .Select(x => new ViewModel
+                            {
+                                Date = x.Key,
+                                List = x
+                            });
                     }
                     catch (Exception e)
                     {
