@@ -71,13 +71,16 @@ namespace Newbe.BookmarkManager
                 .AddTransient<IIdentityApi>(p => p.GetRequiredService<IWebExtensionsApi>().Identity)
                 .AddTransient<IRuntimeApi>(p => p.GetRequiredService<IWebExtensionsApi>().Runtime)
                 .AddTransient<IManagePageNotificationService, ManagePageNotificationService>()
+                .AddTransient<INotificationCenterCore, NotificationCenterCore>()
+                .AddTransient<INewNotification, NewNotification>()
                 .AddTransient<IClock, SystemClock>()
                 .AddTransient<ITagsManager, TagsManager>()
                 .AddSingleton<IRecentSearchHolder, RecentSearchHolder>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
                 .AddSingleton<IAfCodeService, AfCodeService>()
                 .AddSingleton<IRecordService, RecordService>()
-                .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>();
+                .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>()
+                .AddSingleton<INotificationRecordService, NotificationRecordService>();
 
 
             builder.Services
@@ -109,7 +112,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
-                dbStore.Version = 5;
+                dbStore.Version = 6;
 
                 dbStore.Stores.Add(new StoreSchema
                 {
@@ -149,6 +152,11 @@ namespace Newbe.BookmarkManager
                 dbStore.Stores.Add(new StoreSchema
                 {
                     Name = Consts.StoreNames.SimpleData,
+                    PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
+                });
+                dbStore.Stores.Add(new StoreSchema
+                {
+                    Name = Consts.StoreNames.NotificationRecord,
                     PrimaryKey = new IndexSpec { Name = "id", KeyPath = "id", Auto = false, Unique = true },
                 });
             });
@@ -294,6 +302,7 @@ namespace Newbe.BookmarkManager
                     yield return typeof(DataFixJob);
                     yield return typeof(ShowWelcomeJob);
                     yield return typeof(ShowWhatNewJob);
+                    yield return typeof(InviteAcceptPrivacyAgreementJob);
                     yield return typeof(SyncBookmarkJob);
                     yield return typeof(SyncAliasJob);
                     yield return typeof(SyncTagRelatedBkCountJob);

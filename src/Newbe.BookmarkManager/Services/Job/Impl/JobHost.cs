@@ -12,6 +12,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly IShowWhatNewJob _showWhatNewJob;
         private readonly IShowWelcomeJob _showWelcomeJob;
         private readonly ISyncCloudStatusCheckJob _syncCloudStatusCheckJob;
+        private readonly IInviteAcceptPrivacyAgreementJob _inviteAcceptPrivacyAgreementJob;
 
         public JobHost(ISyncBookmarkJob syncBookmarkJob,
             ISyncAliasJob syncAliasJob,
@@ -20,7 +21,8 @@ namespace Newbe.BookmarkManager.Services
             ISyncTagRelatedBkCountJob syncTagRelatedBkCountJob,
             IShowWhatNewJob showWhatNewJob,
             IShowWelcomeJob showWelcomeJob,
-            ISyncCloudStatusCheckJob syncCloudStatusCheckJob)
+            ISyncCloudStatusCheckJob syncCloudStatusCheckJob,
+            IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob)
         {
             _syncBookmarkJob = syncBookmarkJob;
             _syncAliasJob = syncAliasJob;
@@ -30,6 +32,7 @@ namespace Newbe.BookmarkManager.Services
             _showWhatNewJob = showWhatNewJob;
             _showWelcomeJob = showWelcomeJob;
             _syncCloudStatusCheckJob = syncCloudStatusCheckJob;
+            _inviteAcceptPrivacyAgreementJob = inviteAcceptPrivacyAgreementJob;
         }
 
         public async Task StartAsync()
@@ -42,6 +45,7 @@ namespace Newbe.BookmarkManager.Services
             await _syncCloudJob.StartAsync();
             await _syncTagRelatedBkCountJob.StartAsync();
             await _syncCloudStatusCheckJob.StartAsync();
+            await _inviteAcceptPrivacyAgreementJob.StartAsync();
         }
     }
 }

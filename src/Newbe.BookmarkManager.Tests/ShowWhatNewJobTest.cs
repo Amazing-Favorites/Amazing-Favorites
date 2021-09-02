@@ -22,12 +22,9 @@ namespace Newbe.BookmarkManager.Tests
         public async Task OpenIfNotShown()
         {
             using var mocker = AutoMock.GetLoose();
-            mocker.Mock<ITabsApi>()
-                .Setup(x => x.Query(It.IsAny<QueryInfo>()))
-                .Returns(new ValueTask<IEnumerable<Tab>>(Enumerable.Empty<Tab>()))
-                .Verifiable();
-            mocker.Mock<ITabsApi>()
-                .Setup(x => x.Create(It.IsAny<CreateProperties>()))
+            mocker.Mock<INewNotification>()
+                .Setup(x => x.NewReleaseAsync(It.IsAny<NewReleaseInput>()))
+                .Returns(Task.CompletedTask)
                 .Verifiable();
 
             mocker.Mock<IOptions<StaticUrlOptions>>()

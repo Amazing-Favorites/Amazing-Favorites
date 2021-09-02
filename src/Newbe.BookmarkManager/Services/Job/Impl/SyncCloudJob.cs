@@ -5,6 +5,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.SimpleData;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -16,7 +17,11 @@ namespace Newbe.BookmarkManager.Services
         private readonly ICloudServiceFactory _cloudServiceFactory;
         private readonly IAfEventHub _afEventHub;
         private readonly IClock _clock;
-        private Subject<long> _eventSubject = new();
+        private readonly INewNotification _newNotification;
+        private readonly IGoogleDriveClient _googleDriveClient;
+        private readonly IOneDriveClient _oneDriveClient;
+        private readonly ISimpleDataStorage _simpleDataStorage;
+        private readonly Subject<long> _eventSubject = new();
 
         // ReSharper disable once NotAccessedField.Local
         private IDisposable _jobHandler;
@@ -27,7 +32,11 @@ namespace Newbe.BookmarkManager.Services
             IUserOptionsService userOptionsService,
             ICloudServiceFactory cloudServiceFactory,
             IAfEventHub afEventHub,
-            IClock clock)
+            IClock clock,
+            INewNotification newNotification,
+            IGoogleDriveClient googleDriveClient,
+            IOneDriveClient oneDriveClient,
+            ISimpleDataStorage simpleDataStorage)
         {
             _logger = logger;
             _bkManager = bkManager;
@@ -35,11 +44,16 @@ namespace Newbe.BookmarkManager.Services
             _cloudServiceFactory = cloudServiceFactory;
             _afEventHub = afEventHub;
             _clock = clock;
+            _newNotification = newNotification;
+            _googleDriveClient = googleDriveClient;
+            _oneDriveClient = oneDriveClient;
+            _simpleDataStorage = simpleDataStorage;
         }
 
         public async ValueTask StartAsync()
         {
             _afEventHub.RegisterHandler<TriggerCloudSyncEvent>(HandleTriggerCloudSyncEvent);
+            _afEventHub.RegisterHandler<UserLoginSuccessEvent>(HandleUserLoginSuccessEvent);
             await _afEventHub.EnsureStartAsync();
             _eventSubject.OnNext(_clock.UtcNow);
             _jobHandler = _eventSubject
@@ -70,7 +84,7 @@ namespace Newbe.BookmarkManager.Services
 
         private async Task RunSyncAsync()
         {
-            var cloudService = await _cloudServiceFactory.CreateAsync();
+            var (cloudBkProviderType, cloudService) = await _cloudServiceFactory.CreateAsync();
             var options = await _userOptionsService.GetOptionsAsync();
             if (options is
                 {
@@ -92,6 +106,11 @@ namespace Newbe.BookmarkManager.Services
                         // sync to local
                         await _bkManager.LoadCloudCollectionAsync(output.CloudBkCollection!);
                         LogSyncToLocal(output.EtagVersion, output.LastUpdateTime);
+                        await _newNotification.SuccessToSyncBkWithCloudAsync(new SuccessToSyncBkWithCloudInput
+                        {
+                            CloudBkProviderType = cloudBkProviderType
+                        });
+                        await UpdateLastSyncTimeAsync();
                     }
                     else if (output.EtagVersion < etagVersion)
                     {
@@ -100,7 +119,11 @@ namespace Newbe.BookmarkManager.Services
                         if (cloudBkCollection.Bks.Count > 0)
                         {
                             await cloudService.SaveToCloudAsync(cloudBkCollection);
-                            await _afEventHub.PublishAsync(new SyncToCloudSuccessEvent());
+                            await _newNotification.SuccessToSyncBkWithCloudAsync(new SuccessToSyncBkWithCloudInput
+                            {
+                                CloudBkProviderType = cloudBkProviderType
+                            });
+                            await UpdateLastSyncTimeAsync();
                             LogSyncToCloud(
                                 cloudBkCollection.EtagVersion,
                                 cloudBkCollection.LastUpdateTime);
@@ -115,6 +138,39 @@ namespace Newbe.BookmarkManager.Services
                 {
                     LogSameToCloud(etagVersion);
                 }
+            }
+        }
+
+        private async Task UpdateLastSyncTimeAsync()
+        {
+            var cloudBkSyncStatics = await _simpleDataStorage.GetOrDefaultAsync<CloudBkSyncStatics>();
+            cloudBkSyncStatics.LastSyncTime = _clock.UtcNow;
+            await _simpleDataStorage.SaveAsync(cloudBkSyncStatics);
+        }
+
+        private async Task HandleUserLoginSuccessEvent(UserLoginSuccessEvent afEvent)
+        {
+            _logger.LogInformation("received {Event}", nameof(UserLoginSuccessEvent));
+            var (cloudBkProviderType, accessToken) = afEvent;
+            switch (cloudBkProviderType)
+            {
+                case CloudBkProviderType.NewbeApi:
+                    break;
+                case CloudBkProviderType.GoogleDrive:
+                    _googleDriveClient.LoadToken(accessToken);
+                    await TriggerSync();
+                    break;
+                case CloudBkProviderType.OneDrive:
+                    _oneDriveClient.LoadToken(accessToken);
+                    await TriggerSync();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            Task TriggerSync()
+            {
+                return _afEventHub.PublishAsync(new TriggerCloudSyncEvent());
             }
         }
 

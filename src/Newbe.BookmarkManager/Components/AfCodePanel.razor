@@ -1,20 +1,19 @@
 ﻿@using Newbe.BookmarkManager.Services
 <Modal Title="@($"Sharing {Url}")"
        Visible="@Visible"
-       Width="1000"
+       Width="800"
        OnOk="e => ClosePanel()"
        OnCancel="e => ClosePanel()">
     <Form Model="@_model"
-          LabelColSpan="4"
-          WrapperColSpan="20"
+          Layout="@FormLayout.Vertical"
           Size="Default">
-        <FormItem Label="Plain Text Json">
+        <FormItem Label="Plain Text Json" LabelStyle="font-weight: bold">
             <Paragraph Copyable>@((MarkupString) context.PlainText)</Paragraph>
         </FormItem>
-        <FormItem Label="Base64 Encoded Json">
+        <FormItem Label="Base64 Encoded Json" LabelStyle="font-weight: bold">
             <Paragraph Copyable>@((MarkupString) context.JsonBase64)</Paragraph>
         </FormItem>
-        <FormItem Label="Gzip Compression Json">
+        <FormItem Label="Gzip Compression Json" LabelStyle="font-weight: bold">
             <Paragraph Copyable>@((MarkupString) context.CompressionJsonBase64)</Paragraph>
         </FormItem>
     </Form>

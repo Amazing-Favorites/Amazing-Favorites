@@ -3,28 +3,62 @@
         <ManualySync></ManualySync>
     </SpaceItem>
     <SpaceItem>
-        <Button OnClick="OpenWelcome">
-            🌟 Welcome
-        </Button>
+        <NotificationCenter></NotificationCenter>
     </SpaceItem>
     <SpaceItem>
-        <Button OnClick="OpenWhatsNew">
-            🆕 What`s New
-        </Button>
-    </SpaceItem>
-    <SpaceItem>
-        <LikeProject/>
-    </SpaceItem>
-    <SpaceItem>
-        <Button OnClick="OpenHelp">
-            ❔ Help
-        </Button>
-    </SpaceItem>
-    <SpaceItem>
-        <Button OnClick="OpenControlPanel">
-            ⚙
-        </Button>
+        <DropdownButton OnClick="OpenControlPanel">
+            <Overlay>
+                <Menu>
+                    <MenuItem Key="4" OnClick="OpenHelp">
+                        ❔ Help
+                    </MenuItem>
+                    <MenuItem Key="1" OnClick="OpenWhatsNew">
+                        🆕 What`s New
+                    </MenuItem>
+                    <MenuItem Key="2" OnClick="OpenWelcome">
+                        🌟 Welcome
+                    </MenuItem>
+                    <MenuItem Key="3" OnClick="OnClickLike">
+                        ♥ Like This
+                    </MenuItem>
+                </Menu>
+            </Overlay>
+            <ChildContent>
+                ⚙
+            </ChildContent>
+        </DropdownButton>
     </SpaceItem>
 </Space>
 <ControlPanel OnClickResumeFactorySetting="OnClickResumeFactorySetting"
               @bind-Visible="_controlPanelVisible"/>
+
+<Modal Title="Like This"
+       Visible="@_visible"
+       Width="1000"
+       OnCancel="() => _visible = false"
+       OnOk="() => _visible = false">
+    <p>
+        Your support is the key to the growth of the project.
+    </p>
+    <p>
+        We are looking forward to your liking or sharing this project at the following link.
+    </p>
+    <ul>
+        <li>
+            Github: <a href="https://github.com/newbe36524/Amazing-Favorites" target="_blank">https://github.com/newbe36524/Amazing-Favorites</a>
+        </li>
+        <li>
+            Gitee: <a href="https://gitee.com/yks/Amazing-Favorites" target="_blank">https://gitee.com/yks/Amazing-Favorites</a>
+        </li>
+        <li>
+            <a href="https://microsoftedge.microsoft.com/addons/detail/amazing-favorites/bknjgbpkaloajcphccpcnahegfglfiei" target="_blank">Microsoft Edge Extenstion Store</a>
+        </li>
+        <li>
+            <a href="https://chrome.google.com/webstore/detail/amazing-favorites/podhpclhgkdeiechkdceginfehfanhcb" target="_blank">Chrome Extenstion Store</a>
+        </li>
+        <li>
+            <a href="https://twitter.com/newbe36524/status/1403913613895737346" target="_blank">Twitter</a>
+        </li>
+
+    </ul>
+</Modal>
