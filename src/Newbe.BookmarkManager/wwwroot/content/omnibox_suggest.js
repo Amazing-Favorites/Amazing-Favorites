@@ -1,11 +1,16 @@
-﻿(async()=>{
-
-    browser.omnibox.onInputChanged.addListener(async (input,suggest)=>{
+﻿(async () => {
+    console.info("ominiboxSuggest loading");
+    const global = globalThis;
+    window.DotNet.SetDotnetReference = function (pDotNetReference) {
+        console.log(`dotnet set: ${pDotNetReference}`)
+        window.DotNet.DotNetReference = pDotNetReference;
+    };
+    global.browser.omnibox.onInputChanged.addListener(async (input,suggest)=>{
 
         var result = await global.DotNet.DotNetReference.invokeMethodAsync("GetOnimiBoxSuggest",input);
         suggest(result);
     });
-    browser.omnibox.onInputEntered.addListener(async (url, disposition) => {
+    global.browser.omnibox.onInputEntered.addListener(async (url, disposition) => {
         var result = await global.DotNet.DotNetReference.invokeMethodAsync("CheckIsUrl",url);
         if(!result)
         {
@@ -27,15 +32,15 @@
         }
         switch (disposition) {
             case "currentTab":
-                browser.tabs.update({url});
+                await browser.tabs.update({url});
                 break;
             case "newForegroundTab":
-                browser.tabs.create({url});
+                await browser.tabs.create({url});
                 break;
             case "newBackgroundTab":
-                browser.tabs.create({url, active: false});
+                await browser.tabs.create({url, active: false});
                 break;
         }
     });
     console.info("ominiboxSuggest loaded");
-})
+})();

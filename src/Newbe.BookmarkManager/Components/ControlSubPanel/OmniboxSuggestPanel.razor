@@ -1,4 +1,4 @@
-﻿<Panel Header="System Actions" Key="System Actions">
+﻿<Panel Header="Omnibox Suggest" Key="Omnibox Suggest" @ref="_panel">
     <ChildContent>
         <Space>
             <SpaceItem>
@@ -8,7 +8,8 @@
                                 OnChange="OnEnableChange"/>
             </SpaceItem>
             <SpaceItem>
-                <InputNumber @bind-Value="UserOptions.OmniboxSuggestFeature.SuggestCount" Min="1" Max="6" DefaultValue="3"></InputNumber>
+                Suggest Count
+                <AntDesign.InputNumber @bind-Value="UserOptions.OmniboxSuggestFeature.SuggestCount" Min="1" Max="6" DefaultValue="3"></AntDesign.InputNumber>
             </SpaceItem>
         </Space>
         <DevButtons></DevButtons>

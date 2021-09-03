@@ -29,7 +29,15 @@ namespace Newbe.BookmarkManager.Pages
         [JSInvokable]
         public async Task<SuggestResult[]> GetOnimiBoxSuggest(string input)
         {
-            var searchResult = await BkSearcher.Search(input, 3);
+            var option = (await UserOptionsService.GetOptionsAsync())?.OmniboxSuggestFeature;
+            if (option?.Enabled == false)
+            {
+                return Array.Empty<SuggestResult>();
+            }
+            
+            
+            var limit = option?.SuggestCount??3; 
+            var searchResult = await BkSearcher.Search(input, limit);
             var t1 = searchResult.Select(a => new SuggestResult
             {
                 Content = a.Bk.Url,
@@ -53,6 +61,7 @@ namespace Newbe.BookmarkManager.Pages
             {
                 _moduleLoader = new JsModuleLoader(JsRuntime);
                 await _moduleLoader.LoadAsync("/content/background_keyboard.js");
+                await _moduleLoader.LoadAsync("/content/omnibox_suggest.js");
                 var userOptions = await UserOptionsService.GetOptionsAsync();
                 if (userOptions is
                     {
@@ -65,18 +74,6 @@ namespace Newbe.BookmarkManager.Pages
                 {
                     await _moduleLoader.LoadAsync("/content/ai.js");
                 }
-
-                if (userOptions is
-                {
-                    OmniboxSuggestFeature:
-                    {
-                        Enabled: true
-                    }
-                })
-                {
-                    await _moduleLoader.LoadAsync("/content/omnibox_suggest.js");
-                }
-
                 var lDotNetReference = DotNetObjectReference.Create(this);
                 await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
                 await JobHost.StartAsync();
