@@ -19,11 +19,4 @@
         await global.DotNet.DotNetReference.invokeMethodAsync('OnSearchInputKeyup', e.code, e.altKey);
     };
     console.info("keyboard event loaded");
-    chrome.tabs.onUpdated.addListener(async (tabId,changeInfo,tab)=>{
-        console.log(`tabs onChanged id:${tabId},url:${changeInfo.url}`);
-        console.log(`title:${changeInfo.title}`);
-        if(changeInfo.url){
-            await global.DotNet.DotNetReference.invokeMethodAsync('OpenNewTab',tabId,changeInfo.url);
-        }
-    });
 })();

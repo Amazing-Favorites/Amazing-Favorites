@@ -23,7 +23,7 @@
                     <AntList DataSource="@group.List">
                         <ChildContent Context="item">
                             <Row>
-                                <Col Class="short" Span="18">
+                                <Col style=" white-space: nowrap;  overflow: hidden; text-overflow: ellipsis;width: 90%;" Span="18">
                                     <a href="@item.Bk.Url">@item.Bk.Title</a>
                                 </Col>
                                 <Col Span="6">
@@ -37,16 +37,6 @@
         </AntList>
     </Collapse>
 </Drawer>
-
-<style>
-    .short{
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 90%;
-    }
-</style>
-
 @code {
     [Inject] public IBkSearcher BkSearcher { get; set; }
     

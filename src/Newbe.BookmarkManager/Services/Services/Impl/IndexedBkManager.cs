@@ -42,6 +42,7 @@ namespace Newbe.BookmarkManager.Services
             }
 
             bk.ClickedCount += moreCount;
+            bk.LastClickTime = _clock.UtcNow;
             await _bkRepo.UpsertAsync(bk);
         }
         public async Task RestoreAsync()
@@ -298,17 +299,6 @@ namespace Newbe.BookmarkManager.Services
                 await _bkRepo.UpsertAsync(bk);
             }
         }
-
-        public async Task UpdateLastClickTimeAsync(string url)
-        {
-            var bk = await _bkRepo.GetAsync(url);
-            if (bk != null)
-            {
-                bk.LastClickTime = _clock.UtcNow;
-                await _bkRepo.UpsertAsync(bk);
-            }
-        }
-
         public async Task<long> GetEtagVersionAsync()
         {
             var meta = await GetMetadataAsync();

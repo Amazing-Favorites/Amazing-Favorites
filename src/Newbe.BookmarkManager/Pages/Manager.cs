@@ -108,6 +108,7 @@ namespace Newbe.BookmarkManager.Pages
             {
                 _moduleLoader = new JsModuleLoader(JsRuntime);
                 await _moduleLoader.LoadAsync("/content/manager_keyboard.js");
+                await _moduleLoader.LoadAsync("/content/chrome_sub.js");
                 var userOptions = await UserOptionsService.GetOptionsAsync();
                 if (userOptions is
                     {
@@ -123,6 +124,8 @@ namespace Newbe.BookmarkManager.Pages
 
                 var lDotNetReference = DotNetObjectReference.Create(this);
                 await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
+                var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "/content/chrome_sub.js");
+                await module.InvokeVoidAsync("addListenerTabsOnUpdated");
                 _searchSubject
                     .Throttle(TimeSpan.FromMilliseconds(100))
                     .Select(x => x?.Trim())
@@ -376,7 +379,7 @@ namespace Newbe.BookmarkManager.Pages
         [JSInvokable]
         public async Task OpenNewTab(int id, string url)
         {
-            await BkManager.UpdateLastClickTimeAsync(url);
+            await BkManager.AddClickAsync(url, 1);
             await AfEventHub.PublishAsync(new RefreshManagerPageEvent());
         }
 

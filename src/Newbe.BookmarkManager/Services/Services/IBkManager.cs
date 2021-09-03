@@ -39,9 +39,6 @@ namespace Newbe.BookmarkManager.Services
 
         [Insight(EventName = BkTitleUpdateEvent)]
         Task UpdateTitleAsync(string url, string title);
-        //[Insight(EventName = BkLastClickedTimeUpdateEvent)]
-        Task UpdateLastClickTimeAsync(string url);
-
         Task<long> GetEtagVersionAsync();
         Task<Bk?> Get(string url);
         Task<Dictionary<string, int>> GetTagRelatedCountAsync();
