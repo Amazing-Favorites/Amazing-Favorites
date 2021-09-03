@@ -48,10 +48,9 @@ namespace Newbe.BookmarkManager.Pages
 
         }
         [JSInvokable]
-        public async Task<bool> CheckIsUrl(string url)
+        public bool CheckIsUrl(string url)
         {
-           return Uri.TryCreate(url, UriKind.Absolute,out _);
-
+            return Uri.TryCreate(url, UriKind.Absolute,out _);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
