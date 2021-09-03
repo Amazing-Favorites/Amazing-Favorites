@@ -1,0 +1,49 @@
+﻿<Panel Header="System Actions" Key="System Actions">
+    <ChildContent>
+        <Space>
+            <SpaceItem>
+                <Switch @bind-Value="@UserOptions.OmniboxSuggestFeature.Enabled"
+                                CheckedChildren="Enabled"
+                                UnCheckedChildren="Disabled"
+                                OnChange="OnEnableChange"/>
+            </SpaceItem>
+            <SpaceItem>
+                <InputNumber @bind-Value="UserOptions.OmniboxSuggestFeature.SuggestCount" Min="1" Max="6" DefaultValue="3"></InputNumber>
+            </SpaceItem>
+        </Space>
+        <DevButtons></DevButtons>
+    </ChildContent>
+</Panel>
+@code {
+    [Parameter]
+    public ControlPanel.ModalModel UserOptions { get; set; } = new();
+    
+    private Panel _panel = null!;
+    
+    private bool FeatureEnabled => UserOptions?.OmniboxSuggestFeature?.Enabled == true;
+    
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _panel.Disabled = !FeatureEnabled;
+        if (!FeatureEnabled)
+        {
+            _panel.Active = true;
+        }
+    }
+    
+    private void OnEnableChange(bool oldEnabled)
+    {
+        if (!oldEnabled)
+        {
+            _panel.Disabled = false;
+            _panel.Active = true;
+        }
+        else
+        {
+            _panel.Disabled = true;
+            _panel.Active = false;
+        }
+        StateHasChanged();
+    }
+}

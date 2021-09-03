@@ -71,6 +71,11 @@ namespace Newbe.BookmarkManager.Services
             {
                 Enabled = false
             };
+            
+            options.OmniboxSuggestFeature ??= new OmniboxSuggestFeature
+            {
+                Enabled = false
+            };
 
             return options;
         }
