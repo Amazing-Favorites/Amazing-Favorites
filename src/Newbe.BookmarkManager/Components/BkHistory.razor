@@ -22,12 +22,14 @@
                 <Panel Header="@(group.Date > new DateTime(1970,1,1)?group.Date.ToShortDateString():"Unclick")" Key="@group.Date.ToShortDateString()">
                     <AntList DataSource="@group.List">
                         <ChildContent Context="item">
-                            <Paragraph>
-                                @item.LastClickTime.ToLocalTime().ToShortTimeString()
-                            </Paragraph>
-                            <Paragraph Class="short">
-                                <a href="@item.Bk.Url">@item.Bk.Title</a>
-                            </Paragraph>
+                            <Row>
+                                <Col Class="short" Span="18">
+                                    <a href="@item.Bk.Url">@item.Bk.Title</a>
+                                </Col>
+                                <Col Span="6">
+                                    @item.LastClickTime.ToLocalTime().ToShortTimeString()
+                                </Col>
+                            </Row>
                         </ChildContent>
                     </AntList>
                 </Panel>
