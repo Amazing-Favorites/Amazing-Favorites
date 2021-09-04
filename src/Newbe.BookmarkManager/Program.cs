@@ -86,7 +86,9 @@ namespace Newbe.BookmarkManager
 
             builder.Services.AddLogging(loggingBuilder =>
             {
+#if DEBUG
                 loggingBuilder.AddSeq(builder.Configuration.GetSection("Seq"));
+#endif
             });
             builder.Services
                 .AddTransient<IBkEditFormData, BkEditFormData>();
