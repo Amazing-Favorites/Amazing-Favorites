@@ -6,7 +6,6 @@ using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Web;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -17,6 +16,7 @@ using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.SimpleData;
 using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
@@ -37,6 +37,8 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
         [Inject] public IAfEventHub AfEventHub { get; set; }
         [Inject] public NavigationManager Navigation { get; set; }
+        [Inject] public ISimpleDataStorage SimpleDataStorage { get; set; }
+        [Inject] public IClock Clock { get; set; }
         private UserOptions _userOptions;
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
@@ -237,24 +239,15 @@ namespace Newbe.BookmarkManager.Pages
                 _allTags = await TagsManager.GetAllTagsAsync();
 
                 await WebExtensions.Commands.OnCommand.AddListener(OnReceivedCommand);
-                await WebExtensions.Runtime.OnMessage.AddListener((o, sender, arg3) =>
-                {
-                    var evt = JsonSerializer.Deserialize<NewBkAddEvent>(JsonSerializer.Serialize(o))!;
-                    if (!string.IsNullOrEmpty(evt.Url))
-                    {
-                        HandleNewBookmarkAddedEvent(evt);
-                        return true;
-                    }
 
-                    return false;
-                });
-
-                var editTabIdStr = QueryString(NavigationManager, "editTabId");
-                if (int.TryParse(editTabIdStr, out var editTabId))
+                var (tabId, clickTime) = await SimpleDataStorage.GetOrDefaultAsync<LastUserClickIconTabData>();
+                if (Clock.UtcNow - clickTime < TimeSpan.FromSeconds(30).TotalSeconds)
                 {
-                    if (editTabId > 0)
+                    Logger.LogInformation("{sss}", tabId);
+                    Logger.LogInformation("{sss}", clickTime);
+                    if (tabId > 0)
                     {
-                        var tab = await WebExtensions.Tabs.Get(editTabId);
+                        var tab = await WebExtensions.Tabs.Get(tabId);
                         if (tab != null)
                         {
                             await BkEditFormData.LoadAsync(tab.Url, tab.Title, Array.Empty<string>());
@@ -267,8 +260,18 @@ namespace Newbe.BookmarkManager.Pages
 
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
+                AfEventHub.RegisterHandler<TriggerEditBookmarkEvent>(HandleTriggerEditBookmarkEvent);
                 await AfEventHub.EnsureStartAsync();
             }
+        }
+
+        private async Task HandleTriggerEditBookmarkEvent(TriggerEditBookmarkEvent evt)
+        {
+            Logger.LogInformation("Received : {Event}", evt);
+            await BkEditFormData.LoadAsync(evt.Url, evt.Title, Array.Empty<string>());
+            _modalVisible = true;
+            _returnTabId = evt.TabId;
+            StateHasChanged();
         }
 
         private Task HandleUserOptionSaveEvent(UserOptionSaveEvent arg)
@@ -278,29 +281,6 @@ namespace Newbe.BookmarkManager.Pages
                 _userOptions = arg.UserOptions;
                 StateHasChanged();
             });
-        }
-
-        private static string QueryString(NavigationManager nav, string paramName)
-        {
-            var uri = nav.ToAbsoluteUri(nav.Uri);
-            var paramValue = HttpUtility.ParseQueryString(uri.Query).Get(paramName);
-            return paramValue ?? "";
-        }
-
-        public record NewBkAddEvent
-        {
-            [JsonPropertyName("title")] public string Title { get; set; }
-            [JsonPropertyName("url")] public string Url { get; set; }
-            [JsonPropertyName("tabId")] public int TabId { get; set; }
-        }
-
-        private async Task HandleNewBookmarkAddedEvent(NewBkAddEvent evt)
-        {
-            Logger.LogInformation("Received : {Event}", evt);
-            await BkEditFormData.LoadAsync(evt.Url, evt.Title, Array.Empty<string>());
-            _modalVisible = true;
-            _returnTabId = evt.TabId;
-            StateHasChanged();
         }
 
         private BkViewItem[] Map(SearchResultItem[] items)

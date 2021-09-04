@@ -84,6 +84,10 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
 
 
+            builder.Services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddSeq(builder.Configuration.GetSection("Seq"));
+            });
             builder.Services
                 .AddTransient<IBkEditFormData, BkEditFormData>();
 
@@ -301,6 +305,7 @@ namespace Newbe.BookmarkManager
                 IEnumerable<Type> GetJobTypes()
                 {
                     yield return typeof(DataFixJob);
+                    yield return typeof(HandleUserClickIconJob);
                     yield return typeof(ShowWelcomeJob);
                     yield return typeof(ShowWhatNewJob);
                     yield return typeof(InviteAcceptPrivacyAgreementJob);
