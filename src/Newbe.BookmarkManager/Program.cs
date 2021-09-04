@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,6 +6,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
 using BlazorApplicationInsights;
+using Excubo.Blazor.ScriptInjection;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -38,7 +38,6 @@ namespace Newbe.BookmarkManager
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.ConfigureContainer(new AutofacServiceProviderFactory(Register));
             builder.RootComponents.Add<App>("#app");
-
             builder.Services.AddBlazorApplicationInsights(addILoggerProvider: false)
                 .AddSingleton<ApplicationInsights>()
                 .AddSingleton<EmptyApplicationInsights>()
@@ -52,6 +51,8 @@ namespace Newbe.BookmarkManager
                     return provider.GetRequiredService<EmptyApplicationInsights>();
                 })
                 .AddSingleton<ILoggerProvider, AiLoggerProvider>();
+
+            builder.Services.AddScriptInjection(onload_notification: false);
             builder.Services.AddScoped(
                     sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
                 .Configure<BaseUriOptions>(builder.Configuration.GetSection(nameof(BaseUriOptions)))
