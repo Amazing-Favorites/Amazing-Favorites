@@ -1,9 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Newbe.BookmarkManager.Services
 {
     public class JobHost : IJobHost
     {
+        private readonly ILogger<JobHost> _logger;
         private readonly ISyncBookmarkJob _syncBookmarkJob;
         private readonly ISyncAliasJob _syncAliasJob;
         private readonly ISyncCloudJob _syncCloudJob;
@@ -13,8 +16,11 @@ namespace Newbe.BookmarkManager.Services
         private readonly IShowWelcomeJob _showWelcomeJob;
         private readonly ISyncCloudStatusCheckJob _syncCloudStatusCheckJob;
         private readonly IInviteAcceptPrivacyAgreementJob _inviteAcceptPrivacyAgreementJob;
+        private readonly IHandleUserClickIconJob _handleUserClickIconJob;
 
-        public JobHost(ISyncBookmarkJob syncBookmarkJob,
+        public JobHost(
+            ILogger<JobHost> logger,
+            ISyncBookmarkJob syncBookmarkJob,
             ISyncAliasJob syncAliasJob,
             ISyncCloudJob syncCloudJob,
             IDataFixJob dataFixJob,
@@ -22,8 +28,10 @@ namespace Newbe.BookmarkManager.Services
             IShowWhatNewJob showWhatNewJob,
             IShowWelcomeJob showWelcomeJob,
             ISyncCloudStatusCheckJob syncCloudStatusCheckJob,
-            IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob)
+            IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob,
+            IHandleUserClickIconJob handleUserClickIconJob)
         {
+            _logger = logger;
             _syncBookmarkJob = syncBookmarkJob;
             _syncAliasJob = syncAliasJob;
             _syncCloudJob = syncCloudJob;
@@ -33,19 +41,36 @@ namespace Newbe.BookmarkManager.Services
             _showWelcomeJob = showWelcomeJob;
             _syncCloudStatusCheckJob = syncCloudStatusCheckJob;
             _inviteAcceptPrivacyAgreementJob = inviteAcceptPrivacyAgreementJob;
+            _handleUserClickIconJob = handleUserClickIconJob;
         }
 
         public async Task StartAsync()
         {
-            await _dataFixJob.StartAsync();
-            await _showWelcomeJob.StartAsync();
-            await _showWhatNewJob.StartAsync();
-            await _syncBookmarkJob.StartAsync();
-            await _syncAliasJob.StartAsync();
-            await _syncCloudJob.StartAsync();
-            await _syncTagRelatedBkCountJob.StartAsync();
-            await _syncCloudStatusCheckJob.StartAsync();
-            await _inviteAcceptPrivacyAgreementJob.StartAsync();
+            foreach (var job in GetJobs())
+            {
+                await RunCoreAsync(job);
+            }
+            _logger.LogInformation("All job started");
+
+            async Task RunCoreAsync(IJob job)
+            {
+                await job.StartAsync();
+                _logger.LogInformation("{Job} Started", job.GetType().Name);
+            }
+
+            IEnumerable<IJob> GetJobs()
+            {
+                yield return _dataFixJob;
+                yield return _handleUserClickIconJob;
+                yield return _showWelcomeJob;
+                yield return _showWhatNewJob;
+                yield return _syncBookmarkJob;
+                yield return _syncAliasJob;
+                yield return _syncCloudJob;
+                yield return _syncTagRelatedBkCountJob;
+                yield return _syncCloudStatusCheckJob;
+                yield return _inviteAcceptPrivacyAgreementJob;
+            }
         }
     }
 }

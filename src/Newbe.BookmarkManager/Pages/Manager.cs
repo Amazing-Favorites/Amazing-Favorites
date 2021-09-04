@@ -6,7 +6,6 @@ using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Web;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -17,14 +16,13 @@ using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.SimpleData;
 using WebExtensions.Net.Tabs;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+
 namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
     {
-        private JsModuleLoader _moduleLoader;
         [Inject] public IBkSearcher BkSearcher { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public ITagsManager TagsManager { get; set; }
@@ -38,9 +36,10 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IRecordService RecordService { get; set; }
         [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
         [Inject] public IAfEventHub AfEventHub { get; set; }
-
-        [Inject]
-        public NavigationManager Navigation { get; set; }
+        [Inject] public NavigationManager Navigation { get; set; }
+        [Inject] public ISimpleDataStorage SimpleDataStorage { get; set; }
+        [Inject] public IClock Clock { get; set; }
+        private UserOptions _userOptions;
 
         private BkViewItem[] _targetBks = Array.Empty<BkViewItem>();
 
@@ -54,7 +53,6 @@ namespace Newbe.BookmarkManager.Pages
             }
         }
 
-        private UserOptions _userOptions;
         private bool _searchInputLoading;
         private readonly Subject<string?> _searchSubject = new();
         private readonly Subject<bool> _altKeySubject = new();
@@ -83,22 +81,31 @@ namespace Newbe.BookmarkManager.Pages
             public BkViewItem ClickItem { get; set; }
         }
 
-        [JSInvokable]
-        public async Task OnReceivedCommand(string command)
+        private void OnReceivedCommand(string command)
         {
             Logger.LogInformation("received command: {Command}", command);
             if (command == Consts.Commands.OpenManager)
             {
+#pragma warning disable 4014
+                FocusSearchBox();
+#pragma warning restore 4014
+            }
+        }
+
+        private async Task FocusSearchBox()
+        {
+            await InvokeAsync(async () =>
+            {
                 SearchValue = string.Empty;
                 await _search.Focus();
                 StateHasChanged();
-            }
+            });
         }
 
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
-            await RecentSearchHolder.LoadAsync();
+            _userOptions = await UserOptionsService.GetOptionsAsync();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -106,21 +113,7 @@ namespace Newbe.BookmarkManager.Pages
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                _moduleLoader = new JsModuleLoader(JsRuntime);
-                await _moduleLoader.LoadAsync("/content/manager_keyboard.js");
-                var userOptions = await UserOptionsService.GetOptionsAsync();
-                if (userOptions is
-                    {
-                        AcceptPrivacyAgreement: true,
-                        ApplicationInsightFeature:
-                        {
-                            Enabled: true
-                        }
-                    })
-                {
-                    await _moduleLoader.LoadAsync("/content/ai.js");
-                }
-
+                await RecentSearchHolder.LoadAsync();
                 var lDotNetReference = DotNetObjectReference.Create(this);
                 await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
                 _searchSubject
@@ -244,26 +237,17 @@ namespace Newbe.BookmarkManager.Pages
                 _subjectHandlers.Add(subjectHandler);
 
                 _allTags = await TagsManager.GetAllTagsAsync();
-                _userOptions = userOptions;
 
-                await WebExtensions.Runtime.OnMessage.AddListener((o, sender, arg3) =>
+                await WebExtensions.Commands.OnCommand.AddListener(OnReceivedCommand);
+
+                var (tabId, clickTime) = await SimpleDataStorage.GetOrDefaultAsync<LastUserClickIconTabData>();
+                if (Clock.UtcNow - clickTime < TimeSpan.FromSeconds(30).TotalSeconds)
                 {
-                    var evt = JsonSerializer.Deserialize<NewBkAddEvent>(JsonSerializer.Serialize(o))!;
-                    if (!string.IsNullOrEmpty(evt.Url))
+                    Logger.LogInformation("{sss}", tabId);
+                    Logger.LogInformation("{sss}", clickTime);
+                    if (tabId > 0)
                     {
-                        HandleNewBookmarkAddedEvent(evt);
-                        return true;
-                    }
-
-                    return false;
-                });
-
-                var editTabIdStr = QueryString(NavigationManager, "editTabId");
-                if (int.TryParse(editTabIdStr, out var editTabId))
-                {
-                    if (editTabId > 0)
-                    {
-                        var tab = await WebExtensions.Tabs.Get(editTabId);
+                        var tab = await WebExtensions.Tabs.Get(tabId);
                         if (tab != null)
                         {
                             await BkEditFormData.LoadAsync(tab.Url, tab.Title, Array.Empty<string>());
@@ -276,8 +260,18 @@ namespace Newbe.BookmarkManager.Pages
 
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
+                AfEventHub.RegisterHandler<TriggerEditBookmarkEvent>(HandleTriggerEditBookmarkEvent);
                 await AfEventHub.EnsureStartAsync();
             }
+        }
+
+        private async Task HandleTriggerEditBookmarkEvent(TriggerEditBookmarkEvent evt)
+        {
+            Logger.LogInformation("Received : {Event}", evt);
+            await BkEditFormData.LoadAsync(evt.Url, evt.Title, Array.Empty<string>());
+            _modalVisible = true;
+            _returnTabId = evt.TabId;
+            StateHasChanged();
         }
 
         private Task HandleUserOptionSaveEvent(UserOptionSaveEvent arg)
@@ -287,29 +281,6 @@ namespace Newbe.BookmarkManager.Pages
                 _userOptions = arg.UserOptions;
                 StateHasChanged();
             });
-        }
-
-        private static string QueryString(NavigationManager nav, string paramName)
-        {
-            var uri = nav.ToAbsoluteUri(nav.Uri);
-            var paramValue = HttpUtility.ParseQueryString(uri.Query).Get(paramName);
-            return paramValue ?? "";
-        }
-
-        public record NewBkAddEvent
-        {
-            [JsonPropertyName("title")] public string Title { get; set; }
-            [JsonPropertyName("url")] public string Url { get; set; }
-            [JsonPropertyName("tabId")] public int TabId { get; set; }
-        }
-
-        private async Task HandleNewBookmarkAddedEvent(NewBkAddEvent evt)
-        {
-            Logger.LogInformation("Received : {Event}", evt);
-            await BkEditFormData.LoadAsync(evt.Url, evt.Title, Array.Empty<string>());
-            _modalVisible = true;
-            _returnTabId = evt.TabId;
-            StateHasChanged();
         }
 
         private BkViewItem[] Map(SearchResultItem[] items)
@@ -339,19 +310,24 @@ namespace Newbe.BookmarkManager.Pages
                 if (code.StartsWith("Numpad") || code.StartsWith("Digit"))
                 {
                     var number = code[^1..];
-                    if (int.TryParse(number, out var selectIndex) &&
-                        selectIndex > 0 &&
-                        selectIndex < _targetBks.Length)
-                    {
-                        var arrayIndex = selectIndex - 1;
-                        Logger.LogInformation("Click keyboard to select {ArrayIndex} item", arrayIndex);
-                        await OnClickUrl(_targetBks[arrayIndex], default);
-                    }
+                    await OpenSearchResult(number);
                 }
             }
             else
             {
                 _altKeySubject.OnNext(false);
+            }
+        }
+
+        private async Task OpenSearchResult(string? number)
+        {
+            if (int.TryParse(number, out var selectIndex) &&
+                selectIndex > 0 &&
+                selectIndex < _targetBks.Length)
+            {
+                var arrayIndex = selectIndex - 1;
+                Logger.LogInformation("Click keyboard to select {ArrayIndex} item", arrayIndex);
+                await OnClickUrl(_targetBks[arrayIndex], default);
             }
         }
 
@@ -508,14 +484,14 @@ namespace Newbe.BookmarkManager.Pages
 
         #endregion AfCode
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             foreach (var subjectHandler in _subjectHandlers)
             {
                 subjectHandler.Dispose();
             }
 
-            await _moduleLoader.DisposeAsync();
+            return ValueTask.CompletedTask;
         }
     }
 }
