@@ -90,6 +90,8 @@
         public HotTagsFeature HotTagsFeature { get; set; }
         public ApplicationInsightFeature ApplicationInsightFeature { get; set; }
         public OmniboxSuggestFeature OmniboxSuggestFeature { get; set; }
+
+        public bool OminiboxSuggestChanged { get; set; }
     }
 
     private async Task OnClickAgreeUserPrivacyAgreement()
@@ -112,6 +114,7 @@
         await AfEventHub.PublishAsync(new UserOptionSaveEvent
         {
             UserOptions = userOptions,
+            OminiboxSuggestChanged = _modal.OminiboxSuggestChanged
         });
         await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
         await CloseControlPanel();

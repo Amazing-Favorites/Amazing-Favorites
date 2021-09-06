@@ -65,21 +65,7 @@ namespace Newbe.BookmarkManager.Services
         {
             get =>
                 _suggestCount;
-            set
-            {
-                if (value > 6)
-                {
-                    _suggestCount = 6;
-                }
-                else if (value < 1)
-                {
-                    _suggestCount = 1;
-                }
-                else
-                {
-                    _suggestCount = value;
-                }
-            }
+            set => _suggestCount = Math.Clamp(value, 1, 6);
         }
     }
 }
