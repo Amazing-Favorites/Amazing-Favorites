@@ -6,148 +6,30 @@
 <Button OnClick="_=>visible = true">
     <Icon Type="history"/>
 </Button>
-<Drawer Visible="@visible" OnClose="_=>visible = false">
-    <AutoComplete Options="@SearchOptions">
-        <ChildContent>
-            <AutoCompleteSearch EnterButton="true"
-                                AutoFocus="true"
-                                Placeholder="input keyword to search"
-                                @bind-Value="SearchValue">
-            </AutoCompleteSearch>
-        </ChildContent>
-    </AutoComplete>
+<Drawer Visible="@visible" Width="720" OnClose="_=>visible = false">
     <Collapse>
-        <AntList DataSource="@_dateGroup">
-            <ChildContent Context="group">
-                <Panel Header="@(group.Date > new DateTime(1970,1,1)?group.Date.ToShortDateString():"Unclick")" Key="@group.Date.ToShortDateString()">
-                    <AntList DataSource="@group.List">
-                        <ChildContent Context="item">
-                            <Row>
-                                <Col style=" white-space: nowrap;  overflow: hidden; text-overflow: ellipsis;width: 90%;" Span="18">
-                                    <a href="@item.Bk.Url">@item.Bk.Title</a>
-                                </Col>
-                                <Col Span="6">
-                                    @item.LastClickTime.ToLocalTime().ToShortTimeString()
-                                </Col>
-                            </Row>
-                        </ChildContent>
-                    </AntList>
-                </Panel>
+        <AntList DataSource="@_targetBks">
+            <ChildContent Context="item">
+                <Row>
+                    <Col style=" white-space: nowrap;  overflow: hidden; text-overflow: ellipsis;width: 90%;" Span="18">
+                        <a href="@item.Bk.Url">@item.Bk.Title</a>
+                    </Col>
+                    <Col Span="6">
+                        @item.LastClickTime.ToLocalTime()
+                    </Col>
+                </Row>
             </ChildContent>
         </AntList>
     </Collapse>
 </Drawer>
 @code {
     [Inject] public IBkSearcher BkSearcher { get; set; }
-    
-    [Inject] public IRecentSearchHolder RecentSearchHolder { get; set; }
-    
     private SearchResultItem[] _targetBks { get; set; }
-    
-    private IEnumerable<ViewModel> _dateGroup { get; set; }
-    
-    private  string _searchValue { get; set; }
-    
-    private readonly Subject<string?> _searchSubject = new();
-    private bool _searchInputLoading;
-
     private bool visible;
-
-    private record ViewModel
-    {
-        public DateTime Date { get; set; }
-
-        public IEnumerable<SearchResultItem> List { get; set; }
-    }
     
-    
-    private string SearchValue
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        get => _searchValue;
-        set
-        {
-            _searchValue = value;
-            _searchSubject?.OnNext(value);
-        }
+        await base.OnAfterRenderAsync(firstRender);
+        _targetBks = await BkSearcher.History(20);
     }
-    private IEnumerable<string> SearchOptions
-    {
-        get
-        {
-            return RecentSearchHolder?.RecentSearch?.Items?.Select(x => x.Text)
-                   ?? Array.Empty<string>();
-        }
-    }
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-        if (firstRender)
-        {
-            _searchSubject
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .Select(x => x?.Trim())
-                .Subscribe(async args =>
-                {
-                    _searchInputLoading = true;
-                    StateHasChanged();
-                    try
-                    {
-                        // Logger.LogInformation("Search: {Args}", args!);
-                        // if (!string.IsNullOrWhiteSpace(args))
-                        // {
-                        //     var afCode = args;
-                        //     if (await AfCodeService.TryParseAsync(afCode, out var afCodeResult))
-                        //     {
-                        //         if (afCodeResult != null)
-                        //         {
-                        //             await OnClickEdit(afCodeResult.Url, afCodeResult.Title, afCodeResult.Tags);
-                        //             SearchValue = string.Empty;
-                        //             return;
-                        //         }
-                        //     }
-                        // }
-
-                        var target = await BkSearcher.History(args!, 10);
-                        _targetBks = target;
-                        _dateGroup = target.GroupBy(x => x.LastClickTime.ToLocalTime().Date)
-                            .Select(x => new ViewModel
-                            {
-                                Date = x.Key,
-                                List = x
-                            });
-                    }
-                    catch (Exception e)
-                    {
-                        // Logger.LogError(e, "Error when search");
-                    }
-                    finally
-                    {
-                        _searchInputLoading = false;
-                    }
-                    StateHasChanged();
-                });
-            _searchValue = string.Empty;
-            SearchValue = _searchValue;
-        }
-    }
-    
-    
-    private BkViewItem[] Map(SearchResultItem[] items)
-    {
-        var re = CreateItem().ToArray();
-        return re;
-
-        IEnumerable<BkViewItem> CreateItem()
-        {
-            for (int i = 0; i < items.Length; i++)
-            {
-                var item = items[i];
-                yield return new BkViewItem(item.Bk)
-                {
-                    LineIndex = i + 1
-                };
-            }
-        }
-    }
-
 }

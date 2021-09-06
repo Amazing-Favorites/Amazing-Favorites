@@ -20,6 +20,8 @@ using Newbe.BookmarkManager.Services.EventHubs;
 using WebExtensions.Net.Tabs;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using WebExtensions.Net.Runtime;
+
 namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
@@ -108,7 +110,6 @@ namespace Newbe.BookmarkManager.Pages
             {
                 _moduleLoader = new JsModuleLoader(JsRuntime);
                 await _moduleLoader.LoadAsync("/content/manager_keyboard.js");
-                await _moduleLoader.LoadAsync("/content/chrome_sub.js");
                 var userOptions = await UserOptionsService.GetOptionsAsync();
                 if (userOptions is
                     {
@@ -124,8 +125,6 @@ namespace Newbe.BookmarkManager.Pages
 
                 var lDotNetReference = DotNetObjectReference.Create(this);
                 await JsRuntime.InvokeVoidAsync("DotNet.SetDotnetReference", lDotNetReference);
-                var module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "/content/chrome_sub.js");
-                await module.InvokeVoidAsync("addListenerTabsOnUpdated");
                 _searchSubject
                     .Throttle(TimeSpan.FromMilliseconds(100))
                     .Select(x => x?.Trim())
@@ -260,7 +259,7 @@ namespace Newbe.BookmarkManager.Pages
 
                     return false;
                 });
-
+                await AddOnTabsUpdatedAsync();
                 var editTabIdStr = QueryString(NavigationManager, "editTabId");
                 if (int.TryParse(editTabIdStr, out var editTabId))
                 {
@@ -375,12 +374,14 @@ namespace Newbe.BookmarkManager.Pages
 
             return Task.CompletedTask;
         }
-
-        [JSInvokable]
-        public async Task OpenNewTab(int id, string url)
+        
+        public async Task AddOnTabsUpdatedAsync()
         {
-            await BkManager.AddClickAsync(url, 1);
-            await AfEventHub.PublishAsync(new RefreshManagerPageEvent());
+            await WebExtensions.Tabs.OnUpdated.AddListener(async (tabId,changeInfo,tab) =>
+            {
+                await BkManager.AddClickAsync(changeInfo.Url, 1);
+                await AfEventHub.PublishAsync(new RefreshManagerPageEvent());
+            });
         }
 
         private async Task OnClickUrl(BkViewItem bk, MouseEventArgs? e)

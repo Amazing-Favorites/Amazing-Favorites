@@ -9,6 +9,6 @@ namespace Newbe.BookmarkManager.Services
         [Insight(EventName = BkSearchEvent)]
         Task<SearchResultItem[]> Search(string searchText, int limit);
 
-        Task<SearchResultItem[]> History(string searchText, int limit);
+        Task<SearchResultItem[]> History(int limit);
     }
 }

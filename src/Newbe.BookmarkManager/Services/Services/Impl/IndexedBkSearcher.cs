@@ -135,25 +135,15 @@ namespace Newbe.BookmarkManager.Services
                 }
             }
 
-        public async Task<SearchResultItem[]> History(string searchText, int limit)
+        public async Task<SearchResultItem[]> History(int limit)
         {
             var sw = Stopwatch.StartNew();
-            var source = await SearchCore(searchText);
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                source = source
-                    .OrderByDescending(x => x.LastClickTime)
-                    .ThenByDescending(x => x.ClickCount);
-                //.Take(limit);
-            }
-            else
-            {
-                source = source
-                    .OrderByDescending(x => x.Score)
-                    .ThenByDescending(x => x.LastClickTime)
-                    .ThenByDescending(x => x.ClickCount);
-                //.Take(limit);
-            }
+            var source = await SearchCore(string.Empty);
+            source = source
+                .Where(a=>a.LastClickTime > 0)
+                .OrderByDescending(x => x.LastClickTime)
+                .ThenByDescending(x => x.ClickCount)
+                .Take(limit);
             var time = sw.ElapsedMilliseconds;
             _logger.LogInformation("Search cost: {Time} ms", time);
             return source.ToArray();
