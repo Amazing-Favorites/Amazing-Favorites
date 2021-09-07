@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.EventHubs;
@@ -54,7 +55,7 @@ namespace Newbe.BookmarkManager.Pages
 
                 if (userOptions?.OmniboxSuggestFeature?.Enabled == true)
                 {
-                    await AddOnimiBoxSuggestAsync();
+                    await AddOmniBoxSuggestAsync();
                 }
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
                 var lDotNetReference = DotNetObjectReference.Create(this);
@@ -75,18 +76,18 @@ namespace Newbe.BookmarkManager.Pages
             {
                 return InvokeAsync(async () =>
                 {
-                    Console.WriteLine("addOnimiBox");
-                    await AddOnimiBoxSuggestAsync();
+                    Logger.LogInformation("addOmniBoxSuggest");
+                    await AddOmniBoxSuggestAsync();
                 });
             }
 
             return InvokeAsync(async () =>
             {
-                Console.WriteLine("removeOnimiBox");
-                await RemoveOnimiBoxSuggestAsync();
+                Logger.LogInformation(" removeOmniBoxSuggest");
+                await RemoveOmniBoxSuggestAsync();
             });
         }
-        public async Task<SuggestResult[]> GetOnimiBoxSuggest(string input)
+        public async Task<SuggestResult[]> GetOmniBoxSuggest(string input)
         {
             var option = (await UserOptionsService.GetOptionsAsync())?.OmniboxSuggestFeature;
             if (option == null || option.Enabled == false)
@@ -103,28 +104,28 @@ namespace Newbe.BookmarkManager.Pages
             return suggestResults;
 
         }
-        public async Task AddOnimiBoxSuggestAsync()
+        public async Task AddOmniBoxSuggestAsync()
         {
-            await WebExtensions.Omnibox.OnInputChanged.AddListener(OmniboxSuggestAction);
-            await WebExtensions.Omnibox.OnInputEntered.AddListener(OmniboxSuggestCallback);
+            await WebExtensions.Omnibox.OnInputChanged.AddListener(OmniboxSuggestActiveAsync);
+            await WebExtensions.Omnibox.OnInputEntered.AddListener(OmniboxSuggestTabOpenAsync);
         }
 
-        public async Task RemoveOnimiBoxSuggestAsync()
+        public async Task RemoveOmniBoxSuggestAsync()
         {
-            await WebExtensions.Omnibox.OnInputChanged.RemoveListener(OmniboxSuggestAction);
-            await WebExtensions.Omnibox.OnInputEntered.RemoveListener(OmniboxSuggestCallback);
+            await WebExtensions.Omnibox.OnInputChanged.RemoveListener(OmniboxSuggestActiveAsync);
+            await WebExtensions.Omnibox.OnInputEntered.RemoveListener(OmniboxSuggestTabOpenAsync);
         }
         
-        async void OmniboxSuggestAction(string input, Action<IEnumerable<SuggestResult>> suggest)
+        async void OmniboxSuggestActiveAsync(string input, Action<IEnumerable<SuggestResult>> suggest)
         {
-            var result = await GetOnimiBoxSuggest(input);
+            var result = await GetOmniBoxSuggest(input);
             suggest(result);
         }
-        async void OmniboxSuggestCallback(string url, OnInputEnteredDisposition disposition)
+        async void OmniboxSuggestTabOpenAsync(string url, OnInputEnteredDisposition disposition)
         {
             if (!Uri.TryCreate(url, UriKind.Absolute, out _))
             {
-                var managerTabTitle = "Amazing Favorites";
+                var managerTabTitle = Consts.AppName;
                 var managerTabs = await WebExtensions.Tabs.Query(new QueryInfo {Title = managerTabTitle});
                 if (managerTabs.Any())
                 {
