@@ -308,6 +308,7 @@ namespace Newbe.BookmarkManager
                 {
                     yield return typeof(DataFixJob);
                     yield return typeof(HandleUserClickIconJob);
+                    yield return typeof(HandleOmniBoxSuggestJob);
                     yield return typeof(ShowWelcomeJob);
                     yield return typeof(ShowWhatNewJob);
                     yield return typeof(InviteAcceptPrivacyAgreementJob);

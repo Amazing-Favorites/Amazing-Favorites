@@ -17,7 +17,6 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
 using Newbe.BookmarkManager.Services.SimpleData;
-using WebExtensions.Net.Omnibox;
 using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
@@ -259,12 +258,6 @@ namespace Newbe.BookmarkManager.Pages
                     }
                 }
 
-                if ((await UserOptionsService.GetOptionsAsync()).OmniboxSuggestFeature?.Enabled == true)
-                {
-                    Logger.LogInformation("addOmniBoxSuggest");
-                    await AddOmniBoxSuggestAsync();
-                }
-
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
                 AfEventHub.RegisterHandler<TriggerEditBookmarkEvent>(HandleTriggerEditBookmarkEvent);
@@ -283,21 +276,8 @@ namespace Newbe.BookmarkManager.Pages
 
         private Task HandleUserOptionSaveEvent(UserOptionSaveEvent arg)
         {
-            return InvokeAsync(async () =>
+            return InvokeAsync(() =>
             {
-                switch (arg.OminiboxSuggestChanged)
-                {
-                    case true when arg?.UserOptions?.OmniboxSuggestFeature?.Enabled == true:
-                        Logger.LogInformation("addOmniBoxSuggest");
-                        await AddOmniBoxSuggestAsync();
-                        break;
-                    case true when arg?.UserOptions?.OmniboxSuggestFeature?.Enabled == false:
-                        Logger.LogInformation(" removeOmniBoxSuggest");
-                        await RemoveOmniBoxSuggestAsync();
-                        break;
-                }
-
-
                 _userOptions = arg.UserOptions;
                 StateHasChanged();
             });
@@ -504,76 +484,6 @@ namespace Newbe.BookmarkManager.Pages
 
         #endregion AfCode
 
-
-        #region OmniBox
-        private async Task<SuggestResult[]> GetOmniBoxSuggest(string input)
-        {
-            var option = (await UserOptionsService.GetOptionsAsync())?.OmniboxSuggestFeature;
-            if (option == null || option.Enabled == false)
-            {
-                return Array.Empty<SuggestResult>();
-            }
-            var searchResult = await BkSearcher.Search(input, option.SuggestCount);
-            var suggestResults = searchResult.Select(a => new SuggestResult
-            {
-                Content = a.Bk.Url,
-                Description = a.Bk.Title
-            }).ToArray();
-
-            return suggestResults;
-
-        }
-        private async Task AddOmniBoxSuggestAsync()
-        {
-            await WebExtensions.Omnibox.OnInputChanged.AddListener(OmniboxSuggestActiveAsync);
-            await WebExtensions.Omnibox.OnInputEntered.AddListener(OmniboxSuggestTabOpenAsync);
-        }
-
-        private async Task RemoveOmniBoxSuggestAsync()
-        {
-            await WebExtensions.Omnibox.OnInputChanged.RemoveListener(OmniboxSuggestActiveAsync);
-            await WebExtensions.Omnibox.OnInputEntered.RemoveListener(OmniboxSuggestTabOpenAsync);
-        }
-
-        private async void OmniboxSuggestActiveAsync(string input, Action<IEnumerable<SuggestResult>> suggest)
-        {
-            var result = await GetOmniBoxSuggest(input);
-            suggest(result);
-        }
-        private async void OmniboxSuggestTabOpenAsync(string url, OnInputEnteredDisposition disposition)
-        {
-            if (!Uri.TryCreate(url, UriKind.Absolute, out _))
-            {
-                var managerTabTitle = Consts.AppName;
-                var managerTabs = await WebExtensions.Tabs.Query(new QueryInfo { Title = managerTabTitle });
-                if (managerTabs.Any())
-                {
-                    await WebExtensions.Tabs.Update(managerTabs.FirstOrDefault().Id, new UpdateProperties { Active = true });
-                }
-                else
-                {
-                    await WebExtensions.Tabs.Create(new CreateProperties { Url = "/Manager/index.html" });
-                }
-
-                return;
-            }
-
-            switch (disposition)
-            {
-                case OnInputEnteredDisposition.CurrentTab:
-                    await WebExtensions.Tabs.Update(tabId: null, updateProperties: new UpdateProperties { Url = url });
-                    break;
-                case OnInputEnteredDisposition.NewForegroundTab:
-                    await WebExtensions.Tabs.Create(new CreateProperties { Url = url, Active = true });
-                    break;
-                case OnInputEnteredDisposition.NewBackgroundTab:
-                    await WebExtensions.Tabs.Create(new CreateProperties { Url = url, Active = false });
-                    break;
-                default:
-                    break;
-            }
-        }
-        #endregion
         public ValueTask DisposeAsync()
         {
             foreach (var subjectHandler in _subjectHandlers)
