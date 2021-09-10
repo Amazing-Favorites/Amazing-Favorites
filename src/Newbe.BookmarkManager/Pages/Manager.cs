@@ -374,10 +374,10 @@ namespace Newbe.BookmarkManager.Pages
 
             return Task.CompletedTask;
         }
-        
+
         public async Task AddOnTabsUpdatedAsync()
         {
-            await WebExtensions.Tabs.OnUpdated.AddListener(async (tabId,changeInfo,tab) =>
+            await WebExtensions.Tabs.OnUpdated.AddListener(async (tabId, changeInfo, tab) =>
             {
                 await BkManager.AddClickAsync(changeInfo.Url, 1);
                 await AfEventHub.PublishAsync(new RefreshManagerPageEvent());
