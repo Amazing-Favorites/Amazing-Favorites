@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using WebExtensions.Net.Runtime;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Newbe.BookmarkManager.Services.EventHubs
 {
@@ -66,7 +67,11 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             }
 
             var (eventType, handlers) = registration;
-            var payload = JsonSerializer.Deserialize(afEventEnvelope.PayloadJson, eventType);
+            var payloadJson = afEventEnvelope.PayloadJson;
+            _logger.LogDebug("deserialize to {Type} from JSON {Json}", eventType, payloadJson);
+            var payload = JsonConvert.DeserializeObject(payloadJson, eventType);
+            // ??? its strangely, it doesn't work below
+            // var payload = JsonHelper.Deserialize(payloadJson, eventType);
             if (payload == null)
             {
                 _logger.LogError("failed to deserialize event payload: {Payload}", payload);
@@ -77,8 +82,9 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             {
                 handler.Invoke(_lifetimeScope, (IAfEvent)payload);
             }
-
-
+#if DEBUG
+            afEventEnvelope = afEventEnvelope with { PayloadJson = string.Empty };
+#endif
             _logger.LogInformation("event handled success: {AfEvent}",
                 afEventEnvelope with { PayloadJson = string.Empty });
             return true;
@@ -117,10 +123,11 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             {
                 _runtimeApi.SendMessage("", message, new object());
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // ignore
             }
+
             return Task.CompletedTask;
         }
     }

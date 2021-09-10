@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -12,7 +9,7 @@ using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Pages
 {
-    public partial class Background : IAsyncDisposable
+    public partial class Background
     {
         [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
         [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
@@ -23,15 +20,20 @@ namespace Newbe.BookmarkManager.Pages
         [Inject]
         public IAfEventHub AfEventHub { get; set; }
 
-        private JsModuleLoader _moduleLoader = null!;
+        private UserOptions _userOptions = null!;
 
-        [JSInvokable]
-        public void OnReceivedCommand(string command)
+        private void OnReceivedCommand(string command)
         {
             if (command == Consts.Commands.OpenManager)
             {
                 WebExtensions.Tabs.ActiveOrOpenManagerAsync();
             }
+        }
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+            _userOptions = await UserOptionsService.GetOptionsAsync();
+            await WebExtensions.Commands.OnCommand.AddListener(OnReceivedCommand);
         }
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -153,11 +155,6 @@ namespace Newbe.BookmarkManager.Pages
                 default:
                     break;
             }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await _moduleLoader.DisposeAsync();
         }
     }
 }

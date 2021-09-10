@@ -35,5 +35,21 @@ namespace Newbe.BookmarkManager.Services
                     .AsStream(), type);
             return re;
         }
+
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = false
+        };
+
+        public static object? Deserialize(string source, Type type)
+        {
+            if (string.IsNullOrEmpty(source))
+            {
+                return default;
+            }
+
+            var re = JsonSerializer.Deserialize(source, type, JsonSerializerOptions);
+            return re;
+        }
     }
 }

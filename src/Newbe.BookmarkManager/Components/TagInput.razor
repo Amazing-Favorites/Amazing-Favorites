@@ -44,31 +44,9 @@ else
     [Parameter]
     public string[] Options { get; set; } = Array.Empty<string>();
 
-    private readonly Subject<string> _newValueSubject = new();
-
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        _newValueSubject
-            .DistinctUntilChanged()
-            .Buffer(TimeSpan.FromMilliseconds(10), 10)
-            .Where(x => x.Count > 0)
-            .Select(x => x.FirstOrDefault(s => !string.IsNullOrWhiteSpace(s)))
-            .Subscribe(async value =>
-            {
-                var created = await FireCreateTagAsync(value);
-                if (created)
-                {
-                    IsAdding = true;
-                    _value = string.Empty;
-                    await ValueRef.Ref.FocusAsync();
-                }
-                else
-                {
-                    IsAdding = false;
-                }
-                StateHasChanged();
-            });
     }
 
     private void OnClickAddTagAsync()
@@ -81,9 +59,21 @@ else
         });
     }
 
-    private void OnCreatingTag(AutoCompleteOption? option)
+    private async Task OnCreatingTag(AutoCompleteOption? option)
     {
-        _newValueSubject.OnNext(option?.Value?.ToString() ?? _value);
+        var value = option?.Value?.ToString() ?? _value;
+        var created = await FireCreateTagAsync(value);
+        if (created)
+        {
+            IsAdding = true;
+            _value = string.Empty;
+            await ValueRef.Ref.FocusAsync();
+        }
+        else
+        {
+            IsAdding = false;
+        }
+        StateHasChanged();
     }
 
     private async Task<bool> FireCreateTagAsync(string? value)

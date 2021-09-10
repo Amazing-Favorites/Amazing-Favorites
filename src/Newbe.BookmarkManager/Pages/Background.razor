@@ -1,2 +1,14 @@
 ﻿@page "/background"
 @inherits Blazor.BrowserExtension.Pages.BackgroundPage
+
+@if (_userOptions is
+{
+    AcceptPrivacyAgreement: true,
+    ApplicationInsightFeature:
+    {
+        Enabled: true
+        }
+    })
+{
+    <AfAddScript Src="content/ai.js" Async="false" Defer="false"/>
+}
