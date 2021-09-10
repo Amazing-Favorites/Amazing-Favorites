@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Newbe.BookmarkManager.Services.EventHubs
+﻿namespace Newbe.BookmarkManager.Services.EventHubs
 {
     public interface IAfEventHandler
     {

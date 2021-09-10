@@ -1,6 +1,6 @@
 # Amazing Favorites
 
-[![CodeFactor](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites/badge)](https://www.codefactor.io/repository/github/newbe36524/amazing-favorites)
+[![CodeFactor](https://www.codefactor.io/repository/github/amazing-favorites/amazing-favorites/badge)](https://www.codefactor.io/repository/github/amazing-favorites/amazing-favorites)
 
 Amazing Favorites help you to manage you bookmarks efficiently.
 

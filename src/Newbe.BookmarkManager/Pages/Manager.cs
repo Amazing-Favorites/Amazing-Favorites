@@ -20,8 +20,6 @@ using Newbe.BookmarkManager.Services.EventHubs;
 using WebExtensions.Net.Tabs;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
-using WebExtensions.Net.Runtime;
-
 namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
@@ -259,7 +257,7 @@ namespace Newbe.BookmarkManager.Pages
 
                     return false;
                 });
-                await AddOnTabsUpdatedAsync();
+
                 var editTabIdStr = QueryString(NavigationManager, "editTabId");
                 if (int.TryParse(editTabIdStr, out var editTabId))
                 {
@@ -278,17 +276,10 @@ namespace Newbe.BookmarkManager.Pages
 
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
-                AfEventHub.RegisterHandler<RefreshManagerPageEvent>(HandleRefreshPageEvent);
                 await AfEventHub.EnsureStartAsync();
             }
         }
 
-        private Task HandleRefreshPageEvent(RefreshManagerPageEvent arg)
-        {
-            SearchValue = _searchValue;
-            StateHasChanged();
-            return Task.CompletedTask;
-        }
         private Task HandleUserOptionSaveEvent(UserOptionSaveEvent arg)
         {
             return InvokeAsync(() =>
@@ -373,15 +364,6 @@ namespace Newbe.BookmarkManager.Pages
             }
 
             return Task.CompletedTask;
-        }
-
-        public async Task AddOnTabsUpdatedAsync()
-        {
-            await WebExtensions.Tabs.OnUpdated.AddListener(async (tabId, changeInfo, tab) =>
-            {
-                await BkManager.AddClickAsync(changeInfo.Url, 1);
-                await AfEventHub.PublishAsync(new RefreshManagerPageEvent());
-            });
         }
 
         private async Task OnClickUrl(BkViewItem bk, MouseEventArgs? e)
