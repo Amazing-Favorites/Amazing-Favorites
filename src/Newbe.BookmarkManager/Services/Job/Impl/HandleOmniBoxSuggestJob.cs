@@ -10,7 +10,7 @@ using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class HandleOmniBoxSuggestJob:IHandleOmniBoxSuggestJob
+    public class HandleOmniBoxSuggestJob : IHandleOmniBoxSuggestJob
     {
         private readonly ILogger<HandleOmniBoxSuggestJob> _logger;
         private readonly IAfEventHub _afEventHub;

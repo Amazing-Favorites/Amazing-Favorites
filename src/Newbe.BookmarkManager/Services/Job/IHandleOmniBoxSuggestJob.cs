@@ -1,7 +1,7 @@
 ﻿namespace Newbe.BookmarkManager.Services
 {
-    public interface IHandleOmniBoxSuggestJob:IJob
+    public interface IHandleOmniBoxSuggestJob : IJob
     {
-        
+
     }
 }
