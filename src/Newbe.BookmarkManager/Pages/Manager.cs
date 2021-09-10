@@ -283,7 +283,7 @@ namespace Newbe.BookmarkManager.Pages
 
         private Task HandleUserOptionSaveEvent(UserOptionSaveEvent arg)
         {
-            return InvokeAsync(async() =>
+            return InvokeAsync(async () =>
             {
                 switch (arg.OminiboxSuggestChanged)
                 {
@@ -296,8 +296,8 @@ namespace Newbe.BookmarkManager.Pages
                         await RemoveOmniBoxSuggestAsync();
                         break;
                 }
-                
-                
+
+
                 _userOptions = arg.UserOptions;
                 StateHasChanged();
             });
@@ -504,8 +504,8 @@ namespace Newbe.BookmarkManager.Pages
 
         #endregion AfCode
 
-        
-        # region OmniBox
+
+        #region OmniBox
         private async Task<SuggestResult[]> GetOmniBoxSuggest(string input)
         {
             var option = (await UserOptionsService.GetOptionsAsync())?.OmniboxSuggestFeature;
@@ -534,7 +534,7 @@ namespace Newbe.BookmarkManager.Pages
             await WebExtensions.Omnibox.OnInputChanged.RemoveListener(OmniboxSuggestActiveAsync);
             await WebExtensions.Omnibox.OnInputEntered.RemoveListener(OmniboxSuggestTabOpenAsync);
         }
-        
+
         private async void OmniboxSuggestActiveAsync(string input, Action<IEnumerable<SuggestResult>> suggest)
         {
             var result = await GetOmniBoxSuggest(input);
@@ -545,14 +545,14 @@ namespace Newbe.BookmarkManager.Pages
             if (!Uri.TryCreate(url, UriKind.Absolute, out _))
             {
                 var managerTabTitle = Consts.AppName;
-                var managerTabs = await WebExtensions.Tabs.Query(new QueryInfo {Title = managerTabTitle});
+                var managerTabs = await WebExtensions.Tabs.Query(new QueryInfo { Title = managerTabTitle });
                 if (managerTabs.Any())
                 {
-                    await WebExtensions.Tabs.Update(managerTabs.FirstOrDefault().Id, new UpdateProperties {Active = true});
+                    await WebExtensions.Tabs.Update(managerTabs.FirstOrDefault().Id, new UpdateProperties { Active = true });
                 }
                 else
                 {
-                    await WebExtensions.Tabs.Create(new CreateProperties {Url = "/Manager/index.html"});
+                    await WebExtensions.Tabs.Create(new CreateProperties { Url = "/Manager/index.html" });
                 }
 
                 return;
@@ -561,13 +561,13 @@ namespace Newbe.BookmarkManager.Pages
             switch (disposition)
             {
                 case OnInputEnteredDisposition.CurrentTab:
-                    await WebExtensions.Tabs.Update(tabId: null, updateProperties: new UpdateProperties {Url = url});
+                    await WebExtensions.Tabs.Update(tabId: null, updateProperties: new UpdateProperties { Url = url });
                     break;
                 case OnInputEnteredDisposition.NewForegroundTab:
-                    await WebExtensions.Tabs.Create(new CreateProperties {Url = url, Active = true});
+                    await WebExtensions.Tabs.Create(new CreateProperties { Url = url, Active = true });
                     break;
                 case OnInputEnteredDisposition.NewBackgroundTab:
-                    await WebExtensions.Tabs.Create(new CreateProperties {Url = url, Active = false});
+                    await WebExtensions.Tabs.Create(new CreateProperties { Url = url, Active = false });
                     break;
                 default:
                     break;
