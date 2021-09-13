@@ -261,6 +261,7 @@ namespace Newbe.BookmarkManager.Pages
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
                 AfEventHub.RegisterHandler<TriggerEditBookmarkEvent>(HandleTriggerEditBookmarkEvent);
+                AfEventHub.RegisterHandler<RefreshManagerPageEvent>(HandleRefreshPageEvent);
                 await AfEventHub.EnsureStartAsync();
             }
         }
@@ -281,6 +282,12 @@ namespace Newbe.BookmarkManager.Pages
                 _userOptions = arg.UserOptions;
                 StateHasChanged();
             });
+        }
+        private Task HandleRefreshPageEvent(RefreshManagerPageEvent arg)
+        {
+            SearchValue = _searchValue;
+            StateHasChanged();
+            return Task.CompletedTask;
         }
 
         private BkViewItem[] Map(SearchResultItem[] items)
