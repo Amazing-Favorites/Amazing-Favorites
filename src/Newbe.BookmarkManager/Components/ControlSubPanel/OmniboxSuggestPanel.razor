@@ -13,7 +13,7 @@
         @if (FeatureEnabled)
         {
             <Text>Suggest Count</Text>
-            <AntDesign.InputNumber DefaultValue="3" Min="1" Max="6" @bind-Value="@UserOptions.OmniboxSuggestFeature.SuggestCount" ></AntDesign.InputNumber>
+            <AntDesign.InputNumber DefaultValue="Consts.OmniboxSuggestDefault" Min="Consts.OmniboxSuggestMin" Max="Consts.OmniboxSuggestMax" @bind-Value="@UserOptions.OmniboxSuggestFeature.SuggestCount" ></AntDesign.InputNumber>
         }
         else
         {

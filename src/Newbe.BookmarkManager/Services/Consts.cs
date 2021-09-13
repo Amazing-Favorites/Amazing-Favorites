@@ -18,6 +18,7 @@ namespace Newbe.BookmarkManager.Services
 
         public const int OmniboxSuggestMax = 6;
         public const int OmniboxSuggestMin = 1;
+        public const int OmniboxSuggestDefault = 3;
 
 
         public const int JwtExpiredWarningDays = 7;
