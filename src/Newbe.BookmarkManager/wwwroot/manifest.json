@@ -22,7 +22,8 @@
     "tabs",
     "bookmarks",
     "commands",
-    "identity"
+    "identity",
+    "storage"
   ],
   "commands": {
     "open-manager-ui": {
