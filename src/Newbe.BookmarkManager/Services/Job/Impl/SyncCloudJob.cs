@@ -168,9 +168,12 @@ namespace Newbe.BookmarkManager.Services
                     throw new ArgumentOutOfRangeException();
             }
 
-            Task TriggerSync()
+            async Task TriggerSync()
             {
-                return _afEventHub.PublishAsync(new TriggerCloudSyncEvent());
+                var options = await _userOptionsService.GetOptionsAsync();
+                options.CloudBkFeature.AccessToken = accessToken;
+                await _userOptionsService.SaveAsync(options);
+                await _afEventHub.PublishAsync(new TriggerCloudSyncEvent());
             }
         }
 

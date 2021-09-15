@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -78,6 +79,10 @@ namespace Newbe.BookmarkManager.Services
                     Interactive = interactive,
                     Url = new HttpURL(_authUrl)
                 });
+                if (callbackUrl.Contains("error"))
+                {
+                    throw new MicrosoftTokenInvalidException(WebUtility.UrlDecode(callbackUrl.Split('#')[1]));
+                }
                 var token = callbackUrl.Split("#")[1].Split("&")[0].Split("=")[1];
 
                 LoadToken(token);
