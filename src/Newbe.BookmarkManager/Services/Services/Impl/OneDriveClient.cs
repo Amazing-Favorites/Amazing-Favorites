@@ -81,7 +81,7 @@ namespace Newbe.BookmarkManager.Services
                 });
                 if (callbackUrl.Contains("error"))
                 {
-                    throw new MicrosoftTokenInvalidException(callbackUrl.Split('#')[1]);
+                    throw new MicrosoftTokenInvalidException(WebUtility.UrlEncode(callbackUrl.Split('#')[1]));
                 }
                 var token = callbackUrl.Split("#")[1].Split("&")[0].Split("=")[1];
 
