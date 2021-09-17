@@ -37,7 +37,6 @@
         }
         <HotTagsPanel UserOptions="_modal"></HotTagsPanel>
         <SystemActionsPanel></SystemActionsPanel>
-        <OmniboxSuggestPanel UserOptions="_modal"></OmniboxSuggestPanel>
     </Collapse>
 </Modal>
 
@@ -89,9 +88,6 @@
         public CloudBkFeature CloudBkFeature { get; set; }
         public HotTagsFeature HotTagsFeature { get; set; }
         public ApplicationInsightFeature ApplicationInsightFeature { get; set; }
-        public OmniboxSuggestFeature OmniboxSuggestFeature { get; set; }
-
-        public bool OminiboxSuggestChanged { get; set; }
     }
 
     private async Task OnClickAgreeUserPrivacyAgreement()
@@ -114,7 +110,6 @@
         await AfEventHub.PublishAsync(new UserOptionSaveEvent
         {
             UserOptions = userOptions,
-            OminiboxSuggestChanged = _modal.OminiboxSuggestChanged
         });
         await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
         await CloseControlPanel();
@@ -131,8 +126,7 @@
             PinyinFeature = _modal.PinyinFeature,
             CloudBkFeature = _modal.CloudBkFeature,
             HotTagsFeature = _modal.HotTagsFeature,
-            ApplicationInsightFeature = _modal.ApplicationInsightFeature,
-            OmniboxSuggestFeature = _modal.OmniboxSuggestFeature
+            ApplicationInsightFeature = _modal.ApplicationInsightFeature
         };
         return userOptions;
     }
@@ -155,7 +149,6 @@
         _modal.HotTagsFeature = options.HotTagsFeature!;
         _modal.ApplicationInsightFeature = options.ApplicationInsightFeature!;
         _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement;
-        _modal.OmniboxSuggestFeature = options.OmniboxSuggestFeature;
     }
 
     protected override async Task OnInitializedAsync()
