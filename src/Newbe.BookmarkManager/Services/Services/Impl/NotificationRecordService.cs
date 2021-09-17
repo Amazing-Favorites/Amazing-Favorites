@@ -104,7 +104,7 @@ namespace Newbe.BookmarkManager.Services
                             Message = "A new version of Amazing Favorites released.",
                             ArgsJson = JsonSerializer.Serialize(new NewReleaseInput
                             {
-                                Version = "v0.6.2",
+                                Version = $"v{Consts.CurrentVersion}",
                                 WhatsNewUrl = "https://af.newbe.pro"
                             }),
                             Type = UserNotificationType.NewRelease,

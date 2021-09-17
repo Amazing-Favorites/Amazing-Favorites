@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using WebExtensions.Net.Runtime;
+using WebExtensions.Net.Storage;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Newbe.BookmarkManager.Services.EventHubs
@@ -13,20 +14,23 @@ namespace Newbe.BookmarkManager.Services.EventHubs
     public class AfEventHub : IAfEventHub
     {
         private readonly ILogger<AfEventHub> _logger;
-        private readonly IRuntimeApi _runtimeApi;
+        private readonly IStorageApi _storageApi;
         private readonly ILifetimeScope _lifetimeScope;
+        private readonly IClock _clock;
 
         private readonly Dictionary<string, (Type eventType, List<Action<ILifetimeScope, IAfEvent>> handler)>
             _handlersDict = new();
 
         public AfEventHub(
             ILogger<AfEventHub> logger,
-            IRuntimeApi runtimeApi,
-            ILifetimeScope lifetimeScope)
+            IStorageApi storageApi,
+            ILifetimeScope lifetimeScope,
+            IClock clock)
         {
             _logger = logger;
-            _runtimeApi = runtimeApi;
+            _storageApi = storageApi;
             _lifetimeScope = lifetimeScope;
+            _clock = clock;
         }
 
         private int _locker;
@@ -41,10 +45,27 @@ namespace Newbe.BookmarkManager.Services.EventHubs
 
             _logger.LogInformation("Start to run AfEventHub");
 
-            await _runtimeApi.OnMessage.AddListener(OnReceivedMessage);
+            await _storageApi.OnChanged.AddListener(OnReceivedChanged);
         }
 
-        private bool OnReceivedMessage(object o, MessageSender sender, Action arg3)
+        private const string AfEventKey = "afEvent";
+
+        private void OnReceivedChanged(object changes, string area)
+        {
+            var jsonElement = (JsonElement)changes;
+            if (jsonElement.TryGetProperty(AfEventKey, out var value))
+            {
+                if (value.TryGetProperty("newValue", out var newValue))
+                {
+                    if (newValue.TryGetProperty("message", out var message))
+                    {
+                        OnReceivedMessage(message);
+                    }
+                }
+            }
+        }
+
+        private bool OnReceivedMessage(object o)
         {
             var afEventEnvelope = JsonSerializer.Deserialize<AfEventEnvelope>(JsonSerializer.Serialize(o));
             if (afEventEnvelope == null)
@@ -108,7 +129,7 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             _handlersDict[eventName] = registration;
         }
 
-        public Task PublishAsync(IAfEvent afEvent)
+        public async Task PublishAsync(IAfEvent afEvent)
         {
             var typeCode = afEvent.GetType().Name;
             var message = new AfEventEnvelope
@@ -117,18 +138,22 @@ namespace Newbe.BookmarkManager.Services.EventHubs
                 PayloadJson = JsonSerializer.Serialize((object)afEvent)
             };
             _logger.LogInformation("Event published {TypeCode}", typeCode);
-            // current page can not receive runtime message
-            OnReceivedMessage(message, default!, default!);
             try
             {
-                _runtimeApi.SendMessage("", message, new object());
+                var local = await _storageApi.GetLocal();
+                await local.Set(new
+                {
+                    afEvent = new
+                    {
+                        utcNow = _clock.UtcNow,
+                        message
+                    }
+                });
             }
             catch (Exception)
             {
                 // ignore
             }
-
-            return Task.CompletedTask;
         }
     }
 }

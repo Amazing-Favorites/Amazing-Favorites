@@ -1,7 +1,7 @@
 ﻿{
   "manifest_version": 2,
   "name": "Amazing Favorites",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "Amazing Favorites help you to manage you bookmarks efficiently",
   "omnibox": { 
     "keyword" : "af"
@@ -25,7 +25,8 @@
     "tabs",
     "bookmarks",
     "commands",
-    "identity"
+    "identity",
+    "storage"
   ],
   "commands": {
     "open-manager-ui": {

@@ -150,10 +150,10 @@
     private async Task LoadUserOptions()
     {
         var options = await UserOptionsService.GetOptionsAsync();
-        _modal.PinyinFeature = options.PinyinFeature;
-        _modal.CloudBkFeature = options.CloudBkFeature;
-        _modal.HotTagsFeature = options.HotTagsFeature;
-        _modal.ApplicationInsightFeature = options.ApplicationInsightFeature;
+        _modal.PinyinFeature = options.PinyinFeature!;
+        _modal.CloudBkFeature = options.CloudBkFeature!;
+        _modal.HotTagsFeature = options.HotTagsFeature!;
+        _modal.ApplicationInsightFeature = options.ApplicationInsightFeature!;
         _modal.AcceptPrivacyAgreement = options.AcceptPrivacyAgreement;
         _modal.OmniboxSuggestFeature = options.OmniboxSuggestFeature;
     }
