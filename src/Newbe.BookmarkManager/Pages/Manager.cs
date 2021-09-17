@@ -72,7 +72,7 @@ namespace Newbe.BookmarkManager.Pages
         }
 
         private string[] _allTags = Array.Empty<string>();
-        private string _searchValue;
+        private string _searchValue = null!;
         private bool _modalVisible;
 
         public record OnSearchResultClickArgs
