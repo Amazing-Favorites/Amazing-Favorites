@@ -35,7 +35,7 @@
                   WrapperColSpan="20"
                   Size="Default">
                 <FormItem Label="Cloud Storage Provider">
-                    <RadioGroup @bind-Value="context.CloudBkFeature.CloudBkProviderType" ButtonStyle="solid">
+                    <RadioGroup @bind-Value="context.CloudBkFeature.CloudBkProviderType" ButtonStyle="RadioButtonStyle.Solid">
                         <Radio RadioButton Value="@(CloudBkProviderType.OneDrive)"><Icon Type="windows" Theme="outline"/> OneDrive</Radio>
                         <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> GoogleDrive</Radio>
                         <Radio RadioButton Value="@(CloudBkProviderType.NewbeApi)">☁ Newbe API</Radio>
