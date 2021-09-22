@@ -5,6 +5,6 @@ namespace Newbe.BookmarkManager.Services.RPC
 {
     public interface ISender
     {
-        Task<MethodResponse> MethodCall(MethodRequest methodRequest);
+        public  Task<MethodResponse> Send(MethodRequest request);
     }
 }

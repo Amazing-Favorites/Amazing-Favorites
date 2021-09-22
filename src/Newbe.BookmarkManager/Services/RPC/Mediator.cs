@@ -8,7 +8,10 @@ using Autofac;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services.EventHubs;
 using Newtonsoft.Json;
+using WebExtensions.Net.Runtime;
 using WebExtensions.Net.Storage;
+using WebExtensions.Net.Tabs;
+using ConnectInfo = WebExtensions.Net.Runtime.ConnectInfo;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace Newbe.BookmarkManager.Services.RPC
 {
@@ -18,28 +21,22 @@ namespace Newbe.BookmarkManager.Services.RPC
             _handlersDict = new();
         private readonly IClock _clock;
         private readonly ILogger<Mediator> _logger;
-        private readonly IStorageApi _storageApi;
+        private readonly IRuntimeApi _runtimeApi;
         private readonly ILifetimeScope _lifetimeScope;
         private const string AfIPCKey = "afIPCKey";
         private int _locker;
-        public Mediator(IClock clock, IStorageApi storageApi, ILogger<Mediator> logger, ILifetimeScope lifetimeScope)
+        private readonly ITabsApi _tabsApi;
+
+        private Port _port;
+        public Mediator(IClock clock, ILogger<Mediator> logger, ILifetimeScope lifetimeScope, IRuntimeApi runtimeApi)
         {
             _clock = clock;
-            _storageApi = storageApi;
             _logger = logger;
             _lifetimeScope = lifetimeScope;
+            _runtimeApi = runtimeApi;
+             
         }
         
-        public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<object?> Send(object request, CancellationToken cancellationToken = default)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-
         public async Task EnsureStartAsync()
         {
             if (Interlocked.Increment(ref _locker) != 1)
@@ -47,117 +44,65 @@ namespace Newbe.BookmarkManager.Services.RPC
                 _logger.LogInformation("AfEventHub already started");
                 return;
             }
-
+            
             _logger.LogInformation("Start to run AfEventHub");
-
-            await _storageApi.OnChanged.AddListener(OnReceivedRequestChanged);
-            await _storageApi.OnChanged.AddListener(OnReceivedResponseChanged);
+            await OnMessage();
         }
-        private void OnReceivedRequestChanged(object changes, string area)
+        public async Task<bool> OnSendMessage(object message, MessageSender sender,Action<object> sendResponse)
         {
-            var jsonElement = (JsonElement)changes;
-            if (jsonElement.TryGetProperty(AfIPCKey, out var value))
-            {
-                if (value.TryGetProperty("newValue", out var newValue))
-                {
-                    if (newValue.TryGetProperty("request", out var request))
-                    {
-                        OnRequestMessage(request);
-                    }
-                }
-            }
-        }
-        private void OnReceivedResponseChanged(object changes, string area)
-        {
-            var jsonElement = (JsonElement)changes;
-            if (jsonElement.TryGetProperty(AfIPCKey, out var value))
-            {
-                if (value.TryGetProperty("newValue", out var newValue))
-                {
-                    if (newValue.TryGetProperty("response", out var response))
-                    {
-                        OnResponseMessage(response);
-                    }
-                }
-            }
-        }
-        public async Task<MethodResponse> MethodCall(MethodRequest methodRequest)
-        {
-            methodRequest.Id = Guid.NewGuid();
-            //TaskCompletionSource<MethodResponse> methodCallCompletionSource = new TaskCompletionSource<MethodResponse>();
-            if (_handlersDict.TryAdd(methodRequest.TypeCode, methodCallCompletionSource))
-            {
-                //await _hubContext.Clients.User(userId).MethodCall(methodParams);
-
-                
-                
-                
-                return await methodCallCompletionSource.Task;
-            }
-
-            throw new Exception("Couldn't call the method.");
-        }
-
-        private async Task<bool> OnRequestMessage(object o)
-        {
-            var request = JsonSerializer.Deserialize<MethodRequest>(JsonSerializer.Serialize(o));
+            var request = JsonSerializer.Deserialize<MethodRequest>(JsonSerializer.Serialize(message));
             if (request == null)
             {
+                _logger.LogInformation("Not af request");
                 return false;
             }
 
-            var typeCode = request.TypeCode;
-            if (string.IsNullOrEmpty(typeCode))
+            var response = new MethodResponse
             {
-                return false;
-            }
-            
-            if (!_handlersDict.TryGetValue(typeCode, out var registration))
-            {
-                _logger.LogInformation("registration not found for {TypeCode}", typeCode);
-                return false;
-            }
-            var (eventType, handler) = registration;
-            var payloadJson = request.PayloadJson;
-            _logger.LogDebug("deserialize to {Type} from JSON {Json}", eventType, payloadJson);
-            var payload = JsonConvert.DeserializeObject(payloadJson, eventType);
-            var response = handler.Invoke(_lifetimeScope, (MethodRequest)payload);
-            
-            try
-            {
-                var local = await _storageApi.GetLocal();
-                await local.Set(new
-                {
-                    afEvent = new
-                    {
-                        utcNow = _clock.UtcNow,
-                        response
-                    }
-                });
-            }
-            catch (Exception)
-            {
-                // ignore
-            }
-
+                Id = request.Id,
+                PayloadJson = request.PayloadJson
+            };
+            sendResponse(response);
             return true;
-
         }
 
-        private bool OnResponseMessage(object o)
+        private async Task OnMessage()
         {
-            var response = JsonSerializer.Deserialize<MethodResponse>(JsonSerializer.Serialize(o));
-            if (response == null)
+            await _runtimeApi.OnMessage.AddListener2((message, sender, callback) =>
             {
-                return false;
+
+                _logger.LogInformation("OnMessage Installed");
+                var request = JsonSerializer.Deserialize<MethodRequest>(JsonSerializer.Serialize(message));
+                if (request == null)
+                {
+                    _logger.LogInformation("Not af request");
+                    return false;
+                }
+
+                var response = new MethodResponse
+                {
+                    Id = request.Id,
+                    PayloadJson = request.PayloadJson
+                };
+                callback(response);
+                return true;
+            });
+            
+        }
+        public async Task<MethodResponse> Send(MethodRequest request)
+        {
+            _logger.LogInformation("Send Start");
+            object? result = null;
+            void Func(object? o) => result = o;
+            await _runtimeApi.SendMessage("", request,new object(),Func);
+
+            if (result != null)
+            {
+                return JsonSerializer.Deserialize<MethodResponse>(JsonSerializer.Serialize(result));
             }
 
-            var typeCode = response.TypeCode;
-            if (string.IsNullOrEmpty(typeCode))
-            {
-                return false;
-            }
-            
+            throw new Exception("SendException");
         }
     }
+
 }

@@ -17,6 +17,7 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.RPC;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Refit;
 using TG.Blazor.IndexedDB;
@@ -269,6 +270,9 @@ namespace Newbe.BookmarkManager
                 base.Load(builder);
                 builder.RegisterType<AfEventHub>()
                     .As<IAfEventHub>()
+                    .SingleInstance();
+                builder.RegisterType<Mediator>()
+                    .As<IMediator>()
                     .SingleInstance();
             }
         }
