@@ -45,7 +45,7 @@ namespace Newbe.BookmarkManager.Services.RPC
                 return;
             }
             
-            _logger.LogInformation("Start to run AfEventHub");
+            _logger.LogInformation("Start to run Mediator");
             await OnMessage();
         }
         public async Task<bool> OnSendMessage(object message, MessageSender sender,Action<object> sendResponse)
@@ -79,11 +79,14 @@ namespace Newbe.BookmarkManager.Services.RPC
                     return false;
                 }
 
+                var array = request.PayloadJson.ToCharArray();
+                Array.Reverse(array);
                 var response = new MethodResponse
                 {
                     Id = request.Id,
-                    PayloadJson = request.PayloadJson
+                    PayloadJson = new string(array)
                 };
+                _logger.LogInformation($"ID:{response.Id}_Payload: {response.PayloadJson}");
                 callback(response);
                 return true;
             });
@@ -93,9 +96,17 @@ namespace Newbe.BookmarkManager.Services.RPC
         {
             _logger.LogInformation("Send Start");
             object? result = null;
-            void Func(object? o) => result = o;
-            await _runtimeApi.SendMessage("", request,new object(),Func);
+            var t = JsonSerializer.Serialize(request);
+            _logger.LogInformation(t);
+            var sending =  await _runtimeApi.SendMessage(await _runtimeApi.GetId(), request,new object());
+            var t2 = sending.EnumerateObject();
+            foreach (var item in t2)
+            {
+                _logger.LogInformation($"Name:{item.Name},Value{item.Value}");
 
+            }
+
+            result = sending.Deserialize<MethodResponse>();
             if (result != null)
             {
                 return JsonSerializer.Deserialize<MethodResponse>(JsonSerializer.Serialize(result));
