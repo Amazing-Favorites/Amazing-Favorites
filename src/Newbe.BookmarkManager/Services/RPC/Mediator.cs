@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,24 +18,22 @@ namespace Newbe.BookmarkManager.Services.RPC
 {
     public class Mediator:IMediator
     {
-        private readonly Dictionary<string, (Type eventType, Func<ILifetimeScope, MethodRequest,MethodResponse> handler)>
+        private readonly Dictionary<string, (Type eventType, Func<ILifetimeScope, IRequest, object> handler)>
             _handlersDict = new();
         private readonly IClock _clock;
         private readonly ILogger<Mediator> _logger;
         private readonly IRuntimeApi _runtimeApi;
         private readonly ILifetimeScope _lifetimeScope;
-        private const string AfIPCKey = "afIPCKey";
         private int _locker;
         private readonly ITabsApi _tabsApi;
 
         private Port _port;
-        public Mediator(IClock clock, ILogger<Mediator> logger, ILifetimeScope lifetimeScope, IRuntimeApi runtimeApi)
+        public Mediator(IClock clock, ILogger<Mediator> logger, ILifetimeScope lifetimeScope, IRuntimeApi runtimeApi )
         {
             _clock = clock;
             _logger = logger;
             _lifetimeScope = lifetimeScope;
             _runtimeApi = runtimeApi;
-             
         }
         
         public async Task EnsureStartAsync()
@@ -44,75 +43,101 @@ namespace Newbe.BookmarkManager.Services.RPC
                 _logger.LogInformation("AfEventHub already started");
                 return;
             }
-            
             _logger.LogInformation("Start to run Mediator");
             await OnMessage();
         }
-        public async Task<bool> OnSendMessage(object message, MessageSender sender,Action<object> sendResponse)
-        {
-            var request = JsonSerializer.Deserialize<MethodRequest>(JsonSerializer.Serialize(message));
-            if (request == null)
-            {
-                _logger.LogInformation("Not af request");
-                return false;
-            }
-
-            var response = new MethodResponse
-            {
-                Id = request.Id,
-                PayloadJson = request.PayloadJson
-            };
-            sendResponse(response);
-            return true;
-        }
-
+        // private async Task OnMessage()
+        // {
+        //     await _runtimeApi.OnMessage.AddListener2((message, sender, callback) =>
+        //     {
+        //
+        //         _logger.LogInformation("OnMessage Installed");
+        //         var request = JsonSerializer.Deserialize<MethodRequest>(JsonSerializer.Serialize(message));
+        //         if (request == null)
+        //         {
+        //             _logger.LogInformation("Not af request");
+        //             return false;
+        //         }
+        //
+        //         var array = request.PayloadJson.ToCharArray();
+        //         Array.Reverse(array);
+        //         var response = new MethodResponse
+        //         {
+        //             Id = request.Id,
+        //             PayloadJson = new string(array)
+        //         };
+        //         _logger.LogInformation($"ID:{response.Id}_Payload: {response.PayloadJson}");
+        //         callback(response);
+        //         return true;
+        //     });
+        //     
+        // }
         private async Task OnMessage()
         {
-            await _runtimeApi.OnMessage.AddListener2((message, sender, callback) =>
+            await _runtimeApi.OnMessage.AddListener2((message, sender, callback) => 
             {
-
                 _logger.LogInformation("OnMessage Installed");
-                var request = JsonSerializer.Deserialize<MethodRequest>(JsonSerializer.Serialize(message));
-                if (request == null)
+                var envelope = JsonSerializer.Deserialize<AfEventEnvelope>(JsonSerializer.Serialize(message));
+                if (envelope == null)
                 {
                     _logger.LogInformation("Not af request");
                     return false;
                 }
 
-                var array = request.PayloadJson.ToCharArray();
-                Array.Reverse(array);
-                var response = new MethodResponse
+                var typeCode = envelope.TypeCode;
+                if (string.IsNullOrEmpty(typeCode))
                 {
-                    Id = request.Id,
-                    PayloadJson = new string(array)
-                };
-                _logger.LogInformation($"ID:{response.Id}_Payload: {response.PayloadJson}");
+                    _logger.LogInformation("empty af request code");
+                    return false;
+                }
+                if (!_handlersDict.TryGetValue(typeCode, out var registration))
+                {
+                    _logger.LogInformation("registration not found for {TypeCode}", typeCode);
+                    return false;
+                }
+                var (eventType, handler) = registration;
+                var payloadJson = envelope.PayloadJson;
+                var payload = JsonConvert.DeserializeObject(payloadJson, eventType);
+                if (payload == null)
+                {
+                    _logger.LogError("failed to deserialize event payload: {Payload}", payload);
+                    return false;
+                }
+
+                var response =  handler.Invoke(_lifetimeScope, (IRequest) payload);
+                
                 callback(response);
                 return true;
             });
             
         }
-        public async Task<MethodResponse> Send(MethodRequest request)
+        public async Task<TResponse> Send<TResponse>(IRequest request)
         {
-            _logger.LogInformation("Send Start");
-            object? result = null;
-            var t = JsonSerializer.Serialize(request);
-            _logger.LogInformation(t);
-            var sending =  await _runtimeApi.SendMessage(await _runtimeApi.GetId(), request,new object());
-            var t2 = sending.EnumerateObject();
-            foreach (var item in t2)
+            var typeCode = request.GetType().Name;
+            var envelope = new AfEventEnvelope
             {
-                _logger.LogInformation($"Name:{item.Name},Value{item.Value}");
-
-            }
-
-            result = sending.Deserialize<MethodResponse>();
+                TypeCode = typeCode,
+                PayloadJson = JsonSerializer.Serialize((object) request)
+            };
+            var sending =  await _runtimeApi.SendMessage(await _runtimeApi.GetId(), envelope,new object());
+            var result = sending.Deserialize<TResponse>();
             if (result != null)
             {
-                return JsonSerializer.Deserialize<MethodResponse>(JsonSerializer.Serialize(result));
+                return result;
             }
-
             throw new Exception("SendException");
+        }
+
+        public void RegisterHandler<TRequest>(Func<ILifetimeScope, IRequest, object> func)
+        {
+            var requestName = typeof(TRequest).Name;
+            Func<ILifetimeScope, IRequest, object> handler;
+            if (!_handlersDict.TryGetValue(requestName, out var registration))
+            {
+                registration = (typeof(TRequest), func);
+                _handlersDict[requestName] = registration;
+            }
+            
         }
     }
 
