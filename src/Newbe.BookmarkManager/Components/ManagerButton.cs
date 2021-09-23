@@ -6,6 +6,7 @@ using Newbe.BookmarkManager.Services.EventHubs;
 using Newbe.BookmarkManager.Services.RPC;
 using System;
 using System.Threading.Tasks;
+using Newbe.BookmarkManager.Services.RPC.Handlers;
 using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Components
@@ -25,15 +26,14 @@ namespace Newbe.BookmarkManager.Components
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                await Mediator.EnsureStartAsync();
-                var result = await Mediator.Send(new MethodRequest
+                var result = await Mediator.Send<SampleResponse>(new SampleRequest
                 {
-                    Id = Guid.NewGuid(),
-                    PayloadJson = "123456",
-                    TypeCode = "123"
+                    Name = "SampleRequest",
+                    Count = 1
                 });
-
-                Console.WriteLine(result.Id);
+                Console.WriteLine("result:");
+                Console.WriteLine(result.Count);
+                Console.WriteLine(result.Name);
                 AfEventHub.RegisterHandler<TriggerOpenControlPanelEvent>(HandleTriggerOpenControlPanelEvent);
                 await AfEventHub.EnsureStartAsync();
             }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.RPC;
+using Newbe.BookmarkManager.Services.RPC.Handlers;
 using WebExtensions.Net.Runtime;
 
 namespace Newbe.BookmarkManager.Pages
@@ -38,13 +39,20 @@ namespace Newbe.BookmarkManager.Pages
             if (firstRender)
             {
                 await JobHost.StartAsync();
+                await Mediator.EnsureStartAsync();
+                Mediator.RegisterHandler<SampleRequest>(SampleHandler);
             }
         }
-        
-        //[JSInvokable]
-        //public async Task OnMessage(object request, MessageSender sender,Action<object> sendResponse)
-        //{
-        //    await Mediator.OnSendMessage(request, sender, sendResponse);
-        //}
+
+        public Task<SampleResponse> SampleHandler(SampleRequest request)
+        {
+            var result = new SampleResponse();
+
+            result.Count = request.Count + 1;
+            result.Name = "SampleResponse";
+            
+            
+            return Task.FromResult(result);
+        }
     }
 }

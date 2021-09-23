@@ -76,7 +76,7 @@ namespace Newbe.BookmarkManager.Services.RPC
         {
             await _runtimeApi.OnMessage.AddListener2((message, sender, callback) => 
             {
-                _logger.LogInformation("OnMessage Installed");
+                _logger.LogInformation("OnMessage hitted");
                 var envelope = JsonSerializer.Deserialize<AfEventEnvelope>(JsonSerializer.Serialize(message));
                 if (envelope == null)
                 {
@@ -106,6 +106,10 @@ namespace Newbe.BookmarkManager.Services.RPC
 
                 var response =  handler.Invoke(_lifetimeScope, (IRequest) payload);
                 
+                
+                _logger.LogInformation($"Response:{JsonConvert.SerializeObject(response)}");
+                
+                
                 callback(response);
                 return true;
             });
@@ -120,7 +124,19 @@ namespace Newbe.BookmarkManager.Services.RPC
                 PayloadJson = JsonSerializer.Serialize((object) request)
             };
             var sending =  await _runtimeApi.SendMessage(await _runtimeApi.GetId(), envelope,new object());
-            var result = sending.Deserialize<TResponse>();
+
+            foreach (var item in sending.EnumerateObject())
+            {
+                _logger.LogInformation($"Name:{item.Name},Value:{item.Value}");
+            }
+
+            // if (sending.TryGetProperty("result", out var tmpValue))
+            // {
+            //     
+            // }
+            // _logger.LogInformation($"Target:{tmpValue.}");
+            var result = JsonSerializer
+                .Deserialize<TResponse>(JsonSerializer.Serialize((object)sending.EnumerateObject().FirstOrDefault(a=>a.Name == "result").Value));
             if (result != null)
             {
                 return result;
