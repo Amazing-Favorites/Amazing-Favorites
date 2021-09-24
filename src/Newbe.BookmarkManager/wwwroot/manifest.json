@@ -15,7 +15,6 @@
   "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-eval' 'sha256-v8v3RKRPmN4odZ1CWM5gw80QKPCCWMcpNeOmimNL2AA=' 'sha256-j0z5Z6xOoSHTeg6zVPMoHNt5D5v+7IWgT9m5uC9mrGg=' 'sha256-SQC3opwSNRzP3qBB9CWB9I3347XafmEdFyNx7sU8EhI=' https://js.monitor.azure.com/scripts/b/ai.2.min.js ; object-src 'self'",
   "web_accessible_resources": [
     "framework/*",
-    "BrowserExtensionScripts/*",
     "content/*"
   ],
   "permissions": [
