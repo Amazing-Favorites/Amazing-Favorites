@@ -46,32 +46,6 @@ namespace Newbe.BookmarkManager.Services.RPC
             _logger.LogInformation("Start to run Mediator");
             await OnMessage();
         }
-        // private async Task OnMessage()
-        // {
-        //     await _runtimeApi.OnMessage.AddListener2((message, sender, callback) =>
-        //     {
-        //
-        //         _logger.LogInformation("OnMessage Installed");
-        //         var request = JsonSerializer.Deserialize<MethodRequest>(JsonSerializer.Serialize(message));
-        //         if (request == null)
-        //         {
-        //             _logger.LogInformation("Not af request");
-        //             return false;
-        //         }
-        //
-        //         var array = request.PayloadJson.ToCharArray();
-        //         Array.Reverse(array);
-        //         var response = new MethodResponse
-        //         {
-        //             Id = request.Id,
-        //             PayloadJson = new string(array)
-        //         };
-        //         _logger.LogInformation($"ID:{response.Id}_Payload: {response.PayloadJson}");
-        //         callback(response);
-        //         return true;
-        //     });
-        //     
-        // }
         private async Task OnMessage()
         {
             await _runtimeApi.OnMessage.AddListener2((message, sender, callback) => 
@@ -129,14 +103,8 @@ namespace Newbe.BookmarkManager.Services.RPC
             {
                 _logger.LogInformation($"Name:{item.Name},Value:{item.Value}");
             }
-
-            // if (sending.TryGetProperty("result", out var tmpValue))
-            // {
-            //     
-            // }
-            // _logger.LogInformation($"Target:{tmpValue.}");
-            var result = JsonSerializer
-                .Deserialize<TResponse>(JsonSerializer.Serialize((object)sending.EnumerateObject().FirstOrDefault(a=>a.Name == "result").Value));
+            var result = JsonConvert
+                .DeserializeObject<TResponse>(JsonSerializer.Serialize((object)sending.EnumerateObject().FirstOrDefault(a=>a.Name == "result").Value));
             if (result != null)
             {
                 return result;
