@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
-using Newbe.BookmarkManager.Services.RPC;
-using System;
-using System.Threading.Tasks;
-using Newbe.BookmarkManager.Services.RPC.Handlers;
 using WebExtensions.Net.Tabs;
 
 namespace Newbe.BookmarkManager.Components
@@ -17,8 +14,6 @@ namespace Newbe.BookmarkManager.Components
         [Inject] public IOptions<StaticUrlOptions> StaticUrlOptions { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public IAfEventHub AfEventHub { get; set; }
-
-        [Inject] public IMediator Mediator { get; set; }
         private bool _controlPanelVisible;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -26,14 +21,6 @@ namespace Newbe.BookmarkManager.Components
             await base.OnAfterRenderAsync(firstRender);
             if (firstRender)
             {
-                var result = await Mediator.Send<SampleResponse>(new SampleRequest
-                {
-                    Name = "SampleRequest",
-                    Count = 1
-                });
-                Console.WriteLine("result:");
-                Console.WriteLine(result.Count);
-                Console.WriteLine(result.Name);
                 AfEventHub.RegisterHandler<TriggerOpenControlPanelEvent>(HandleTriggerOpenControlPanelEvent);
                 await AfEventHub.EnsureStartAsync();
             }

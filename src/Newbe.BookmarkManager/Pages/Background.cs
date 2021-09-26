@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -15,6 +16,8 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
         [Inject] public IJobHost JobHost { get; set; }
         [Inject] public IMediator Mediator { get; set; }
+        
+        [Inject] public IIndexedDbRepo<Bk, string> _bkRepo { get; set; }
 
         private UserOptions _userOptions = null!;
 
@@ -40,19 +43,17 @@ namespace Newbe.BookmarkManager.Pages
             {
                 await JobHost.StartAsync();
                 await Mediator.EnsureStartAsync();
-                Mediator.RegisterHandler<SampleRequest>(SampleHandler);
+                Mediator.RegisterHandler<GetAllBkRequest>(SearchHandler);
             }
         }
 
-        public Task<SampleResponse> SampleHandler(SampleRequest request)
+ 
+
+        public  Task<List<Bk>> SearchHandler(GetAllBkRequest request)
         {
-            var result = new SampleResponse();
+            var result = _bkRepo.GetAllAsync();
 
-            result.Count = request.Count + 1;
-            result.Name = "SampleResponse";
-
-
-            return Task.FromResult(result);
+            return result;
         }
     }
 }
