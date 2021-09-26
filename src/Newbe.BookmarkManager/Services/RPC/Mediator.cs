@@ -16,7 +16,7 @@ using ConnectInfo = WebExtensions.Net.Runtime.ConnectInfo;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace Newbe.BookmarkManager.Services.RPC
 {
-    public class Mediator:IMediator
+    public class Mediator : IMediator
     {
         private readonly Dictionary<string, (Type eventType, Func<ILifetimeScope, IRequest, object> handler)>
             _handlersDict = new();
@@ -25,14 +25,14 @@ namespace Newbe.BookmarkManager.Services.RPC
         private readonly IRuntimeApi _runtimeApi;
         private readonly ILifetimeScope _lifetimeScope;
         private int _locker;
-        public Mediator(IClock clock, ILogger<Mediator> logger, ILifetimeScope lifetimeScope, IRuntimeApi runtimeApi )
+        public Mediator(IClock clock, ILogger<Mediator> logger, ILifetimeScope lifetimeScope, IRuntimeApi runtimeApi)
         {
             _clock = clock;
             _logger = logger;
             _lifetimeScope = lifetimeScope;
             _runtimeApi = runtimeApi;
         }
-        
+
         public async Task EnsureStartAsync()
         {
             if (Interlocked.Increment(ref _locker) != 1)
@@ -45,7 +45,7 @@ namespace Newbe.BookmarkManager.Services.RPC
         }
         private async Task OnMessage()
         {
-            await _runtimeApi.OnMessage.AddListener((message, sender, callback) => 
+            await _runtimeApi.OnMessage.AddListener((message, sender, callback) =>
             {
                 _logger.LogInformation("OnMessage hitted");
                 var envelope = JsonSerializer.Deserialize<AfEventEnvelope>(JsonSerializer.Serialize(message));
@@ -75,16 +75,16 @@ namespace Newbe.BookmarkManager.Services.RPC
                     return false;
                 }
 
-                var response =  handler.Invoke(_lifetimeScope, (IRequest) payload);
-                
-                
+                var response = handler.Invoke(_lifetimeScope, (IRequest)payload);
+
+
                 _logger.LogInformation($"Response:{JsonConvert.SerializeObject(response)}");
-                
-                
+
+
                 callback(response);
                 return true;
             });
-            
+
         }
         public async Task<TResponse> Send<TResponse>(IRequest request)
         {
@@ -92,16 +92,16 @@ namespace Newbe.BookmarkManager.Services.RPC
             var envelope = new AfEventEnvelope
             {
                 TypeCode = typeCode,
-                PayloadJson = JsonSerializer.Serialize((object) request)
+                PayloadJson = JsonSerializer.Serialize((object)request)
             };
-            var sending =  await _runtimeApi.SendMessage(await _runtimeApi.GetId(), envelope,new object());
-            
+            var sending = await _runtimeApi.SendMessage(await _runtimeApi.GetId(), envelope, new object());
+
             foreach (var item in sending.EnumerateObject())
             {
                 _logger.LogInformation($"Name:{item.Name},Value:{item.Value}");
             }
             var result = JsonConvert
-                .DeserializeObject<TResponse>(JsonSerializer.Serialize((object)sending.EnumerateObject().FirstOrDefault(a=>a.Name == "result").Value));
+                .DeserializeObject<TResponse>(JsonSerializer.Serialize((object)sending.EnumerateObject().FirstOrDefault(a => a.Name == "result").Value));
             if (result != null)
             {
                 return result;
@@ -118,7 +118,7 @@ namespace Newbe.BookmarkManager.Services.RPC
                 registration = (typeof(TRequest), func);
                 _handlersDict[requestName] = registration;
             }
-            
+
         }
     }
 

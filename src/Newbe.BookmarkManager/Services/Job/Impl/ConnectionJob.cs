@@ -4,7 +4,7 @@ using WebExtensions.Net.Runtime;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class ConnectionJob:IConnectionJob
+    public class ConnectionJob : IConnectionJob
     {
 
         private readonly IRuntimeApi _runtimeApi;

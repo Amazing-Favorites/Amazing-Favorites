@@ -50,8 +50,8 @@ namespace Newbe.BookmarkManager.Pages
 
             result.Count = request.Count + 1;
             result.Name = "SampleResponse";
-            
-            
+
+
             return Task.FromResult(result);
         }
     }

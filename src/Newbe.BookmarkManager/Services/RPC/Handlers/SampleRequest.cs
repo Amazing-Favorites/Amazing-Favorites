@@ -1,6 +1,6 @@
 ﻿namespace Newbe.BookmarkManager.Services.RPC.Handlers
 {
-    public class SampleRequest:IRequest
+    public class SampleRequest : IRequest
     {
         public int Count { get; set; }
 
