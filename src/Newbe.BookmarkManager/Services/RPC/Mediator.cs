@@ -25,9 +25,6 @@ namespace Newbe.BookmarkManager.Services.RPC
         private readonly IRuntimeApi _runtimeApi;
         private readonly ILifetimeScope _lifetimeScope;
         private int _locker;
-        private readonly ITabsApi _tabsApi;
-
-        private Port _port = null;
         public Mediator(IClock clock, ILogger<Mediator> logger, ILifetimeScope lifetimeScope, IRuntimeApi runtimeApi )
         {
             _clock = clock;
@@ -45,7 +42,6 @@ namespace Newbe.BookmarkManager.Services.RPC
             }
             _logger.LogInformation("Start to run Mediator");
             await OnMessage();
-            //await OnMessagePort();
         }
         private async Task OnMessage()
         {
@@ -90,30 +86,6 @@ namespace Newbe.BookmarkManager.Services.RPC
             });
             
         }
-
-        // private async Task OnMessagePort()
-        // {
-        //     await _runtimeApi.OnConnect.AddListener((Port port) =>
-        //     {
-        //         
-        //         if (port.Name == "test")
-        //         {
-        //             _port = port;
-        //             
-        //         }
-        //     });
-        //
-        //     if (_port != null)
-        //     {
-        //         await _port.OnMessage.AddListener((msg) =>
-        //         {
-        //             var d1 = msg as Data1;
-        //             _logger.LogInformation($"msg:{d1.Name}");
-        //             d1.Name = "000";
-        //         });
-        //     }
-        //     
-        // }
         public async Task<TResponse> Send<TResponse>(IRequest request)
         {
             var typeCode = request.GetType().Name;
@@ -123,22 +95,6 @@ namespace Newbe.BookmarkManager.Services.RPC
                 PayloadJson = JsonSerializer.Serialize((object) request)
             };
             var sending =  await _runtimeApi.SendMessage(await _runtimeApi.GetId(), envelope,new object());
-
-            // var port = await _runtimeApi.Connect(await _runtimeApi.GetId(),new ConnectInfo
-            // {
-            //     Name = "test",
-            //     
-            // });
-            // _logger.LogInformation($"port:{port.Name}");
-            // port.PostMessage = () =>  new Data1
-            // {
-            //     Name = "123"
-            // }; 
-            // port.OnMessage.AddListener(a =>
-            // {
-            //     _logger.LogInformation($"recived:{a.ToString()}");
-            // });
-            
             
             foreach (var item in sending.EnumerateObject())
             {
@@ -164,11 +120,6 @@ namespace Newbe.BookmarkManager.Services.RPC
             }
             
         }
-    }
-
-    public record Data1
-    {
-        public string Name { get; set; }
     }
 
 }

@@ -4,7 +4,4 @@
     {
         
     }
-    
-    
-    public interface IRequest<out TResponse> :IRequest{}
 }
