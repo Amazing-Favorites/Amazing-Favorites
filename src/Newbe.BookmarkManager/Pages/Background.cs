@@ -16,7 +16,7 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
         [Inject] public IJobHost JobHost { get; set; }
         [Inject] public IMediator Mediator { get; set; }
-        
+
         [Inject] public IIndexedDbRepo<Bk, string> _bkRepo { get; set; }
 
         private UserOptions _userOptions = null!;
@@ -47,9 +47,9 @@ namespace Newbe.BookmarkManager.Pages
             }
         }
 
- 
 
-        public  Task<List<Bk>> SearchHandler(GetAllBkRequest request)
+
+        public Task<List<Bk>> SearchHandler(GetAllBkRequest request)
         {
             var result = _bkRepo.GetAllAsync();
 
