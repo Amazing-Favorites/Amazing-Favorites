@@ -18,7 +18,8 @@ namespace Newbe.BookmarkManager.Services
             ILogger<HandleUserClickIconJob> logger,
             IAfEventHub afEventHub,
             ISimpleDataStorage simpleDataStorage,
-            IClock clock, IMediator mediator)
+            IClock clock,
+            IMediator mediator)
         {
             _logger = logger;
             _afEventHub = afEventHub;

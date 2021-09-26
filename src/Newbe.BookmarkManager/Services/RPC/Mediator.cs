@@ -25,7 +25,10 @@ namespace Newbe.BookmarkManager.Services.RPC
         private readonly IRuntimeApi _runtimeApi;
         private readonly ILifetimeScope _lifetimeScope;
         private int _locker;
-        public Mediator(IClock clock, ILogger<Mediator> logger, ILifetimeScope lifetimeScope, IRuntimeApi runtimeApi)
+        public Mediator(IClock clock, 
+            ILogger<Mediator> logger, 
+            ILifetimeScope lifetimeScope, 
+            IRuntimeApi runtimeApi)
         {
             _clock = clock;
             _logger = logger;
