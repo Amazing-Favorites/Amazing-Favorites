@@ -65,7 +65,7 @@ namespace Newbe.BookmarkManager
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
             builder.Services
                 .AddAntDesign()
-                .AddBrowserExtensionServices(options => { options.ProjectNamespace = typeof(Program).Namespace; })
+                .AddBrowserExtensionServices()
                 .AddTransient<IBookmarksApi>(p => p.GetRequiredService<IWebExtensionsApi>().Bookmarks)
                 .AddTransient<ITabsApi>(p => p.GetRequiredService<IWebExtensionsApi>().Tabs)
                 .AddTransient<IWindowsApi>(p => p.GetRequiredService<IWebExtensionsApi>().Windows)

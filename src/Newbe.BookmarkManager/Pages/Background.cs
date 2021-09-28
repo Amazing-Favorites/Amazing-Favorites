@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.RPC;
-using Newbe.BookmarkManager.Services.RPC.Handlers;
-using WebExtensions.Net.Runtime;
 
 namespace Newbe.BookmarkManager.Pages
 {

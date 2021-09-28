@@ -14,7 +14,7 @@
         <PackageReference Include="AntDesign" Version="0.9.4" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
         <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.0" />
-        <PackageReference Include="Blazor.BrowserExtension" Version="0.6.4" />
+        <PackageReference Include="Blazor.BrowserExtension" Version="0.7.0" />
         <PackageReference Include="BlazorApplicationInsights" Version="1.2.1" />
         <PackageReference Include="Castle.Core.AsyncInterceptor" Version="2.0.0" />
         <PackageReference Include="Excubo.Generators.Blazor" Version="1.14.1" />
@@ -34,6 +34,7 @@
         <PackageReference Include="System.Reactive" Version="5.0.0" />
         <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
         <PackageReference Include="Excubo.Blazor.ScriptInjection" Version="3.0.45" />
+        <PackageReference Include="WebExtensions.Net" Version="0.9.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -42,11 +43,5 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="WebExtensions.Net, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\CS\WebExtensions.Net\src\WebExtensions.Net\bin\Debug\net5.0\WebExtensions.Net.dll</HintPath>
-      </Reference>
     </ItemGroup>
 </Project>
