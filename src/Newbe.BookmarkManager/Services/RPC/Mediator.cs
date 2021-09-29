@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
@@ -10,9 +8,6 @@ using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services.EventHubs;
 using Newtonsoft.Json;
 using WebExtensions.Net.Runtime;
-using WebExtensions.Net.Storage;
-using WebExtensions.Net.Tabs;
-using ConnectInfo = WebExtensions.Net.Runtime.ConnectInfo;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace Newbe.BookmarkManager.Services.RPC
 {
@@ -25,9 +20,9 @@ namespace Newbe.BookmarkManager.Services.RPC
         private readonly IRuntimeApi _runtimeApi;
         private readonly ILifetimeScope _lifetimeScope;
         private int _locker;
-        public Mediator(IClock clock, 
-            ILogger<Mediator> logger, 
-            ILifetimeScope lifetimeScope, 
+        public Mediator(IClock clock,
+            ILogger<Mediator> logger,
+            ILifetimeScope lifetimeScope,
             IRuntimeApi runtimeApi)
         {
             _clock = clock;

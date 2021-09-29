@@ -22,7 +22,7 @@ namespace Newbe.BookmarkManager.Services
             IApplicationInsights insights,
             ILogger<IndexedBkSearcher> logger,
             IIndexedDbRepo<Bk, string> bkRepo,
-            IIndexedDbRepo<BkTag, string> tagRepo, 
+            IIndexedDbRepo<BkTag, string> tagRepo,
             IMediator mediator)
         {
             _insights = insights;
