@@ -74,11 +74,6 @@ namespace Newbe.BookmarkManager.Services.RPC
                 }
 
                 var response = handler.Invoke(_lifetimeScope, (IRequest)payload);
-
-
-                _logger.LogInformation($"Response:{JsonConvert.SerializeObject(response)}");
-
-
                 callback(response);
                 return true;
             });
@@ -93,11 +88,6 @@ namespace Newbe.BookmarkManager.Services.RPC
                 PayloadJson = JsonSerializer.Serialize((object)request)
             };
             var sending = await _runtimeApi.SendMessage(await _runtimeApi.GetId(), envelope, new object());
-
-            foreach (var item in sending.EnumerateObject())
-            {
-                _logger.LogInformation($"Name:{item.Name},Value:{item.Value}");
-            }
             var result = JsonConvert
                 .DeserializeObject<TResponse>(JsonSerializer.Serialize((object)sending.EnumerateObject().FirstOrDefault(a => a.Name == "result").Value));
             if (result != null)
