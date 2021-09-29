@@ -423,6 +423,11 @@ namespace Newbe.BookmarkManager.Pages
             }
         }
 
+        private void OnSharingButton()
+        {
+            OnClickSharing(BkEditFormData.Url);
+        }
+
         private async Task OnClickModalSaveAsync()
         {
             try
