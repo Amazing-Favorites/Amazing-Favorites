@@ -96,6 +96,8 @@ namespace Newbe.BookmarkManager
             builder.Services
                 .AddTransient<NewbeApiAuthHeaderHandler>();
             builder.Services
+                .AddTransient<BaiduApiAuthHeaderHandler>();
+            builder.Services
                 .AddRefitClient<IPinyinApi>()
                 .ConfigureHttpClient((sp, client) =>
                 {
@@ -116,6 +118,13 @@ namespace Newbe.BookmarkManager
                 })
                 .AddHttpMessageHandler<NewbeApiAuthHeaderHandler>();
 
+            builder.Services
+                .AddRefitClient<IBaiduApi>()
+                .ConfigureHttpClient((sp,client) =>
+                {
+                    client.BaseAddress = new Uri("https://openapi.baidu.com/");
+                })
+                .AddHttpMessageHandler<BaiduApiAuthHeaderHandler>();
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
@@ -219,6 +228,11 @@ namespace Newbe.BookmarkManager
                 builder.RegisterType<GoogleDriveClient>()
                     .As<IGoogleDriveClient>()
                     .SingleInstance();
+
+                builder.RegisterType<BaiduDriveClient>()
+                    .As<IBaiduDriveClient>()
+                    .SingleInstance();
+
             }
         }
 

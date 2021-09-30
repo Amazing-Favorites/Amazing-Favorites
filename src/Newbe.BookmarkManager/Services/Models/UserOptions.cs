@@ -40,7 +40,8 @@ namespace Newbe.BookmarkManager.Services
     {
         NewbeApi,
         GoogleDrive,
-        OneDrive
+        OneDrive,
+        BaiduDrive,
     }
 
     public record HotTagsFeature
