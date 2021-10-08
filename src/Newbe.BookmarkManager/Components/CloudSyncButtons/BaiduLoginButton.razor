@@ -47,15 +47,45 @@
                 CheckFree = 1,
                 CheckExpire = 1
             });
-            Console.WriteLine(response?.Error?.Content);
-            Console.WriteLine(response.StatusCode);
-            // if (response.IsSuccessStatusCode && response.Content != null)
+
+            // var res2 = await BaiduAPi.GetFileListAsync(new BaiduFileListRequest()
             // {
-            //     var quota = response.Content;
-            //     Console.WriteLine(JsonConvert.SerializeObject(quota));
-            //     Console.WriteLine(quota.free);
-            // }
-            
+            //     AccessToken = options.CloudBkFeature.AccessToken,
+            //     Dir = "/",
+            //     Order = "name",
+            //     Desc = "",
+            //     Start = 0,
+            //     Limit = 100,
+            //     Web = "0",
+            //     Folder = 0,
+            //     ShowEmpty = 0
+            //     
+            //     
+            //
+            // });
+            // Console.WriteLine("Error");
+            // Console.WriteLine(res2?.Error?.Content);
+
+            var res3 = await BaiduAPi.SearchAsync(new BaiduSearchRequest()
+            {
+                AccessToken = options.CloudBkFeature.AccessToken,
+                Key = "Publish 48.rar",
+            });
+            Console.WriteLine("Error");
+            Console.WriteLine(res3?.Error?.Content);
+            Console.WriteLine("Content");
+            Console.WriteLine(res3?.Content);
+            var fileInfo = JsonConvert.DeserializeObject<BaiduSearchResponse>(res3.Error.Content);
+            var res4 = await BaiduAPi.GetFileMatesAsync(new BaiduFileMetasRequest()
+            {
+                AccessToken = options.CloudBkFeature.AccessToken,
+                FsIds = "[" + string.Join(",",fileInfo.List.Select(a=>a.FsId.ToString()).ToArray()) + "]",
+                DLink = 1
+
+            });
+            Console.WriteLine("res4 Error");
+            Console.WriteLine(res4?.Error?.Content);
+
         }
         catch (Exception e)
         {

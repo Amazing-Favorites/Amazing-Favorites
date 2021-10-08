@@ -56,9 +56,9 @@ namespace Newbe.BookmarkManager.Services
                 {
                     var scopes = "basic netdisk";
                     _authUrl = "https://openapi.baidu.com/oauth/2.0/authorize";
-                    var clientId = "";
-                    var key = "";
-                    var secret = "";
+                    var clientId = "tPftmS1HNHNp6zUPXVdNR9frdQ2jNnoR";
+                    var key = "tPftmS1HNHNp6zUPXVdNR9frdQ2jNnoR";
+                    var secret = "lCeZM6NY5aQXAPum35d6nSGxtM2y0QDb";
                     _authUrl += $"?client_id={clientId}";
                     _authUrl += "&response_type=token";
                     _authUrl += $"&redirect_uri={WebUtility.UrlEncode(redirectUrl)}";
