@@ -18,6 +18,9 @@
                 case CloudBkProviderType.OneDrive:
                     <Text>@_oneDriveStatics.LastSuccessUploadTime.ToLocalTime() OneDrive </Text>
                     break;
+                case CloudBkProviderType.BaiduDrive:
+                    <Text>@_oneDriveStatics.LastSuccessUploadTime.ToLocalTime() BaiduDrive </Text>
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -39,6 +42,7 @@
                         <Radio RadioButton Value="@(CloudBkProviderType.OneDrive)"><Icon Type="windows" Theme="outline"/> OneDrive</Radio>
                         <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> GoogleDrive</Radio>
                         <Radio RadioButton Value="@(CloudBkProviderType.NewbeApi)">☁ Newbe API</Radio>
+                        <Radio RadioButton Value="@(CloudBkProviderType.BaiduDrive)"><Icon Type="ant-cloud" Theme="outline"/> BaiduDrive</Radio>
                     </RadioGroup>
                 </FormItem>
                 @switch (context.CloudBkFeature.CloudBkProviderType)
@@ -94,6 +98,34 @@
                                 Last upload success time: @_googleDriveStatics.LastSuccessUploadTime.ToLocalTime()
                             </Paragraph>
                             <GoogleLoginButton></GoogleLoginButton>
+                        </FormItem>
+                        break;
+                    case CloudBkProviderType.BaiduDrive:
+                        <FormItem Label="BaiduDrive">
+                            <Paragraph>
+                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via BaiduDrive to synchronize your Tag data across multiple devices.
+                            </Paragraph>
+                            <FormItem Label="Token Expiration Date">
+                                @context.CloudBkFeature.ExpireDate
+                                @(context.CloudBkFeature.ExpireDate != null ? $"{context.CloudBkFeature.ExpireDate:d}" : "")
+                                @if (context.CloudBkFeature.ExpireDate.HasValue &&
+                                     context.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                                {
+                                    if (context.CloudBkFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
+                                    {
+                                        <Alert
+                                            Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
+                                            Type="@AlertType.Warning"/>
+                                    }
+                                    else if (context.CloudBkFeature.ExpireDate <= DateTime.Now)
+                                    {
+                                        <Alert
+                                            Message=@($"Your token has been expired, please try to create a new one.")
+                                            Type="@AlertType.Error"/>
+                                    }
+                                }
+                            </FormItem>
+                            <BaiduLoginButton></BaiduLoginButton>
                         </FormItem>
                         break;
                     default:
@@ -160,7 +192,10 @@
     {
         try
         {
-            UserOptions.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
+            if (UserOptions.CloudBkFeature.CloudBkProviderType != CloudBkProviderType.BaiduDrive)
+            {
+                UserOptions.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);   
+            }
         }
         catch (Services.Common.AccessTokenInvalidException)
         {

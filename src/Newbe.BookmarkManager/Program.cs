@@ -122,7 +122,7 @@ namespace Newbe.BookmarkManager
                 .AddRefitClient<IBaiduApi>()
                 .ConfigureHttpClient((sp,client) =>
                 {
-                    client.BaseAddress = new Uri("https://openapi.baidu.com/");
+                    client.BaseAddress = new Uri("https://pan.baidu.com/");
                 })
                 .AddHttpMessageHandler<BaiduApiAuthHeaderHandler>();
             builder.Services.AddIndexedDB(dbStore =>

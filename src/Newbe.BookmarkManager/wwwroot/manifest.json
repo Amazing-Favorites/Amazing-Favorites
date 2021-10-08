@@ -22,7 +22,8 @@
     "bookmarks",
     "commands",
     "identity",
-    "storage"
+    "storage",
+    "https://pan.baidu.com/"
   ],
   "commands": {
     "open-manager-ui": {

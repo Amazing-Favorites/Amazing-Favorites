@@ -15,16 +15,21 @@ namespace Newbe.BookmarkManager.Services
         private readonly IIdentityApi _identityApi;
         private readonly ILogger<BaiduDriveClient> _logger;
         private readonly IBaiduApi _baiduApi;
-        private readonly WebRequestApi _webRequestApi;
+        private readonly IUserOptionsService _userOptionsService;
         private static string? _authUrl = null;
         
         private static string? _tokenUrl = null;
 
-        public BaiduDriveClient(IIdentityApi identityApi, ILogger<BaiduDriveClient> logger, IBaiduApi baiduApi)
+        public BaiduDriveClient(IIdentityApi identityApi,
+            ILogger<BaiduDriveClient> logger,
+            IBaiduApi baiduApi,
+            IUserOptionsService userOptionsService
+            )
         {
             _identityApi = identityApi;
             _logger = logger;
             _baiduApi = baiduApi;
+            _userOptionsService = userOptionsService;
         }
     
         public async Task<string?> LoginAsync(bool interactive)
@@ -49,7 +54,7 @@ namespace Newbe.BookmarkManager.Services
                 _logger.LogInformation($"{redirectUrl}");
                 if (_authUrl == null)
                 {
-                    var scopes = "basic";
+                    var scopes = "basic netdisk";
                     _authUrl = "https://openapi.baidu.com/oauth/2.0/authorize";
                     var clientId = "";
                     var key = "";
@@ -70,8 +75,19 @@ namespace Newbe.BookmarkManager.Services
                 var token = callbackUrl.Split('#')[1].Split('&')[1].Split('=')[1];
                 var exp = callbackUrl.Split('#')[1].Split('&')[0].Split('=')[1];
                 _logger.LogInformation($"callbackUrl:{callbackUrl}");
+                _logger.LogInformation($"exp:{exp}");
+                await LoadTokenAsync(token, exp);
                 return token;
             }
+        }
+        
+        public async Task LoadTokenAsync(string token,string exp)
+        {
+            var options = await _userOptionsService.GetOptionsAsync();
+            options.CloudBkFeature.AccessToken = token;
+            if (Int64.TryParse(exp, out var time))
+                options.CloudBkFeature.ExpireDate = DateTime.Now.AddSeconds(time);
+            await _userOptionsService.SaveAsync(options);
         }
         public Task<bool> TestAsync()
         {

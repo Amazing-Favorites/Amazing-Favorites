@@ -1,0 +1,71 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Microsoft.Extensions.Logging
+@using Newtonsoft.Json
+<Spin Spinning="@_loading">
+    <Tooltip Placement="@Placement.Bottom" Title="@("Sync data to BaiduDrive")">
+        <Button OnClick="ClickLoginAsync">
+            <Icon Type="cloud-sync" Theme="outline"/>
+        </Button>
+    </Tooltip>
+</Spin>
+
+
+@code {
+
+    [Inject]
+    public IBaiduDriveClient BaiduDriveClient { get; set; }
+    
+    [Inject]
+    public IBaiduApi BaiduAPi { get; set; }
+
+    [Inject]
+    public ILogger<BaiduLoginButton> Logger { get; set; }
+    
+    [Inject]
+    public  IUserOptionsService UserOptionsService { get; set; }
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+
+    private bool _loading;
+
+    private async Task ClickLoginAsync()
+    {
+        try
+        {
+            _loading = true;
+            var token = await BaiduDriveClient.LoginAsync(true);
+            if (!string.IsNullOrEmpty(token))
+            {
+                await AfEventHub.PublishAsync(new UserLoginSuccessEvent(CloudBkProviderType.BaiduDrive, token));
+            }
+            var options = await UserOptionsService.GetOptionsAsync();
+            var response =  await BaiduAPi.GetQuotaAsync(new BaiduQuotaRequest()
+            {
+                AccessToken = options.CloudBkFeature.AccessToken,
+                CheckFree = 1,
+                CheckExpire = 1
+            });
+            Console.WriteLine(response?.Error?.Content);
+            Console.WriteLine(response.StatusCode);
+            // if (response.IsSuccessStatusCode && response.Content != null)
+            // {
+            //     var quota = response.Content;
+            //     Console.WriteLine(JsonConvert.SerializeObject(quota));
+            //     Console.WriteLine(quota.free);
+            // }
+            
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "failed to login with Baidu");
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+}
