@@ -258,6 +258,15 @@ namespace Newbe.BookmarkManager.Pages
                     }
                 }
 
+                await WebExtensions.Tabs.OnUpdated.AddListener(async (tabId, changeInfo, tab) =>
+                {
+                    await BkManager.AddClickAsync(changeInfo.Url, 1);
+                    await InvokeAsync(() =>
+                    {
+                        SearchValue = _searchValue;
+                        StateHasChanged();
+                    });
+                });
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
                 AfEventHub.RegisterHandler<TriggerEditBookmarkEvent>(HandleTriggerEditBookmarkEvent);
@@ -282,7 +291,6 @@ namespace Newbe.BookmarkManager.Pages
                 StateHasChanged();
             });
         }
-
         private BkViewItem[] Map(SearchResultItem[] items)
         {
             var re = CreateItem().ToArray();
