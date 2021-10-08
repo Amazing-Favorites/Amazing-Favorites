@@ -1,7 +1,7 @@
 ﻿@using Newbe.BookmarkManager.Services
 @using Newbe.BookmarkManager.Services.EventHubs
 @using Microsoft.Extensions.Logging
-@using Newtonsoft.Json
+@using System.Text.Json
 <Spin Spinning="@_loading">
     <Tooltip Placement="@Placement.Bottom" Title="@("Sync data to BaiduDrive")">
         <Button OnClick="ClickLoginAsync">
@@ -47,35 +47,17 @@
                 CheckFree = 1,
                 CheckExpire = 1
             });
-
-            // var res2 = await BaiduAPi.GetFileListAsync(new BaiduFileListRequest()
-            // {
-            //     AccessToken = options.CloudBkFeature.AccessToken,
-            //     Dir = "/",
-            //     Order = "name",
-            //     Desc = "",
-            //     Start = 0,
-            //     Limit = 100,
-            //     Web = "0",
-            //     Folder = 0,
-            //     ShowEmpty = 0
-            //     
-            //     
-            //
-            // });
-            // Console.WriteLine("Error");
-            // Console.WriteLine(res2?.Error?.Content);
-
+            Console.WriteLine("1Content");
+            Console.WriteLine(response.Content);
+            Console.WriteLine(response?.Content?.Errno);
+            Console.WriteLine(response?.Content?.Total);
             var res3 = await BaiduAPi.SearchAsync(new BaiduSearchRequest()
             {
                 AccessToken = options.CloudBkFeature.AccessToken,
                 Key = "Publish 48.rar",
             });
-            Console.WriteLine("Error");
-            Console.WriteLine(res3?.Error?.Content);
-            Console.WriteLine("Content");
             Console.WriteLine(res3?.Content);
-            var fileInfo = JsonConvert.DeserializeObject<BaiduSearchResponse>(res3.Error.Content);
+            var fileInfo = res3?.Content;
             var res4 = await BaiduAPi.GetFileMatesAsync(new BaiduFileMetasRequest()
             {
                 AccessToken = options.CloudBkFeature.AccessToken,
@@ -84,7 +66,7 @@
 
             });
             Console.WriteLine("res4 Error");
-            Console.WriteLine(res4?.Error?.Content);
+            Console.WriteLine(res4?.Content);
 
         }
         catch (Exception e)

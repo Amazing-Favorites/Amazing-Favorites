@@ -1,6 +1,4 @@
 ﻿
-
-
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -38,17 +36,17 @@ namespace Newbe.BookmarkManager.Services
     public record BaiduQuotaResponse
     {
         [JsonPropertyName("errno")]
-        public string Errno { get; set; }
+        public long Errno { get; set; }
         [JsonPropertyName("total")]
-        public string Total { get; set; }
+        public long Total { get; set; }
         [JsonPropertyName("expire")]
         public bool Expire { get; set; }
         [JsonPropertyName("used")]
-        public string Used { get; set; }
+        public long Used { get; set; }
         [JsonPropertyName("free")]
-        public string Free { get; set; }
+        public long Free { get; set; }
         [JsonPropertyName("request_id")]
-        public string RequestId { get; set; }
+        public long RequestId { get; set; }
     }
 
     public record BaiduFileListRequest
@@ -82,86 +80,63 @@ namespace Newbe.BookmarkManager.Services
         [JsonPropertyName("guid_info")]
         public string GuidInfo { get; set; }
         [JsonPropertyName("request_id")]
-        public string RequestId { get; set; }
+        public long RequestId { get; set; }
         [JsonPropertyName("list")]
         public BaiduFile[] List { get; set; }
-        // [JsonPropertyName("fs_id")]
-        // public long FsId { get; set; }
-        // [JsonPropertyName("path")]
-        // public string Path { get; set; }
-        // [JsonPropertyName("server_filename")]
-        // public string ServerFileName { get; set; }
-        // [JsonPropertyName("size")]
-        // public int Size { get; set; }
-        // [JsonPropertyName("server_mtime")]
-        // public int ServerMTime { get; set; }
-        // [JsonPropertyName("server_ctime")]
-        // public int ServerCTime { get; set; }
-        // [JsonPropertyName("local_mtime")]
-        // public int LocalMTime { get; set; }
-        // [JsonPropertyName("local_ctime")]
-        // public int LocalCTime { get; set; }
-        // [JsonPropertyName("isdir")]
-        // public int IsDir { get; set; }
-        // [JsonPropertyName("category")]
-        // public int Category { get; set; }
-        // [JsonPropertyName("md5")]
-        // public string MD5 { get; set; }
-        // [JsonPropertyName("dir_empty")]
-        // public int DirEmpty { get; set; }
-        // [JsonPropertyName("thumbs")]
-        // public string[] Thumbs { get; set; }
     }
 
     public record BaiduFile
     {
-        [JsonProperty("category")]
+        [JsonPropertyName("category")]
         public int Category { get; set; }
-        [JsonProperty("dir_empty")]
+        [JsonPropertyName("dir_empty")]
         public int DirEmpty { get; set; }
-        [JsonProperty("empty")]
+        [JsonPropertyName("empty")]
         public int Empty { get; set; }
-        [JsonProperty("extent_tinyint7")]
+        [JsonPropertyName("extent_tinyint7")]
         public int ExtentTinyInt7 { get; set; }
-        [JsonProperty("fs_id")]
+        [JsonPropertyName("fs_id")]
         public long FsId { get; set; }
-        [JsonProperty("isdir")]
+        [JsonPropertyName("isdir")]
         public int IsDir { get; set; }
-        [JsonProperty("local_mtime")]
+        [JsonPropertyName("local_mtime")]
         public long LocalMTime { get; set; }
-        [JsonProperty("local_ctime")]
+        [JsonPropertyName("local_ctime")]
         public long LocalCTime { get; set; }
-        [JsonProperty("oper_id")]
+        [JsonPropertyName("oper_id")]
         public long OperId { get; set; }
-        [JsonProperty("owner_id")]
+        [JsonPropertyName("owner_id")]
         public int OwnerId { get; set; }
-        [JsonProperty("owner_type")]
+        [JsonPropertyName("owner_type")]
         public int OwnerType { get; set; }
-        [JsonProperty("path")]
+        [JsonPropertyName("path")]
         public string Path { get; set; }
-        [JsonProperty("pl")]
+        [JsonPropertyName("pl")]
         public int PL { get; set; }
-        [JsonProperty("real_category")]
+        [JsonPropertyName("real_category")]
         public string realCategory { get; set; }
-        [JsonProperty("server_atime")]
+        [JsonPropertyName("server_atime")]
         public long ServerATime { get; set; }
-        [JsonProperty("server_ctime")]
+        [JsonPropertyName("server_ctime")]
         public long ServerCTime { get; set; }
         
-        [JsonProperty("server_filename")]
+        [JsonPropertyName("server_filename")]
         public string ServerFileName { get; set; }
-        [JsonProperty("server_mtime")]
+        [JsonPropertyName("server_mtime")]
         public long ServerMTime { get; set; }
-        [JsonProperty("share")]
+        [JsonPropertyName("share")]
         public int Share { get; set; }
-        [JsonProperty("size")]
+        [JsonPropertyName("size")]
         public int Size { get; set; }
-        [JsonProperty("tkbind_id")]
+        [JsonPropertyName("tkbind_id")]
         public long TKBindId { get; set; }
-        [JsonProperty("unlist")]
+        [JsonPropertyName("unlist")]
         public int UnList { get; set; }
-        [JsonProperty("wpfile")]
+        [JsonPropertyName("wpfile")]
         public int WPFile { get; set; }
+        
+        [JsonPropertyName("md5")]
+        public string MD5 { get; set; }
     }
 
     public record BaiduDocListRequest
@@ -208,13 +183,13 @@ namespace Newbe.BookmarkManager.Services
     public record BaiduSearchResponse
     {
         public dynamic ContentList { get; set; }
-        [JsonProperty("errno")]
-        public string Errno { get; set; }
-        [JsonProperty("has_more")]
+        [JsonPropertyName("errno")]
+        public long Errno { get; set; }
+        [JsonPropertyName("has_more")]
         public int HasMore { get; set; }
-        [JsonProperty("request_id")]
-        public string RequestId { get; set; }
-        [JsonProperty("list")]
+        [JsonPropertyName("request_id")]
+        public long RequestId { get; set; }
+        [JsonPropertyName("list")]
         public BaiduFile[] List { get; set; }
     }
 
@@ -238,7 +213,46 @@ namespace Newbe.BookmarkManager.Services
 
     public record BaiduFileMetasResponse
     {
+        [JsonPropertyName("errmsg")]
+        public string ErrMsg { get; set; }
+        [JsonPropertyName("errno")]
+        public long Errno { get; set; }
         
+        //[JsonPropertyName("names")]
+        //public string[] Names { get; set; }
+
+        [JsonPropertyName("list")]
+        public BaiduFileDLink[] List { get; set; }
+        [JsonPropertyName("request_id")]
+        public string RequestId { get; set; }
+    }
+
+    public record BaiduFileDLink
+    {
+        [JsonPropertyName("category")]
+        public int Category { get; set; }
+        [JsonPropertyName("dlink")]
+        public string DLink { get; set; }
+        [JsonPropertyName("filename")]
+        public string FileName { get; set; }
+        [JsonPropertyName("fs_id")]
+        public long FsId { get; set; }
+        [JsonPropertyName("isdir")]
+        public int IsDir { get; set; }
+        [JsonPropertyName("md5")]
+        public string MD5 { get; set; }
+
+        [JsonPropertyName("oper_id")]
+        public long OperId { get; set; }
+        [JsonPropertyName("path")]
+        public string Path { get; set; }
+        
+        [JsonPropertyName("server_ctime")]
+        public long ServerCTime { get; set; }
+        [JsonPropertyName("server_mtime")]
+        public long ServerMTime { get; set; }
+        [JsonPropertyName("size")]
+        public long Size { get; set; }
     }
     
 }
