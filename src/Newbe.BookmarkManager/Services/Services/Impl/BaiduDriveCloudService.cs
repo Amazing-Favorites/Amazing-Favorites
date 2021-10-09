@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Toolkit.HighPerformance;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Newbe.BookmarkManager.WebApi;
 
@@ -17,19 +20,24 @@ namespace Newbe.BookmarkManager.Services
         private readonly IClock _clock;
         private readonly IUserOptionsService _userOptionsService;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IBaiduPCSApi _baiduPcsApi;
         private long? _fileId;
         
         public BaiduDriveCloudService(
             IBaiduApi baiduApi, 
             ISimpleDataStorage simpleDataStorage,
             IClock clock, 
-            IUserOptionsService userOptionsService, IHttpClientFactory httpClientFactory)
+            IUserOptionsService userOptionsService, 
+            IHttpClientFactory httpClientFactory, 
+            IBaiduPCSApi baiduPcsApi
+            )
         {
             _baiduApi = baiduApi;
             _simpleDataStorage = simpleDataStorage;
             _clock = clock;
             _userOptionsService = userOptionsService;
             _httpClientFactory = httpClientFactory;
+            _baiduPcsApi = baiduPcsApi;
         }
 
         public async Task<CloudBkStatus> GetCloudAsync(long etagVersion)
@@ -89,7 +97,7 @@ namespace Newbe.BookmarkManager.Services
             var dLinkResponse = await _baiduApi.GetFileMatesAsync(new BaiduFileMetasRequest()
             {
                 AccessToken = accessToken,
-                FsIds = "[" + _fileId + "]",
+                FsIds = JsonSerializer.Serialize(new string[]{_fileId.ToString()}),
                 DLink = 1
             });
             var dlink = dLinkResponse.Content.List.FirstOrDefault().DLink;
@@ -123,9 +131,66 @@ namespace Newbe.BookmarkManager.Services
             var re = BitConverter.ToInt64(bytes);
             return re;
         }
-        public Task<SaveToCloudOutput> SaveToCloudAsync(CloudBkCollection cloudBkCollection)
+        public async Task<SaveToCloudOutput> SaveToCloudAsync(CloudBkCollection cloudBkCollection)
         {
-            throw new System.NotImplementedException();
+            // if (!await _googleDriveClient.TestAsync())
+            // {
+            //     return new SaveToCloudOutput
+            //     {
+            //         IsOk = false,
+            //         Message = "google not login"
+            //     };
+            // }
+
+            await UploadAsync(cloudBkCollection);
+            var googleDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
+            googleDriveStatics.LastSuccessUploadTime = _clock.UtcNow;
+            await _simpleDataStorage.SaveAsync(googleDriveStatics);
+            var re = new SaveToCloudOutput
+            {
+                IsOk = true
+            };
+            return re;
+        }
+
+        public async Task UploadAsync(CloudBkCollection cloudBkCollection)
+        {
+            var options = await _userOptionsService.GetOptionsAsync();
+            var accessToken = options.CloudBkFeature.AccessToken;
+            var uploadid = "";
+            
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().ToArray();
+            await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
+            using var md5 = MD5.Create();
+            var hashBytes = await md5.ComputeHashAsync(stream);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hashBytes.Length; i++)
+            {
+                sb.Append(hashBytes[i].ToString("X2"));
+            }
+
+            // var reCreateResponse = await _baiduApi.PreCreateAsync(new BaiduQuotaRequest()
+            // {
+            //     AccessToken = accessToken
+            // }, new BaiduPreCreateBody()
+            // {
+            //     Path = "af/" + Consts.AmazingFavoriteFolderName,
+            //     Size = bytes.Length,
+            //     IsDir = 0,
+            //     RType = 3,
+            //     BlockList = JsonSerializer.Serialize(new string[] {sb.ToString()}),
+            // });
+            //
+            // if (reCreateResponse.IsSuccessStatusCode&& reCreateResponse.Content !=null)
+            // {
+            //     var updateRequest = await _baiduPcsApi.UploadAsync(new UploadRequest()
+            //     {
+            //         AccessToken = accessToken,
+            //         Path = "af/" + Consts.AmazingFavoriteFolderName,
+            //         Uploadid = reCreateResponse.Content.UploadId,
+            //         PartSeq = 0
+            //     }, bytes);
+            // }
         }
     }
 }

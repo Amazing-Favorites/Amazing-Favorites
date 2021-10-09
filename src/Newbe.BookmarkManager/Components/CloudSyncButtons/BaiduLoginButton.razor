@@ -2,6 +2,8 @@
 @using Newbe.BookmarkManager.Services.EventHubs
 @using Microsoft.Extensions.Logging
 @using System.Text.Json
+@using Newbe.BookmarkManager.WebApi
+@using System.Text
 <Spin Spinning="@_loading">
     <Tooltip Placement="@Placement.Bottom" Title="@("Sync data to BaiduDrive")">
         <Button OnClick="ClickLoginAsync">
@@ -24,10 +26,11 @@
     
     [Inject]
     public  IUserOptionsService UserOptionsService { get; set; }
-
+    [Inject]
+    public CryptoJS CryptoJS { get; set; }
     [Inject]
     public IAfEventHub AfEventHub { get; set; }
-
+    
     private bool _loading;
 
     private async Task ClickLoginAsync()
@@ -41,33 +44,46 @@
                 await AfEventHub.PublishAsync(new UserLoginSuccessEvent(CloudBkProviderType.BaiduDrive, token));
             }
             var options = await UserOptionsService.GetOptionsAsync();
-            var response =  await BaiduAPi.GetQuotaAsync(new BaiduQuotaRequest()
-            {
-                AccessToken = options.CloudBkFeature.AccessToken,
-                CheckFree = 1,
-                CheckExpire = 1
-            });
-            Console.WriteLine("1Content");
-            Console.WriteLine(response.Content);
-            Console.WriteLine(response?.Content?.Errno);
-            Console.WriteLine(response?.Content?.Total);
-            var res3 = await BaiduAPi.SearchAsync(new BaiduSearchRequest()
-            {
-                AccessToken = options.CloudBkFeature.AccessToken,
-                Key = "Publish 48.rar",
-            });
-            Console.WriteLine(res3?.Content);
-            var fileInfo = res3?.Content;
-            var res4 = await BaiduAPi.GetFileMatesAsync(new BaiduFileMetasRequest()
-            {
-                AccessToken = options.CloudBkFeature.AccessToken,
-                FsIds = "[" + string.Join(",",fileInfo.List.Select(a=>a.FsId.ToString()).ToArray()) + "]",
-                DLink = 1
+            // var response =  await BaiduAPi.GetQuotaAsync(new BaiduQuotaRequest()
+            // {
+            //     AccessToken = options.CloudBkFeature.AccessToken,
+            //     CheckFree = 1,
+            //     CheckExpire = 1
+            // });
+            // Console.WriteLine("1Content");
+            // Console.WriteLine(response.Content);
+            // Console.WriteLine(response?.Content?.Errno);
+            // Console.WriteLine(response?.Content?.Total);
+            // var res3 = await BaiduAPi.SearchAsync(new BaiduSearchRequest()
+            // {
+            //     AccessToken = options.CloudBkFeature.AccessToken,
+            //     Key = "Publish 48.rar",
+            // });
+            // Console.WriteLine(res3?.Content);
+            // var fileInfo = res3?.Content;
+            // var res4 = await BaiduAPi.GetFileMatesAsync(new BaiduFileMetasRequest()
+            // {
+            //     AccessToken = options.CloudBkFeature.AccessToken,
+            //     FsIds = "[" + string.Join(",",fileInfo.List.Select(a=>a.FsId.ToString()).ToArray()) + "]",
+            //     DLink = 1
+            //
+            // });
+            // Console.WriteLine("res4 Error");
+            // Console.WriteLine(res4?.Content);
 
-            });
-            Console.WriteLine("res4 Error");
-            Console.WriteLine(res4?.Content);
-
+            var data = new CloudBkCollection
+            {
+                EtagVersion = 1,
+                LastUpdateTime = 2,
+                Bks = new Dictionary<string, CloudBk>
+                {
+                    {"123", new CloudBk() {Tags = new List<string>() {"12345"}}}
+                }
+            };
+            await BaiduDriveClient.UploadAsync(data);
+            // byte[] bytes = Encoding.ASCII.GetBytes("123456");
+            // var t1 = await CryptoJS.Hex(bytes);
+            // Console.WriteLine(t1);
         }
         catch (Exception e)
         {

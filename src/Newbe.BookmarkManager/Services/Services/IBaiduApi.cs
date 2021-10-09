@@ -1,6 +1,8 @@
 ﻿
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Azure.Core;
 using Newtonsoft.Json;
 using Refit;
 
@@ -22,16 +24,30 @@ namespace Newbe.BookmarkManager.Services
 
         [Get("/rest/2.0/xpan/multimedia?method=filemetas")]
         Task<ApiResponse<BaiduFileMetasResponse>> GetFileMatesAsync(BaiduFileMetasRequest baiduFileMetasRequest);
-    }
 
+        [Post("/rest/2.0/xpan/file?method=precreate")]
+        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync([Query] BaiduRequest query,[Body]BaiduPreCreateBody body);
+        [Post("/rest/2.0/xpan/file?method=precreate")]
+        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync2(BaiduRequest request,
+            [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+
+        [Post("/rest/2.0/xpan/file?method=create")]
+        Task<ApiResponse<BaiduCreateResponse>> CreateAsync(BaiduRequest request,
+            [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+    }
+    public record BaiduRequest
+    {
+        [AliasAs("access_token")]
+        public string AccessToken { get; set; }
+    }
     public record BaiduQuotaRequest
     {
         [AliasAs("access_token")]
         public string AccessToken { get; set; }
         [AliasAs("checkfree")]
-        public int CheckFree { get; set; }
+        public int? CheckFree { get; set; }
         [AliasAs("checkexpire")]
-        public int CheckExpire { get; set; }
+        public int? CheckExpire { get; set; }
     }
     public record BaiduQuotaResponse
     {
@@ -253,6 +269,68 @@ namespace Newbe.BookmarkManager.Services
         public long ServerMTime { get; set; }
         [JsonPropertyName("size")]
         public long Size { get; set; }
+    }
+
+    public record BaiduPreCreateBody
+    {
+        [AliasAs("path")]
+        public string Path { get; set; }
+        [AliasAs("size")]
+        public int Size { get; set; }
+        
+        [AliasAs("isdir")]
+        public int IsDir { get; set; }
+        [AliasAs("autoinit")]
+        public int AutoInit { get; set; }
+        [AliasAs("rtype")]
+        public int? RType { get; set; }
+        [AliasAs("uploadid")]
+        public string UploadId { get; set; }
+        
+        [AliasAs("block_list")]
+        public string BlockList { get; set; }
+        
+        [AliasAs("content-md5")]
+        public string ContentMd5 { get; set; }
+        
+        [AliasAs("slice-md5")]
+        public string SliceMd5	 { get; set; }
+        [AliasAs("local_ctime")]
+        public string LocalCTime	 { get; set; }
+        [AliasAs("local_mtime")]
+        public string LocalMTime	 { get; set; }
+    }
+
+    public record BaiduPreCreateResponse
+    {
+        [JsonPropertyName("errno")]
+        public int Errno { get; set; }
+        
+        [JsonPropertyName("path")]
+        public string Path { get; set; }
+        
+        [JsonPropertyName("uploadid")]
+        public string UploadId { get; set; }
+        
+        [JsonPropertyName("return_type")]
+        public int ReturnType { get; set; }
+        
+        [JsonPropertyName("block_list")]
+        public int[] BlockList { get; set; }
+    }
+
+    public record BaiduCreateResponse
+    {
+        [JsonPropertyName("errno")]
+        public int Errno { get; set; }
+        [JsonPropertyName("fs_id")]
+        public long FsId { get; set; }
+        [JsonPropertyName("md5")]
+        public string Md5 { get; set; }
+        [JsonPropertyName("path")]
+        public string Path { get; set; }
+        [JsonPropertyName("server_filename")]
+        public string ServerFileName { get; set; }
     }
     
 }

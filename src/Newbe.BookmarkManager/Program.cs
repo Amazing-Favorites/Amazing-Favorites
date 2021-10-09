@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -82,8 +83,9 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<IRecordService, RecordService>()
                 .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
-
-
+            builder.Services.AddJsBind();
+            builder.Services.AddTransient<CryptoJS>();
+            Encoding.RegisterProvider(new MyEncodingProvider());
             builder.Services.AddLogging(loggingBuilder =>
             {
 #if DEBUG
@@ -118,6 +120,13 @@ namespace Newbe.BookmarkManager
                 })
                 .AddHttpMessageHandler<NewbeApiAuthHeaderHandler>();
 
+            builder.Services
+                .AddRefitClient<IBaiduPCSApi>()
+                .ConfigureHttpClient((sp,client) =>
+                {
+                    client.BaseAddress = new Uri("https://d.pcs.baidu.com/");
+                })
+                .AddHttpMessageHandler<BaiduApiAuthHeaderHandler>();
             builder.Services
                 .AddRefitClient<IBaiduApi>()
                 .ConfigureHttpClient((sp,client) =>
@@ -229,9 +238,16 @@ namespace Newbe.BookmarkManager
                     .As<IGoogleDriveClient>()
                     .SingleInstance();
 
+                builder.RegisterType<BaiduDriveCloudService>()
+                    .Keyed<ICloudService>(CloudBkProviderType.BaiduDrive)
+                    .SingleInstance()
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
                 builder.RegisterType<BaiduDriveClient>()
                     .As<IBaiduDriveClient>()
                     .SingleInstance();
+                
+                
 
             }
         }

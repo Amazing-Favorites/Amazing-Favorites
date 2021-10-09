@@ -23,7 +23,8 @@
     "commands",
     "identity",
     "storage",
-    "https://pan.baidu.com/"
+    "https://pan.baidu.com/",
+    "https://d.pcs.baidu.com/"
   ],
   "commands": {
     "open-manager-ui": {

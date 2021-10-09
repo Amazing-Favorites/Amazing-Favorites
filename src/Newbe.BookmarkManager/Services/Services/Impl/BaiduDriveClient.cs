@@ -1,7 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Toolkit.HighPerformance;
+using Newbe.BookmarkManager.WebApi;
+using Refit;
 using WebExtensions.Net.Identity;
 using WebExtensions.Net.Manifest;
 using WebExtensions.Net.WebRequest;
@@ -17,19 +26,23 @@ namespace Newbe.BookmarkManager.Services
         private readonly IBaiduApi _baiduApi;
         private readonly IUserOptionsService _userOptionsService;
         private static string? _authUrl = null;
-        
+        private readonly IBaiduPCSApi _baiduPcsApi;
+        private readonly CryptoJS _cryptoJS;
         private static string? _tokenUrl = null;
+        private readonly IClock _clock;
 
         public BaiduDriveClient(IIdentityApi identityApi,
             ILogger<BaiduDriveClient> logger,
             IBaiduApi baiduApi,
-            IUserOptionsService userOptionsService
-            )
+            IUserOptionsService userOptionsService, CryptoJS cryptoJs, IClock clock, IBaiduPCSApi baiduPcsApi)
         {
             _identityApi = identityApi;
             _logger = logger;
             _baiduApi = baiduApi;
             _userOptionsService = userOptionsService;
+            _cryptoJS = cryptoJs;
+            _clock = clock;
+            _baiduPcsApi = baiduPcsApi;
         }
     
         public async Task<string?> LoginAsync(bool interactive)
@@ -62,7 +75,7 @@ namespace Newbe.BookmarkManager.Services
                     //_authUrl += $"&redirect_uri={WebUtility.UrlEncode(redirectUrl)}";
                     _authUrl += $"&redirect_uri={redirectUrl}";
                     //_authUrl += $"&redirect_uri=oob";
-                    _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(" ", scopes))}";
+                    _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(",", scopes))}";
                     _authUrl += $"&state=STATE";
                 }
                 _logger.LogInformation($"{_authUrl}");
@@ -91,6 +104,59 @@ namespace Newbe.BookmarkManager.Services
         public Task<bool> TestAsync()
         {
             throw new System.NotImplementedException();
+        }
+        public async Task UploadAsync(CloudBkCollection cloudBkCollection)
+        {
+            var options = await _userOptionsService.GetOptionsAsync();
+            var accessToken = options.CloudBkFeature.AccessToken;
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().ToArray();
+            await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
+            var md5Str = await _cryptoJS.Hex(bytes);
+            var data = new Dictionary<string, object>
+            {
+                {"path", "/test/af.json"},
+                {"size", "4096"},
+                {"rtype", "3"},
+                {"isdir", "0"},
+                {"autoinit", "1"},
+                {"block_list", JsonSerializer.Serialize(new string[] {md5Str})}
+            };
+            var reCreateResponse = await _baiduApi.PreCreateAsync2(new BaiduRequest()
+            {
+                AccessToken = accessToken
+            }, data);
+            _logger.LogInformation(reCreateResponse.Content?.Path);
+            _logger.LogInformation(reCreateResponse.Content?.UploadId);
+            if (reCreateResponse.IsSuccessStatusCode&& reCreateResponse.Content !=null)
+            {
+                var updateRequest = await _baiduPcsApi.UploadAsync(new UploadRequest()
+                {
+                    AccessToken = accessToken,
+                    Path = "/test/af.json",
+                    Uploadid = reCreateResponse.Content.UploadId,
+                    Type = "tmpfile",
+                    PartSeq = 0
+                },new StreamPart(stream,"af.json","application/json"));
+                
+                data = new Dictionary<string, object>
+                {
+                    {"path", "/test/af.json"},
+                    {"size", "4096"},
+                    {"rtype", "3"},
+                    {"isdir", "0"},
+                    {"uploadid", reCreateResponse.Content.UploadId},
+                    {"block_list", JsonSerializer.Serialize(new string[] {md5Str})}
+                };
+                var mergeResponse = await _baiduApi.CreateAsync(new BaiduRequest()
+                {
+                    AccessToken = accessToken
+                }, data);
+            }
+
+            
+            
+
+
         }
     }
 }

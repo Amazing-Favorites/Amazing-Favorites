@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Newbe.BookmarkManager.WebApi;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -6,6 +7,8 @@ namespace Newbe.BookmarkManager.Services
     {
         Task<string?> LoginAsync(bool interactive);
         Task<bool> TestAsync();
-        
+
+        Task UploadAsync(CloudBkCollection cloudBkCollection);
+
     }
 }
