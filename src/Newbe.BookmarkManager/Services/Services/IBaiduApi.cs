@@ -28,12 +28,18 @@ namespace Newbe.BookmarkManager.Services
         [Post("/rest/2.0/xpan/file?method=precreate")]
         Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync([Query] BaiduRequest query,[Body]BaiduPreCreateBody body);
         [Post("/rest/2.0/xpan/file?method=precreate")]
-        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync2(BaiduRequest request,
+        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync(BaiduRequest request,
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
-
+        
+        
         [Post("/rest/2.0/xpan/file?method=create")]
+        [Headers("Cookie:","Test1:")]
         Task<ApiResponse<BaiduCreateResponse>> CreateAsync(BaiduRequest request,
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+        
+        [Post("/rest/2.0/xpan/file?method=create")]
+        Task<ApiResponse<BaiduCreateResponse>> CreateAsync([Query]BaiduRequest request,
+            [Body]BaiduCreateBody data);
     }
     public record BaiduRequest
     {
@@ -301,6 +307,19 @@ namespace Newbe.BookmarkManager.Services
         public string LocalMTime	 { get; set; }
     }
 
+    public record BaiduCreateBody
+    {
+        [JsonPropertyName("path")]
+        public string Path { get; set; }
+        [JsonPropertyName("size")]
+        public long Size { get; set; }
+        [JsonPropertyName("isdir")]
+        public int IsDir { get; set; }
+        [JsonPropertyName("block_list")]
+        public string BlockList { get; set; }
+        [JsonPropertyName("uploadid")]
+        public string UploadId { get; set; }
+    }
     public record BaiduPreCreateResponse
     {
         [JsonPropertyName("errno")]

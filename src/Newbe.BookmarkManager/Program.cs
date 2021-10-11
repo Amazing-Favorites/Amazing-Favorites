@@ -27,6 +27,7 @@ using WebExtensions.Net.Identity;
 using WebExtensions.Net.Runtime;
 using WebExtensions.Net.Storage;
 using WebExtensions.Net.Tabs;
+using WebExtensions.Net.WebRequest;
 using WebExtensions.Net.Windows;
 using Module = Autofac.Module;
 
@@ -85,7 +86,7 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
             builder.Services.AddJsBind();
             builder.Services.AddTransient<CryptoJS>();
-            Encoding.RegisterProvider(new MyEncodingProvider());
+            //Encoding.RegisterProvider(new MyEncodingProvider());
             builder.Services.AddLogging(loggingBuilder =>
             {
 #if DEBUG

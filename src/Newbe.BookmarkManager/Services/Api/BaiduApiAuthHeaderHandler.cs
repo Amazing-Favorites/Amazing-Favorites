@@ -14,6 +14,7 @@ namespace Newbe.BookmarkManager.Services
         
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            request.Headers.Remove("Cookie");
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
         

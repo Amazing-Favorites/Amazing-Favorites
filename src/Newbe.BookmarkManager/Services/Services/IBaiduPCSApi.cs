@@ -11,7 +11,7 @@ namespace Newbe.BookmarkManager.Services
     {
         [Multipart]
         [Post("/rest/2.0/pcs/superfile2?method=upload")]
-        Task<UploadResponse> UploadAsync([Query]UploadRequest uploadRequest,[AliasAs("myPhoto")] StreamPart stream);
+        Task<ApiResponse<UploadResponse>> UploadAsync([Query]UploadRequest uploadRequest,[AliasAs("file")] StreamPart stream);
     }
 
     public record UploadRequest
@@ -40,13 +40,13 @@ namespace Newbe.BookmarkManager.Services
 
     public record UploadResponse
     {
-        [JsonPropertyName("md5")]
-        public string Md5 { get; set; }
+        // [JsonPropertyName("md5")]
+        // public string Md5 { get; set; }
         [JsonPropertyName("uploadid")]
         public string UploadId { get; set; }
-        [JsonPropertyName("partseq")]
-        public string PartSeq { get; set; }
-        [JsonPropertyName("request_id")]
-        public long RequestId { get; set; }
+        // [JsonPropertyName("partseq")]
+        // public string PartSeq { get; set; }
+        // [JsonPropertyName("request_id")]
+        // public long RequestId { get; set; }
     }
 }

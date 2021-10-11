@@ -8,7 +8,7 @@ namespace Newbe.BookmarkManager.Services
         Task<string?> LoginAsync(bool interactive);
         Task<bool> TestAsync();
 
-        Task UploadAsync(CloudBkCollection cloudBkCollection);
+        Task<string> UploadAsync(CloudBkCollection cloudBkCollection);
 
     }
 }

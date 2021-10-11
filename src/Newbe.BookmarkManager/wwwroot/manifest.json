@@ -24,7 +24,8 @@
     "identity",
     "storage",
     "https://pan.baidu.com/",
-    "https://d.pcs.baidu.com/"
+    "https://d.pcs.baidu.com/",
+    "cookies"
   ],
   "commands": {
     "open-manager-ui": {
