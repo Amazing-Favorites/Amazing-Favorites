@@ -86,7 +86,7 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
             builder.Services.AddJsBind();
             builder.Services.AddTransient<CryptoJS>();
-            //Encoding.RegisterProvider(new MyEncodingProvider());
+            Encoding.RegisterProvider(new MyEncodingProvider());
             builder.Services.AddLogging(loggingBuilder =>
             {
 #if DEBUG

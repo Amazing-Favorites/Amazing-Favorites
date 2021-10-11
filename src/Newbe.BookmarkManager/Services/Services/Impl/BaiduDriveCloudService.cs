@@ -15,116 +15,49 @@ namespace Newbe.BookmarkManager.Services
 {
     public class BaiduDriveCloudService:ICloudService
     {
-        private readonly IBaiduApi _baiduApi;
         private readonly ISimpleDataStorage _simpleDataStorage;
         private readonly IClock _clock;
         private readonly IUserOptionsService _userOptionsService;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IBaiduPCSApi _baiduPcsApi;
+        private readonly IBaiduDriveClient _baiduDriveClient;
         private long? _fileId;
         
         public BaiduDriveCloudService(
-            IBaiduApi baiduApi, 
             ISimpleDataStorage simpleDataStorage,
             IClock clock, 
-            IUserOptionsService userOptionsService, 
-            IHttpClientFactory httpClientFactory, 
-            IBaiduPCSApi baiduPcsApi
+            IUserOptionsService userOptionsService,
+            IBaiduDriveClient baiduDriveClient
             )
         {
-            _baiduApi = baiduApi;
             _simpleDataStorage = simpleDataStorage;
             _clock = clock;
             _userOptionsService = userOptionsService;
-            _httpClientFactory = httpClientFactory;
-            _baiduPcsApi = baiduPcsApi;
+            _baiduDriveClient = baiduDriveClient;
         }
 
         public async Task<CloudBkStatus> GetCloudAsync(long etagVersion)
         {
-            var fileDescription = await GetFileDescription();
-            if (fileDescription == null)
+            // var fileDescription = await GetFileDescription();
+            // if (fileDescription == null)
+            // {
+            //     return new CloudBkStatus(true, new GetCloudOutput()
+            //     {
+            //         EtagVersion = 0,
+            //         LastUpdateTime = 0,
+            //     });
+            // }
+            // var cloudBkCollection = await GetCloudDataAsync();
+            //  return new CloudBkStatus(etagVersion != fileDescription.EtagVersion, new GetCloudOutput
+            //  {
+            //      LastUpdateTime = fileDescription.LastUpdateTime,
+            //      EtagVersion = fileDescription.EtagVersion,
+            //      CloudBkCollection = cloudBkCollection
+            //  });
+            return new CloudBkStatus(true, new GetCloudOutput()
             {
-                return new CloudBkStatus(true, new GetCloudOutput()
-                {
-                    EtagVersion = 0,
-                    LastUpdateTime = 0,
-                });
-            }
-            var cloudBkCollection = await GetCloudDataAsync();
-             return new CloudBkStatus(etagVersion != fileDescription.EtagVersion, new GetCloudOutput
-             {
-                 LastUpdateTime = fileDescription.LastUpdateTime,
-                 EtagVersion = fileDescription.EtagVersion,
-                 CloudBkCollection = cloudBkCollection
-             });
-        }
-
-        private async Task<CloudDataDescription?> GetFileDescription()
-        {
-            var options = await _userOptionsService.GetOptionsAsync();
-            var accessToken = options.CloudBkFeature.AccessToken;
-            var response = await _baiduApi.SearchAsync(new BaiduSearchRequest()
-            {
-                AccessToken = accessToken,
-                Key = Consts.Cloud.CloudDataFileName,
+                EtagVersion = 0,
+                LastUpdateTime = 0,
             });
-            if (response.Content == null)
-            {
-                return null;
-            }
-            var file = response.Content.List.FirstOrDefault(a => a.ServerFileName.Contains(Consts.Cloud.CloudDataFileName));
-            if (file != null)
-            {
-                _fileId = file.FsId;
-            }
-            var re = new CloudDataDescription
-            {
-                LastUpdateTime = file.ServerMTime,
-                EtagVersion = MD5ToLong(file.MD5)
-            };
-            
-            return re;
         }
-        private async Task<CloudBkCollection?> GetCloudDataAsync()
-        {
-            if (_fileId == null)
-            {
-                return default;
-            }
-            var options = await _userOptionsService.GetOptionsAsync();
-            var accessToken = options.CloudBkFeature.AccessToken;
-            var dLinkResponse = await _baiduApi.GetFileMatesAsync(new BaiduFileMetasRequest()
-            {
-                AccessToken = accessToken,
-                FsIds = JsonSerializer.Serialize(new string[]{_fileId.ToString()}),
-                DLink = 1
-            });
-            var dlink = dLinkResponse.Content.List.FirstOrDefault().DLink;
-            return await GetDLinkFileAsync(dlink);
-        }
-
-
-        private async Task<CloudBkCollection?> GetDLinkFileAsync(string dlink)
-        {
-            var options = await _userOptionsService.GetOptionsAsync();
-            var accessToken = options.CloudBkFeature.AccessToken;
-            dlink = dlink + "&access_token=" + accessToken;
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                dlink);
-            request.Headers.Add("User-Agent", "pan.baidu.com");
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-            {
-                using var responseStream = await response.Content.ReadAsStreamAsync();
-                var re = await JsonSerializer.DeserializeAsync<CloudBkCollection>(responseStream);
-                return re;
-            }
-
-            return null;
-        }
-
         private long MD5ToLong(string md5)
         {
             byte[] bytes = Encoding.ASCII.GetBytes(md5);  
@@ -133,64 +66,25 @@ namespace Newbe.BookmarkManager.Services
         }
         public async Task<SaveToCloudOutput> SaveToCloudAsync(CloudBkCollection cloudBkCollection)
         {
-            // if (!await _googleDriveClient.TestAsync())
-            // {
-            //     return new SaveToCloudOutput
-            //     {
-            //         IsOk = false,
-            //         Message = "google not login"
-            //     };
-            // }
+            if (!await _baiduDriveClient.TestAsync())
+            {
+                return new SaveToCloudOutput
+                {
+                    IsOk = false,
+                    Message = "baidu not login"
+                };
+            }
 
-            await UploadAsync(cloudBkCollection);
-            var googleDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
-            googleDriveStatics.LastSuccessUploadTime = _clock.UtcNow;
-            await _simpleDataStorage.SaveAsync(googleDriveStatics);
+            await _baiduDriveClient.UploadAsync(cloudBkCollection);
+            var baiduDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
+            baiduDriveStatics.LastSuccessUploadTime = _clock.UtcNow;
+            await _simpleDataStorage.SaveAsync(baiduDriveStatics);
             var re = new SaveToCloudOutput
             {
                 IsOk = true
             };
             return re;
         }
-
-        public async Task UploadAsync(CloudBkCollection cloudBkCollection)
-        {
-            var options = await _userOptionsService.GetOptionsAsync();
-            var accessToken = options.CloudBkFeature.AccessToken;
-            var uploadid = "";
-            
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().ToArray();
-            await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
-            using var md5 = MD5.Create();
-            var hashBytes = await md5.ComputeHashAsync(stream);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < hashBytes.Length; i++)
-            {
-                sb.Append(hashBytes[i].ToString("X2"));
-            }
-
-            // var reCreateResponse = await _baiduApi.PreCreateAsync(new BaiduQuotaRequest()
-            // {
-            //     AccessToken = accessToken
-            // }, new BaiduPreCreateBody()
-            // {
-            //     Path = "af/" + Consts.AmazingFavoriteFolderName,
-            //     Size = bytes.Length,
-            //     IsDir = 0,
-            //     RType = 3,
-            //     BlockList = JsonSerializer.Serialize(new string[] {sb.ToString()}),
-            // });
-            //
-            // if (reCreateResponse.IsSuccessStatusCode&& reCreateResponse.Content !=null)
-            // {
-            //     var updateRequest = await _baiduPcsApi.UploadAsync(new UploadRequest()
-            //     {
-            //         AccessToken = accessToken,
-            //         Path = "af/" + Consts.AmazingFavoriteFolderName,
-            //         Uploadid = reCreateResponse.Content.UploadId,
-            //         PartSeq = 0
-            //     }, bytes);
-            // }
-        }
+        
     }
 }

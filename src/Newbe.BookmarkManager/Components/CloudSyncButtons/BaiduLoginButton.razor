@@ -81,7 +81,9 @@
                 }
             };
             await BaiduDriveClient.UploadAsync(data);
-            //await BaiduDriveClient.TestAsync();
+            var bks = await BaiduDriveClient.DownLoadFileByFileIdAsync();
+            Console.WriteLine(JsonSerializer.Serialize(bks));
+    //await BaiduDriveClient.TestAsync();
     // byte[] bytes = Encoding.ASCII.GetBytes("123456");
     // var t1 = await CryptoJS.Hex(bytes);
     // Console.WriteLine(t1);
