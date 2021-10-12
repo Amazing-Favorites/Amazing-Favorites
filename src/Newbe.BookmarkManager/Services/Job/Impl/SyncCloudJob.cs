@@ -20,7 +20,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly INewNotification _newNotification;
         private readonly IGoogleDriveClient _googleDriveClient;
         private readonly IOneDriveClient _oneDriveClient;
-        private readonly IBaiduApi _baiduApi;
+        private readonly IBaiduDriveClient _baiduDriveClient;
         private readonly ISimpleDataStorage _simpleDataStorage;
         private readonly Subject<long> _eventSubject = new();
 
@@ -37,7 +37,9 @@ namespace Newbe.BookmarkManager.Services
             INewNotification newNotification,
             IGoogleDriveClient googleDriveClient,
             IOneDriveClient oneDriveClient,
-            ISimpleDataStorage simpleDataStorage, IBaiduApi baiduApi)
+            ISimpleDataStorage simpleDataStorage,
+            IBaiduDriveClient baiduDriveClient
+            )
         {
             _logger = logger;
             _bkManager = bkManager;
@@ -49,7 +51,7 @@ namespace Newbe.BookmarkManager.Services
             _googleDriveClient = googleDriveClient;
             _oneDriveClient = oneDriveClient;
             _simpleDataStorage = simpleDataStorage;
-            _baiduApi = baiduApi;
+            _baiduDriveClient = baiduDriveClient;
         }
 
         public async ValueTask StartAsync()
@@ -165,6 +167,8 @@ namespace Newbe.BookmarkManager.Services
                     await TriggerSync();
                     break;
                 case CloudBkProviderType.BaiduDrive:
+                    _baiduDriveClient.LoadToken(accessToken);
+                    await TriggerSync();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -26,30 +26,23 @@ namespace Newbe.BookmarkManager.Services
         Task<ApiResponse<BaiduFileMetasResponse>> GetFileMatesAsync(BaiduFileMetasRequest baiduFileMetasRequest);
 
         [Post("/rest/2.0/xpan/file?method=precreate")]
-        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync([Query] BaiduRequest query, [Body] BaiduPreCreateBody body);
+        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync([Body] BaiduPreCreateBody body);
         [Post("/rest/2.0/xpan/file?method=precreate")]
-        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync(BaiduRequest request,
+        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync(
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
 
         [Post("/rest/2.0/xpan/file?method=create")]
         [Headers("Cookie:", "Test1:")]
-        Task<ApiResponse<BaiduCreateResponse>> CreateAsync(BaiduRequest request,
+        Task<ApiResponse<BaiduCreateResponse>> CreateAsync(
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
         [Post("/rest/2.0/xpan/file?method=create")]
-        Task<ApiResponse<BaiduCreateResponse>> CreateAsync([Query] BaiduRequest request,
+        Task<ApiResponse<BaiduCreateResponse>> CreateAsync(
             [Body] BaiduCreateBody data);
-    }
-    public record BaiduRequest
-    {
-        [AliasAs("access_token")]
-        public string AccessToken { get; set; }
     }
     public record BaiduQuotaRequest
     {
-        [AliasAs("access_token")]
-        public string AccessToken { get; set; }
         [AliasAs("checkfree")]
         public int? CheckFree { get; set; }
         [AliasAs("checkexpire")]
@@ -73,8 +66,6 @@ namespace Newbe.BookmarkManager.Services
 
     public record BaiduFileListRequest
     {
-        [AliasAs("access_token")]
-        public string AccessToken { get; set; }
         [AliasAs("dir")]
         public string? Dir { get; set; }
         [AliasAs("order")]
@@ -163,8 +154,6 @@ namespace Newbe.BookmarkManager.Services
 
     public record BaiduDocListRequest
     {
-        [AliasAs("access_token")]
-        public string AccessToken { get; set; }
         [AliasAs("page")]
         public int? Page { get; set; }
         [AliasAs("num")]
@@ -187,8 +176,6 @@ namespace Newbe.BookmarkManager.Services
 
     public record BaiduSearchRequest
     {
-        [AliasAs("access_token")]
-        public string AccessToken { get; set; }
         [AliasAs("key")]
         public string Key { get; set; }
         [AliasAs("dir")]
@@ -217,8 +204,6 @@ namespace Newbe.BookmarkManager.Services
 
     public record BaiduFileMetasRequest
     {
-        [AliasAs("access_token")]
-        public string AccessToken { get; set; }
 
         [AliasAs("fsids")]
         public string FsIds { get; set; }

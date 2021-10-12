@@ -54,12 +54,6 @@ namespace Newbe.BookmarkManager.Services
                 CloudBkCollection = cloudBkCollection
             });
         }
-        private long MD5ToLong(string md5)
-        {
-            byte[] bytes = Encoding.ASCII.GetBytes(md5);
-            var re = BitConverter.ToInt64(bytes);
-            return re;
-        }
         public async Task<SaveToCloudOutput> SaveToCloudAsync(CloudBkCollection cloudBkCollection)
         {
             if (!await _baiduDriveClient.TestAsync())

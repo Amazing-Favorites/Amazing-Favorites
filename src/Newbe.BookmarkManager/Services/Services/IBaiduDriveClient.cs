@@ -5,6 +5,7 @@ namespace Newbe.BookmarkManager.Services
 {
     public interface IBaiduDriveClient
     {
+        void LoadToken(string token);
         Task<string?> LoginAsync(bool interactive);
         Task<bool> TestAsync();
 
