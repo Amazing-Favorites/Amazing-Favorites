@@ -156,18 +156,20 @@ namespace Newbe.BookmarkManager.Services
                 {"block_list", JsonSerializer.Serialize(new string[] {md5Str})}
             };
             var reCreateResponse = await _baiduApi.PreCreateAsync(request);
-            _logger.LogInformation(reCreateResponse.Content?.Path);
-            _logger.LogInformation(reCreateResponse.Content?.UploadId);
-            if (reCreateResponse.IsSuccessStatusCode && reCreateResponse.Content != null)
+            if (reCreateResponse.IsSuccessStatusCode && reCreateResponse.Content != null&& reCreateResponse.Content.Errno == 0)
             {
-                var updateResponse = await _baiduPcsApi.UploadAsync(new UploadRequest()
+                var upLoadResponse = await _baiduPcsApi.UploadAsync(new UploadRequest()
                 {
                     Path = Dir + DataFileName,
                     Uploadid = reCreateResponse.Content.UploadId,
                     Type = "tmpfile",
                     PartSeq = 0
                 }, new StreamPart(stream, "af.json", "application/json"));
-                _logger.LogInformation(updateResponse.Content?.UploadId);
+                _logger.LogInformation(upLoadResponse?.Content?.UploadId);
+                if (!upLoadResponse.IsSuccessStatusCode || reCreateResponse.Content == null || string.IsNullOrEmpty(upLoadResponse.Content.UploadId))
+                {
+                    return null;
+                }
                 request = new Dictionary<string, object>
                 {
                     {"path", Path},
@@ -197,7 +199,12 @@ namespace Newbe.BookmarkManager.Services
         public async Task<CloudBkCollection?> DownLoadFileByFileIdAsync()
         {
             if (!_fileId.HasValue)
-                return null;
+            {
+                if (!(await GetAfFieldId()).HasValue)
+                {
+                    return null;
+                }
+            }
             var options = await _userOptionsService.GetOptionsAsync();
             var accessToken = options.CloudBkFeature.AccessToken;
             var dLinkResponse = await _baiduApi.GetFileMatesAsync(new BaiduFileMetasRequest()
@@ -205,6 +212,11 @@ namespace Newbe.BookmarkManager.Services
                 FsIds = JsonSerializer.Serialize(new long[] { _fileId.Value }),
                 DLink = 1
             });
+            if (!dLinkResponse.IsSuccessStatusCode || dLinkResponse.Content == null ||
+                !dLinkResponse.Content.List.Any())
+            {
+                return null;
+            }
             var dlink = dLinkResponse.Content.List.FirstOrDefault().DLink;
             dlink = dlink + "&access_token=" + accessToken;
             _logger.LogInformation("DLINK:" + dlink);
@@ -231,7 +243,7 @@ namespace Newbe.BookmarkManager.Services
                 Dir = Dir,
             });
 
-            if (response.IsSuccessStatusCode && response.Content != null && response.Content.Errno == 0)
+            if (response.IsSuccessStatusCode && response.Content != null && response.Content.Errno == 0 && response.Content.List.Any())
             {
                 _fileId = response.Content.List.FirstOrDefault().FsId;
                 return _fileId;
