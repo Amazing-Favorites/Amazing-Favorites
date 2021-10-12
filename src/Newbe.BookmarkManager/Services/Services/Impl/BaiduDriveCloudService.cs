@@ -13,17 +13,15 @@ using Newbe.BookmarkManager.WebApi;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class BaiduDriveCloudService:ICloudService
+    public class BaiduDriveCloudService : ICloudService
     {
         private readonly ISimpleDataStorage _simpleDataStorage;
         private readonly IClock _clock;
         private readonly IUserOptionsService _userOptionsService;
         private readonly IBaiduDriveClient _baiduDriveClient;
-        private long? _fileId;
-        
         public BaiduDriveCloudService(
             ISimpleDataStorage simpleDataStorage,
-            IClock clock, 
+            IClock clock,
             IUserOptionsService userOptionsService,
             IBaiduDriveClient baiduDriveClient
             )
@@ -36,31 +34,29 @@ namespace Newbe.BookmarkManager.Services
 
         public async Task<CloudBkStatus> GetCloudAsync(long etagVersion)
         {
-            // var fileDescription = await GetFileDescription();
-            // if (fileDescription == null)
-            // {
-            //     return new CloudBkStatus(true, new GetCloudOutput()
-            //     {
-            //         EtagVersion = 0,
-            //         LastUpdateTime = 0,
-            //     });
-            // }
-            // var cloudBkCollection = await GetCloudDataAsync();
-            //  return new CloudBkStatus(etagVersion != fileDescription.EtagVersion, new GetCloudOutput
-            //  {
-            //      LastUpdateTime = fileDescription.LastUpdateTime,
-            //      EtagVersion = fileDescription.EtagVersion,
-            //      CloudBkCollection = cloudBkCollection
-            //  });
-            return new CloudBkStatus(true, new GetCloudOutput()
+            if (!await _baiduDriveClient.TestAsync())
             {
-                EtagVersion = 0,
-                LastUpdateTime = 0,
+                return new CloudBkStatus(false, new GetCloudOutput());
+            }
+            var cloudBkCollection = await _baiduDriveClient.DownLoadFileByFileIdAsync();
+            if (cloudBkCollection == null)
+            {
+                return new CloudBkStatus(true, new GetCloudOutput()
+                {
+                    EtagVersion = 0,
+                    LastUpdateTime = 0,
+                });
+            }
+            return new CloudBkStatus(etagVersion != cloudBkCollection.EtagVersion, new GetCloudOutput
+            {
+                LastUpdateTime = cloudBkCollection.LastUpdateTime,
+                EtagVersion = cloudBkCollection.EtagVersion,
+                CloudBkCollection = cloudBkCollection
             });
         }
         private long MD5ToLong(string md5)
         {
-            byte[] bytes = Encoding.ASCII.GetBytes(md5);  
+            byte[] bytes = Encoding.ASCII.GetBytes(md5);
             var re = BitConverter.ToInt64(bytes);
             return re;
         }
@@ -74,7 +70,6 @@ namespace Newbe.BookmarkManager.Services
                     Message = "baidu not login"
                 };
             }
-
             await _baiduDriveClient.UploadAsync(cloudBkCollection);
             var baiduDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
             baiduDriveStatics.LastSuccessUploadTime = _clock.UtcNow;
@@ -85,6 +80,6 @@ namespace Newbe.BookmarkManager.Services
             };
             return re;
         }
-        
+
     }
 }

@@ -11,7 +11,7 @@ namespace Newbe.BookmarkManager.Services
     {
         [Multipart]
         [Post("/rest/2.0/pcs/superfile2?method=upload")]
-        Task<ApiResponse<UploadResponse>> UploadAsync([Query]UploadRequest uploadRequest,[AliasAs("file")] StreamPart stream);
+        Task<ApiResponse<UploadResponse>> UploadAsync([Query] UploadRequest uploadRequest, [AliasAs("file")] StreamPart stream);
     }
 
     public record UploadRequest
@@ -24,7 +24,7 @@ namespace Newbe.BookmarkManager.Services
 
         [AliasAs("type")]
         public string Type { get; set; }
-        
+
         [AliasAs("path")]
         public string Path { get; set; }
 

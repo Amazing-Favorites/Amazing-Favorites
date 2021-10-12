@@ -10,5 +10,7 @@ namespace Newbe.BookmarkManager.Services
 
         Task<long?> UploadAsync(CloudBkCollection cloudBkCollection);
         Task<CloudBkCollection?> DownLoadFileByFileIdAsync();
+
+        Task<long?> GetAfFieldId();
     }
 }

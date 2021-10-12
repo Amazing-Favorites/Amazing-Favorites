@@ -123,14 +123,14 @@ namespace Newbe.BookmarkManager
 
             builder.Services
                 .AddRefitClient<IBaiduPCSApi>()
-                .ConfigureHttpClient((sp,client) =>
+                .ConfigureHttpClient((sp, client) =>
                 {
                     client.BaseAddress = new Uri("https://d.pcs.baidu.com/");
                 })
                 .AddHttpMessageHandler<BaiduApiAuthHeaderHandler>();
             builder.Services
                 .AddRefitClient<IBaiduApi>()
-                .ConfigureHttpClient((sp,client) =>
+                .ConfigureHttpClient((sp, client) =>
                 {
                     client.BaseAddress = new Uri("https://pan.baidu.com/");
                 })
@@ -247,8 +247,8 @@ namespace Newbe.BookmarkManager
                 builder.RegisterType<BaiduDriveClient>()
                     .As<IBaiduDriveClient>()
                     .SingleInstance();
-                
-                
+
+
 
             }
         }

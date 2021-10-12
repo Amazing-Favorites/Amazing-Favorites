@@ -74,7 +74,7 @@
             var data = new CloudBkCollection
             {
                 EtagVersion = 1,
-                LastUpdateTime = 2,
+                LastUpdateTime = ((DateTimeOffset)DateTime.Now.ToLocalTime()).ToUnixTimeSeconds(),
                 Bks = new Dictionary<string, CloudBk>
                 {
                     {"123", new CloudBk() {Tags = new List<string>() {"12345"}}}
@@ -83,10 +83,8 @@
             await BaiduDriveClient.UploadAsync(data);
             var bks = await BaiduDriveClient.DownLoadFileByFileIdAsync();
             Console.WriteLine(JsonSerializer.Serialize(bks));
-    //await BaiduDriveClient.TestAsync();
-    // byte[] bytes = Encoding.ASCII.GetBytes("123456");
-    // var t1 = await CryptoJS.Hex(bytes);
-    // Console.WriteLine(t1);
+            var id = await BaiduDriveClient.GetAfFieldId();
+            Console.WriteLine(id);
         }
         catch (Exception e)
         {

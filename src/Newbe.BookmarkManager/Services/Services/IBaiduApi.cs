@@ -18,7 +18,7 @@ namespace Newbe.BookmarkManager.Services
 
         [Get("/rest/2.0/xpan/file?method=doclist")]
         Task<ApiResponse<BaiduDocListResponse>> GetDocListAsync(BaiduDocListRequest baiduDocListRequest);
-        
+
         [Get("/rest/2.0/xpan/file?method=search")]
         Task<ApiResponse<BaiduSearchResponse>> SearchAsync(BaiduSearchRequest baiduSearchRequest);
 
@@ -26,20 +26,20 @@ namespace Newbe.BookmarkManager.Services
         Task<ApiResponse<BaiduFileMetasResponse>> GetFileMatesAsync(BaiduFileMetasRequest baiduFileMetasRequest);
 
         [Post("/rest/2.0/xpan/file?method=precreate")]
-        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync([Query] BaiduRequest query,[Body]BaiduPreCreateBody body);
+        Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync([Query] BaiduRequest query, [Body] BaiduPreCreateBody body);
         [Post("/rest/2.0/xpan/file?method=precreate")]
         Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync(BaiduRequest request,
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
-        
-        
+
+
         [Post("/rest/2.0/xpan/file?method=create")]
-        [Headers("Cookie:","Test1:")]
+        [Headers("Cookie:", "Test1:")]
         Task<ApiResponse<BaiduCreateResponse>> CreateAsync(BaiduRequest request,
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
-        
+
         [Post("/rest/2.0/xpan/file?method=create")]
-        Task<ApiResponse<BaiduCreateResponse>> CreateAsync([Query]BaiduRequest request,
-            [Body]BaiduCreateBody data);
+        Task<ApiResponse<BaiduCreateResponse>> CreateAsync([Query] BaiduRequest request,
+            [Body] BaiduCreateBody data);
     }
     public record BaiduRequest
     {
@@ -141,7 +141,7 @@ namespace Newbe.BookmarkManager.Services
         public long ServerATime { get; set; }
         [JsonPropertyName("server_ctime")]
         public long ServerCTime { get; set; }
-        
+
         [JsonPropertyName("server_filename")]
         public string ServerFileName { get; set; }
         [JsonPropertyName("server_mtime")]
@@ -156,7 +156,7 @@ namespace Newbe.BookmarkManager.Services
         public int UnList { get; set; }
         [JsonPropertyName("wpfile")]
         public int WPFile { get; set; }
-        
+
         [JsonPropertyName("md5")]
         public string MD5 { get; set; }
     }
@@ -182,7 +182,7 @@ namespace Newbe.BookmarkManager.Services
     }
     public record BaiduDocListResponse
     {
-        
+
     }
 
     public record BaiduSearchRequest
@@ -219,10 +219,10 @@ namespace Newbe.BookmarkManager.Services
     {
         [AliasAs("access_token")]
         public string AccessToken { get; set; }
-        
+
         [AliasAs("fsids")]
         public string FsIds { get; set; }
-        
+
         [AliasAs("path")]
         public string? Path { get; set; }
         [AliasAs("thumb")]
@@ -239,7 +239,7 @@ namespace Newbe.BookmarkManager.Services
         public string ErrMsg { get; set; }
         [JsonPropertyName("errno")]
         public long Errno { get; set; }
-        
+
         //[JsonPropertyName("names")]
         //public string[] Names { get; set; }
 
@@ -268,7 +268,7 @@ namespace Newbe.BookmarkManager.Services
         public long OperId { get; set; }
         [JsonPropertyName("path")]
         public string Path { get; set; }
-        
+
         [JsonPropertyName("server_ctime")]
         public long ServerCTime { get; set; }
         [JsonPropertyName("server_mtime")]
@@ -283,7 +283,7 @@ namespace Newbe.BookmarkManager.Services
         public string Path { get; set; }
         [AliasAs("size")]
         public int Size { get; set; }
-        
+
         [AliasAs("isdir")]
         public int IsDir { get; set; }
         [AliasAs("autoinit")]
@@ -292,19 +292,19 @@ namespace Newbe.BookmarkManager.Services
         public int? RType { get; set; }
         [AliasAs("uploadid")]
         public string UploadId { get; set; }
-        
+
         [AliasAs("block_list")]
         public string BlockList { get; set; }
-        
+
         [AliasAs("content-md5")]
         public string ContentMd5 { get; set; }
-        
+
         [AliasAs("slice-md5")]
-        public string SliceMd5	 { get; set; }
+        public string SliceMd5 { get; set; }
         [AliasAs("local_ctime")]
-        public string LocalCTime	 { get; set; }
+        public string LocalCTime { get; set; }
         [AliasAs("local_mtime")]
-        public string LocalMTime	 { get; set; }
+        public string LocalMTime { get; set; }
     }
 
     public record BaiduCreateBody
@@ -324,16 +324,16 @@ namespace Newbe.BookmarkManager.Services
     {
         [JsonPropertyName("errno")]
         public int Errno { get; set; }
-        
+
         [JsonPropertyName("path")]
         public string Path { get; set; }
-        
+
         [JsonPropertyName("uploadid")]
         public string UploadId { get; set; }
-        
+
         [JsonPropertyName("return_type")]
         public int ReturnType { get; set; }
-        
+
         [JsonPropertyName("block_list")]
         public int[] BlockList { get; set; }
     }
@@ -351,5 +351,5 @@ namespace Newbe.BookmarkManager.Services
         [JsonPropertyName("server_filename")]
         public string ServerFileName { get; set; }
     }
-    
+
 }

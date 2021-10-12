@@ -20,10 +20,12 @@ using WebExtensions.Net.WebRequest;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class BaiduDriveClient:IBaiduDriveClient
+    public class BaiduDriveClient : IBaiduDriveClient
     {
-    
-        public const string DataFileName = "/apps/AmazingFavoritesZ/af.json";
+
+        public const string Dir = "/apps/AmazingFavoritesZ/";
+        public const string DataFileName = "af.json";
+        public const string Path = Dir + DataFileName;
         private readonly IIdentityApi _identityApi;
         private readonly ILogger<BaiduDriveClient> _logger;
         private readonly IBaiduApi _baiduApi;
@@ -35,7 +37,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IClock _clock;
         private long? _fileId;
-        
+
         public BaiduDriveClient(IIdentityApi identityApi,
             ILogger<BaiduDriveClient> logger,
             IBaiduApi baiduApi,
@@ -51,7 +53,7 @@ namespace Newbe.BookmarkManager.Services
             _webExtensionsApi = webExtensionsApi;
             _httpClientFactory = httpClientFactory;
         }
-    
+
         public async Task<string?> LoginAsync(bool interactive)
         {
 
@@ -98,8 +100,8 @@ namespace Newbe.BookmarkManager.Services
                 return token;
             }
         }
-        
-        public async Task LoadTokenAsync(string token,string exp)
+
+        public async Task LoadTokenAsync(string token, string exp)
         {
             var options = await _userOptionsService.GetOptionsAsync();
             options.CloudBkFeature.AccessToken = token;
@@ -136,9 +138,9 @@ namespace Newbe.BookmarkManager.Services
             await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
             var size = stream.Length;
             var md5Str = await _cryptoJS.Hex(bytes);
-            var data = new Dictionary<string, object>
+            var request = new Dictionary<string, object>
             {
-                {"path", DataFileName},
+                {"path", Path},
                 {"size", size},
                 {"rtype", "3"},
                 {"isdir", "0"},
@@ -148,23 +150,23 @@ namespace Newbe.BookmarkManager.Services
             var reCreateResponse = await _baiduApi.PreCreateAsync(new BaiduRequest()
             {
                 AccessToken = accessToken
-            }, data);
+            }, request);
             _logger.LogInformation(reCreateResponse.Content?.Path);
             _logger.LogInformation(reCreateResponse.Content?.UploadId);
-            if (reCreateResponse.IsSuccessStatusCode&& reCreateResponse.Content !=null)
+            if (reCreateResponse.IsSuccessStatusCode && reCreateResponse.Content != null)
             {
                 var updateResponse = await _baiduPcsApi.UploadAsync(new UploadRequest()
                 {
                     AccessToken = accessToken,
-                    Path = DataFileName,
+                    Path = Dir + DataFileName,
                     Uploadid = reCreateResponse.Content.UploadId,
                     Type = "tmpfile",
                     PartSeq = 0
-                },new StreamPart(stream,"af.json","application/json"));
+                }, new StreamPart(stream, "af.json", "application/json"));
                 _logger.LogInformation(updateResponse.Content?.UploadId);
-                data = new Dictionary<string, object>
+                request = new Dictionary<string, object>
                 {
-                    {"path",  DataFileName},
+                    {"path", Path},
                     {"size", size},
                     {"rtype", 3},
                     {"isdir", "0"},
@@ -179,8 +181,8 @@ namespace Newbe.BookmarkManager.Services
                 var mergeResponse = await _baiduApi.CreateAsync(new BaiduRequest()
                 {
                     AccessToken = accessToken
-                }, data);
-                _logger.LogInformation("FSID:"+mergeResponse?.Content?.FsId.ToString());
+                }, request);
+                _logger.LogInformation("FSID:" + mergeResponse?.Content?.FsId.ToString());
                 _fileId = mergeResponse.Content.FsId;
                 return mergeResponse.Content.FsId;
             }
@@ -200,12 +202,12 @@ namespace Newbe.BookmarkManager.Services
             var dLinkResponse = await _baiduApi.GetFileMatesAsync(new BaiduFileMetasRequest()
             {
                 AccessToken = accessToken,
-                FsIds = JsonSerializer.Serialize(new long[]{_fileId.Value}),
+                FsIds = JsonSerializer.Serialize(new long[] { _fileId.Value }),
                 DLink = 1
             });
             var dlink = dLinkResponse.Content.List.FirstOrDefault().DLink;
             dlink = dlink + "&access_token=" + accessToken;
-            _logger.LogInformation("DLINK:"+dlink);
+            _logger.LogInformation("DLINK:" + dlink);
             var request = new HttpRequestMessage(HttpMethod.Get,
                 dlink);
             request.Headers.Add("User-Agent", "pan.baidu.com");
@@ -219,6 +221,28 @@ namespace Newbe.BookmarkManager.Services
             }
 
             return null;
+        }
+
+        public async Task<long?> GetAfFieldId()
+        {
+            var options = await _userOptionsService.GetOptionsAsync();
+            var accessToken = options.CloudBkFeature.AccessToken;
+
+            var response = await _baiduApi.SearchAsync(new BaiduSearchRequest()
+            {
+                AccessToken = accessToken,
+                Key = DataFileName,
+                Dir = Dir,
+            });
+
+            if (response.IsSuccessStatusCode && response.Content != null && response.Content.Errno == 0)
+            {
+                _fileId = response.Content.List.FirstOrDefault().FsId;
+                return _fileId;
+            }
+
+            return null;
+
         }
     }
 }
