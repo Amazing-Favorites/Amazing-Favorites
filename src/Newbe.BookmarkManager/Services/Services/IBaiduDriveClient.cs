@@ -14,4 +14,11 @@ namespace Newbe.BookmarkManager.Services
 
         Task<long?> GetAfFieldId();
     }
+    public record BaiduDriveOAuthOptions
+    {
+        public OAuth2ClientType Type { get; set; }
+        public string ClientId { get; set; }
+        public string DevClientId { get; set; }
+        public string[] Scopes { get; set; }
+    }
 }

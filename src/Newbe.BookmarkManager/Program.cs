@@ -61,6 +61,7 @@ namespace Newbe.BookmarkManager
                 .Configure<DevOptions>(builder.Configuration.GetSection(nameof(DevOptions)))
                 .Configure<GoogleDriveOAuthOptions>(builder.Configuration.GetSection(nameof(GoogleDriveOAuthOptions)))
                 .Configure<OneDriveOAuthOptions>(builder.Configuration.GetSection(nameof(OneDriveOAuthOptions)))
+                .Configure<BaiduDriveOAuthOptions>(builder.Configuration.GetSection(nameof(BaiduDriveOAuthOptions)))
                 .Configure<StaticUrlOptions>(builder.Configuration.GetSection(nameof(StaticUrlOptions)));
             builder.Services
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
@@ -211,6 +212,7 @@ namespace Newbe.BookmarkManager
             builder.RegisterModule<SimpleObjectStorageModule>();
             builder.RegisterModule<OneDriveModule>();
             builder.RegisterModule<GoogleDriveModule>();
+            builder.RegisterModule<BaiduDriveModule>();
             builder.RegisterModule<JobModule>();
 
             void RegisterType<TType, TInterface>()
@@ -237,18 +239,6 @@ namespace Newbe.BookmarkManager
                 builder.RegisterType<GoogleDriveClient>()
                     .As<IGoogleDriveClient>()
                     .SingleInstance();
-
-                builder.RegisterType<BaiduDriveCloudService>()
-                    .Keyed<ICloudService>(CloudBkProviderType.BaiduDrive)
-                    .SingleInstance()
-                    .EnableInterfaceInterceptors()
-                    .InterceptedBy(typeof(ApplicationInsightAop));
-                builder.RegisterType<BaiduDriveClient>()
-                    .As<IBaiduDriveClient>()
-                    .SingleInstance();
-
-
-
             }
         }
 
@@ -274,6 +264,23 @@ namespace Newbe.BookmarkManager
                     .SingleInstance();
                 builder.RegisterType<OneDriveClient>()
                     .As<IOneDriveClient>()
+                    .SingleInstance();
+            }
+        }
+
+        private class BaiduDriveModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+
+                builder.RegisterType<BaiduDriveCloudService>()
+                    .Keyed<ICloudService>(CloudBkProviderType.BaiduDrive)
+                    .SingleInstance()
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
+                builder.RegisterType<BaiduDriveClient>()
+                    .As<IBaiduDriveClient>()
                     .SingleInstance();
             }
         }

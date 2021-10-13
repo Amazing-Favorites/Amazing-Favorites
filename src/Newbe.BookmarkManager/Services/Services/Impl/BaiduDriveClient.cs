@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance;
 using Newbe.BookmarkManager.WebApi;
 using Refit;
@@ -35,6 +36,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly CryptoJS _cryptoJS;
         private readonly IWebExtensionsApi _webExtensionsApi;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IOptions<BaiduDriveOAuthOptions> _baiduDriveOauthOptions;
         private readonly IClock _clock;
         private long? _fileId;
 
@@ -46,7 +48,10 @@ namespace Newbe.BookmarkManager.Services
             IClock clock,
             IBaiduPCSApi baiduPcsApi,
             IWebExtensionsApi webExtensionsApi,
-            IHttpClientFactory httpClientFactory, IUserOptionsService userOptionsService)
+            IHttpClientFactory httpClientFactory,
+            IUserOptionsService userOptionsService,
+            IOptions<BaiduDriveOAuthOptions> baiduDriveOauthOptions
+            )
         {
             _identityApi = identityApi;
             _logger = logger;
@@ -57,6 +62,7 @@ namespace Newbe.BookmarkManager.Services
             _webExtensionsApi = webExtensionsApi;
             _httpClientFactory = httpClientFactory;
             _userOptionsService = userOptionsService;
+            _baiduDriveOauthOptions = baiduDriveOauthOptions;
         }
 
         public void LoadToken(string token)
@@ -82,21 +88,22 @@ namespace Newbe.BookmarkManager.Services
             return default;
             async Task<string?> LoginCoreAsync()
             {
+                var options = _baiduDriveOauthOptions.Value;
                 var redirectUrl = await _identityApi.GetRedirectURL("");
                 _logger.LogInformation($"{redirectUrl}");
                 if (_authUrl == null)
                 {
-                    var scopes = "basic netdisk";
                     _authUrl = "https://openapi.baidu.com/oauth/2.0/authorize";
-                    var clientId = "tPftmS1HNHNp6zUPXVdNR9frdQ2jNnoR";
+                    var clientId = options.Type == OAuth2ClientType.Dev
+                        ? options.DevClientId
+                        : options.ClientId;
                     _authUrl += $"?client_id={clientId}";
                     _authUrl += "&response_type=token";
                     _authUrl += $"&redirect_uri={redirectUrl}";
                     //_authUrl += $"&redirect_uri=oob";
-                    _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(",", scopes.Split(" ")))}";
+                    _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(",", options.Scopes))}";
                     _authUrl += $"&state=STATE";
                 }
-                _logger.LogInformation($"{_authUrl}");
                 var callbackUrl = await _identityApi.LaunchWebAuthFlow(new LaunchWebAuthFlowDetails
                 {
                     Interactive = interactive,
@@ -104,8 +111,6 @@ namespace Newbe.BookmarkManager.Services
                 });
                 var token = callbackUrl.Split('#')[1].Split('&')[1].Split('=')[1];
                 var exp = callbackUrl.Split('#')[1].Split('&')[0].Split('=')[1];
-                _logger.LogInformation($"callbackUrl:{callbackUrl}");
-                _logger.LogInformation($"exp:{exp}");
                 await LoadTokenAsync(token, exp);
                 return token;
             }
