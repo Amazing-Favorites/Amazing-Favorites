@@ -23,9 +23,9 @@ namespace Newbe.BookmarkManager.Services
     public class BaiduDriveClient : IBaiduDriveClient
     {
 
-        public const string Dir = "/apps/AmazingFavoritesZ/";
-        public const string DataFileName = "af.json";
-        public const string Path = Dir + DataFileName;
+        private const string Dir = "/apps/AmazingFavoritesZ/";
+        private const string DataFileName = "af.json";
+        private const string Path = Dir + DataFileName;
         private readonly IIdentityApi _identityApi;
         private readonly ILogger<BaiduDriveClient> _logger;
         private readonly IUserOptionsService _userOptionsService;
@@ -86,7 +86,7 @@ namespace Newbe.BookmarkManager.Services
                 _logger.LogInformation($"{redirectUrl}");
                 if (_authUrl == null)
                 {
-                    var scopes = "basic netdisk super_msg";
+                    var scopes = "basic netdisk";
                     _authUrl = "https://openapi.baidu.com/oauth/2.0/authorize";
                     var clientId = "tPftmS1HNHNp6zUPXVdNR9frdQ2jNnoR";
                     _authUrl += $"?client_id={clientId}";
@@ -121,24 +121,35 @@ namespace Newbe.BookmarkManager.Services
         }
         public async Task<bool> TestAsync()
         {
-            // await _webExtensionsApi.Cookies.Remove(new RemoveDetails()
-            // {
-            //     Name = "PANWEB",
-            //     Url = "https://pan.baidu.com/"
-            // });
-            // var data = new Dictionary<string, object>
-            // {
-            //     {"path",  "/apps/AmazingFavoritesZ"},
-            //     {"size", "1"},
-            //     {"rtype", "3"},
-            //     {"isdir", "1"},
-            // };
-            // var mergeResponse = await _baiduApi.CreateAsync(data);
-            // if (mergeResponse?.Content != null && mergeResponse.)
-            // {
-            //     return true;
-            // }
-            return true;
+            try
+            {
+                return await TestCoreAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "error when Baidu Drive test");
+                return false;
+            }
+
+            async Task<bool> TestCoreAsync()
+            {
+                try
+                {
+                    var fsId = await GetAfFieldId();
+                    if (fsId.HasValue)
+                    {
+                        return true;
+                    }
+                    
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "failed to test Baidu Drive api");
+                }
+
+                return false;
+            }
         }
         public async Task<long?> UploadAsync(CloudBkCollection cloudBkCollection)
         {
@@ -156,7 +167,7 @@ namespace Newbe.BookmarkManager.Services
                 {"block_list", JsonSerializer.Serialize(new string[] {md5Str})}
             };
             var reCreateResponse = await _baiduApi.PreCreateAsync(request);
-            if (reCreateResponse.IsSuccessStatusCode && reCreateResponse.Content != null&& reCreateResponse.Content.Errno == 0)
+            if (reCreateResponse.IsSuccessStatusCode && reCreateResponse.Content != null && reCreateResponse.Content.Errno == 0)
             {
                 var upLoadResponse = await _baiduPcsApi.UploadAsync(new UploadRequest()
                 {
@@ -250,7 +261,6 @@ namespace Newbe.BookmarkManager.Services
             }
 
             return null;
-
         }
     }
 }
