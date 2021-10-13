@@ -140,7 +140,7 @@ namespace Newbe.BookmarkManager.Services
                     {
                         return true;
                     }
-                    
+
                     return false;
                 }
                 catch (Exception e)
