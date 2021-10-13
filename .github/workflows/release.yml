@@ -25,7 +25,7 @@ jobs:
       - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.100-rc.1.21458.32'
+          dotnet-version: '6.0.0-rc.2.21480.10'
           include-prerelease: true
       - name: Setup .NET 5.0 for Release Manager
         uses: actions/setup-dotnet@v1
