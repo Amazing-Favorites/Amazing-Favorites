@@ -6,6 +6,8 @@ namespace Newbe.BookmarkManager.Services
     public record SearchResultItem(Bk Bk)
     {
         public int ClickCount { get; init; }
+
+        public long LastClickTime { get; init; }
         public bool Matched => Score > 0;
         public double Score => MatchedDetails.Values.Sum();
         public Dictionary<ScoreReason, int> MatchedDetails { get; set; } = new();
