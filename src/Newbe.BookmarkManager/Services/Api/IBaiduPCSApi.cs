@@ -40,13 +40,7 @@ namespace Newbe.BookmarkManager.Services
 
     public record UploadResponse
     {
-        // [JsonPropertyName("md5")]
-        // public string Md5 { get; set; }
         [JsonPropertyName("uploadid")]
         public string UploadId { get; set; }
-        // [JsonPropertyName("partseq")]
-        // public string PartSeq { get; set; }
-        // [JsonPropertyName("request_id")]
-        // public long RequestId { get; set; }
     }
 }

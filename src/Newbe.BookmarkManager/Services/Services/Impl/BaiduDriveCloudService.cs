@@ -65,7 +65,7 @@ namespace Newbe.BookmarkManager.Services
                 };
             }
             await _baiduDriveClient.UploadAsync(cloudBkCollection);
-            var baiduDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
+            var baiduDriveStatics = await _simpleDataStorage.GetOrDefaultAsync<BaiduDriveStatics>();
             baiduDriveStatics.LastSuccessUploadTime = _clock.UtcNow;
             await _simpleDataStorage.SaveAsync(baiduDriveStatics);
             var re = new SaveToCloudOutput

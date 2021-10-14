@@ -19,7 +19,7 @@
                     <Text>@_oneDriveStatics.LastSuccessUploadTime.ToLocalTime() OneDrive </Text>
                     break;
                 case CloudBkProviderType.BaiduDrive:
-                    <Text>@_oneDriveStatics.LastSuccessUploadTime.ToLocalTime() BaiduDrive </Text>
+                    <Text>@_baiduDriveStatics.LastSuccessUploadTime.ToLocalTime() BaiduDrive </Text>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -105,26 +105,9 @@
                             <Paragraph>
                                 When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via BaiduDrive to synchronize your Tag data across multiple devices.
                             </Paragraph>
-                            <FormItem Label="Token Expiration Date">
-                                @context.CloudBkFeature.ExpireDate
-                                @(context.CloudBkFeature.ExpireDate != null ? $"{context.CloudBkFeature.ExpireDate:d}" : "")
-                                @if (context.CloudBkFeature.ExpireDate.HasValue &&
-                                     context.CloudBkFeature.ExpireDate < DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-                                {
-                                    if (context.CloudBkFeature.ExpireDate <= DateTime.Now.AddDays(Consts.JwtExpiredWarningDays))
-                                    {
-                                        <Alert
-                                            Message=@($"Your token will be expired within {Consts.JwtExpiredWarningDays} days, please try to create a new one.")
-                                            Type="@AlertType.Warning"/>
-                                    }
-                                    else if (context.CloudBkFeature.ExpireDate <= DateTime.Now)
-                                    {
-                                        <Alert
-                                            Message=@($"Your token has been expired, please try to create a new one.")
-                                            Type="@AlertType.Error"/>
-                                    }
-                                }
-                            </FormItem>
+                            <Paragraph>
+                                Last upload success time: @_baiduDriveStatics.LastSuccessUploadTime.ToLocalTime()
+                            </Paragraph>
                             <BaiduLoginButton></BaiduLoginButton>
                         </FormItem>
                         break;
@@ -153,6 +136,7 @@
     private Panel _panel = null!;
     private OneDriveStatics _oneDriveStatics = new();
     private GoogleDriveStatics _googleDriveStatics = new();
+    private BaiduDriveStatics _baiduDriveStatics = new();
 
     private bool FeatureEnabled => UserOptions?.CloudBkFeature?.Enabled == true;
 
@@ -186,6 +170,8 @@
         await base.OnInitializedAsync();
         _googleDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
         _oneDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<OneDriveStatics>();
+        _baiduDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<BaiduDriveStatics>();
+
     }
 
     private Task OnChangeCloudBkFeatureAccessToken(string accessToken)

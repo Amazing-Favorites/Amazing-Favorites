@@ -225,9 +225,6 @@ namespace Newbe.BookmarkManager.Services
         [JsonPropertyName("errno")]
         public long Errno { get; set; }
 
-        //[JsonPropertyName("names")]
-        //public string[] Names { get; set; }
-
         [JsonPropertyName("list")]
         public BaiduFileDLink[] List { get; set; }
         [JsonPropertyName("request_id")]
