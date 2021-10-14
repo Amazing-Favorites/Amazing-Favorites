@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Newbe.BookmarkManager.Services;
+using Newbe.BookmarkManager.Services.RPC;
 
 namespace Newbe.BookmarkManager.Pages
 {
@@ -10,6 +13,9 @@ namespace Newbe.BookmarkManager.Pages
         [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
         [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
         [Inject] public IJobHost JobHost { get; set; }
+        [Inject] public IMediator Mediator { get; set; }
+
+        [Inject] public IIndexedDbRepo<Bk, string> _bkRepo { get; set; }
 
         private UserOptions _userOptions = null!;
 
@@ -34,7 +40,18 @@ namespace Newbe.BookmarkManager.Pages
             if (firstRender)
             {
                 await JobHost.StartAsync();
+                await Mediator.EnsureStartAsync();
+                Mediator.RegisterHandler<GetAllBkRequest>(SearchHandler);
             }
+        }
+
+
+
+        public Task<List<Bk>> SearchHandler(GetAllBkRequest request)
+        {
+            var result = _bkRepo.GetAllAsync();
+
+            return result;
         }
     }
 }
