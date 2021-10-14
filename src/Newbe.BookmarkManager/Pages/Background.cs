@@ -23,7 +23,9 @@ namespace Newbe.BookmarkManager.Pages
         {
             if (command == Consts.Commands.OpenManager)
             {
+#pragma warning disable 4014
                 WebExtensions.Tabs.ActiveOrOpenManagerAsync();
+#pragma warning restore 4014
             }
         }
 
@@ -44,7 +46,6 @@ namespace Newbe.BookmarkManager.Pages
                 Mediator.RegisterHandler<GetAllBkRequest>(SearchHandler);
             }
         }
-
 
 
         public Task<List<Bk>> SearchHandler(GetAllBkRequest request)
