@@ -100,7 +100,6 @@ namespace Newbe.BookmarkManager.Services
                     _authUrl += $"?client_id={clientId}";
                     _authUrl += "&response_type=token";
                     _authUrl += $"&redirect_uri={redirectUrl}";
-                    //_authUrl += $"&redirect_uri=oob";
                     _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(",", options.Scopes))}";
                     _authUrl += $"&state=STATE";
                 }
@@ -161,7 +160,7 @@ namespace Newbe.BookmarkManager.Services
             var bytes = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().ToArray();
             await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
             var size = stream.Length;
-            var md5Str = await _cryptoJS.Hex(bytes);
+            var md5Str = await _cryptoJS.MD5(bytes);
             var request = new Dictionary<string, object>
             {
                 {"path", Path},

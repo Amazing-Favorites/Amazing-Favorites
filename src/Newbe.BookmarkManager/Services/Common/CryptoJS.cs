@@ -14,6 +14,6 @@ public class CryptoJS : ObjectBindingBase
     }
 
 
-    public ValueTask<string> Hex(byte[] bytes) => InvokeAsync<string>("hex", string.Join("", bytes.Select(x => x.ToString("X"))));
-    public ValueTask<string> Hex(string str) => InvokeAsync<string>("hex", str);
+    public ValueTask<string> MD5(byte[] bytes) => InvokeAsync<string>("hex", bytes);
+    public ValueTask<string> MD5(string str) => InvokeAsync<string>("hex", str);
 }
