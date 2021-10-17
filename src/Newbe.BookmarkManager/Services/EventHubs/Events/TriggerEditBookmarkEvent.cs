@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Newbe.BookmarkManager.Services.EventHubs
+﻿namespace Newbe.BookmarkManager.Services.EventHubs
 {
     public record TriggerEditBookmarkEvent : IAfEvent
     {

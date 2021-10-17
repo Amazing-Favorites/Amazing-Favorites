@@ -1,6 +1,8 @@
-﻿namespace Newbe.BookmarkManager.Services.EventHubs
+﻿using Newbe.BookmarkManager.Services.MessageBus;
+
+namespace Newbe.BookmarkManager.Services.EventHubs
 {
-    public interface IAfEvent
+    public interface IAfEvent : IMessage
     {
     }
 }

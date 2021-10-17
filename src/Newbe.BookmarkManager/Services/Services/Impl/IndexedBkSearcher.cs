@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using BlazorApplicationInsights;
 using Microsoft.Extensions.Logging;
-using Newbe.BookmarkManager.Services.RPC;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -16,20 +15,16 @@ namespace Newbe.BookmarkManager.Services
         private readonly ILogger<IndexedBkSearcher> _logger;
         private readonly IIndexedDbRepo<BkTag, string> _tagRepo;
 
-        private readonly IMediator _mediator;
-
         public IndexedBkSearcher(
             IApplicationInsights insights,
             ILogger<IndexedBkSearcher> logger,
             IIndexedDbRepo<Bk, string> bkRepo,
-            IIndexedDbRepo<BkTag, string> tagRepo,
-            IMediator mediator)
+            IIndexedDbRepo<BkTag, string> tagRepo)
         {
             _insights = insights;
             _bkRepo = bkRepo;
             _logger = logger;
             _tagRepo = tagRepo;
-            _mediator = mediator;
         }
 
         public virtual async Task<SearchResultItem[]> Search(string searchText, int limit)
