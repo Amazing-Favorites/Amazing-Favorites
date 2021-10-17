@@ -40,7 +40,7 @@ namespace Newbe.BookmarkManager.Tests
             });
             testResponse.Should().NotBeNull();
             testResponse.Greetings.Should().Be(GetGreetings(name));
-            
+
             channel.MessageHandlerCollection.HandlerItems.Count.Should().Be(1);
 
             string GetGreetings(string n)

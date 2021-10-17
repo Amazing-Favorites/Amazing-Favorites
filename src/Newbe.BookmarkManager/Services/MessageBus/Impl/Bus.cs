@@ -73,7 +73,6 @@ namespace Newbe.BookmarkManager.Services.MessageBus
         public void RegisterHandler(string messageType, RequestHandlerDelegate handler, string? messageId = null)
         {
             var eventName = messageType;
-            ConcurrentDictionary<string, RequestHandlerDelegate> handlers;
             if (string.IsNullOrEmpty(messageId))
             {
                 MessageHandlerCollection.AddHandler(message => message.MessageType == messageType,

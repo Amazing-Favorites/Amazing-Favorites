@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("Newbe.BookmarkManager.Tests")]
+[assembly: InternalsVisibleTo("Newbe.BookmarkManager.Tests")]

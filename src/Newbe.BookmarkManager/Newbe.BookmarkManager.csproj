@@ -36,7 +36,6 @@
         <PackageReference Include="System.Reactive" Version="5.0.0" />
         <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
         <PackageReference Include="Excubo.Blazor.ScriptInjection" Version="3.0.45" />
-        <PackageReference Include="WebExtensions.Net" Version="0.9.3" />
     </ItemGroup>
 
     <ItemGroup>

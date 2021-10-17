@@ -9,9 +9,7 @@ namespace Newbe.BookmarkManager.Pages
     {
         [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
         [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
-        [Inject] public IJobHost JobHost { get; set; }
-
-        [Inject] public IIndexedDbRepo<Bk, string> _bkRepo { get; set; }
+        [Inject] public IJobHost JobHost { get; set; } = null!;
 
         private UserOptions _userOptions = null!;
 
