@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AntDesign" Version="0.10.0" />
+        <PackageReference Include="AntDesign" Version="0.10.1" />
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
         <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.0" />
         <PackageReference Include="Blazor.BrowserExtension" Version="0.7.0" />
@@ -31,8 +31,8 @@
         <PackageReference Include="Seq.Extensions.Logging" Version="6.0.0" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0-rc.2.21480.5" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.13.1" />
-        <PackageReference Include="Refit" Version="6.0.94" />
-        <PackageReference Include="Refit.HttpClientFactory" Version="6.0.94" />
+        <PackageReference Include="Refit" Version="6.1.15" />
+        <PackageReference Include="Refit.HttpClientFactory" Version="6.1.15" />
         <PackageReference Include="System.Reactive" Version="5.0.0" />
         <PackageReference Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
         <PackageReference Include="Excubo.Blazor.ScriptInjection" Version="3.0.45" />
