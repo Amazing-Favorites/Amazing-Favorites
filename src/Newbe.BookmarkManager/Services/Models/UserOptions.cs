@@ -15,6 +15,8 @@ namespace Newbe.BookmarkManager.Services
         public CloudBkFeature? CloudBkFeature { get; set; }
         public HotTagsFeature? HotTagsFeature { get; set; }
         public ApplicationInsightFeature? ApplicationInsightFeature { get; set; }
+
+        public OmniboxSuggestFeature? OmniboxSuggestFeature { get; set; }
     }
 
     public record PinyinFeature
@@ -52,5 +54,18 @@ namespace Newbe.BookmarkManager.Services
     public record ApplicationInsightFeature
     {
         public bool Enabled { get; set; }
+    }
+
+    public record OmniboxSuggestFeature
+    {
+        public bool Enabled { get; set; }
+        private int _suggestCount;
+
+        public int SuggestCount
+        {
+            get =>
+                _suggestCount;
+            set => _suggestCount = Math.Clamp(value, Consts.OmniboxSuggestMin, Consts.OmniboxSuggestMax);
+        }
     }
 }
