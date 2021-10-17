@@ -57,6 +57,13 @@ namespace Newbe.BookmarkManager.Services
             "Other favorites"
         };
 
+        public static class BusEnvelopNames
+        {
+            public const string AfEvent = "afEvent";
+            public const string LPCServer = "lpc";
+        }
+
+
         public static bool IsReservedBookmarkFolder(string title)
         {
             return ReservedBookmarkFolder.Contains(title);

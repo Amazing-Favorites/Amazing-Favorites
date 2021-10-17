@@ -1,0 +1,34 @@
+﻿@page "/test/LPCClientTestPage/index.html"
+@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.LPC
+@inherits Blazor.BrowserExtension.Pages.IndexPage
+
+<p>
+    <Button OnClick="OnClickSend">send</Button>
+    @_greetings
+</p>
+
+
+@code {
+
+    [Inject]
+    public ILPCClient<LPCServerTestPage.ITestServer> Client { get; set; } = null!;
+
+    private string _greetings = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Client.StartAsync();
+    }
+
+    private async Task OnClickSend(MouseEventArgs obj)
+    {
+        var testResponse = await Client.InvokeAsync<BusTestPage.TestRequest, BusTestPage.TestResponse>(new BusTestPage.TestRequest
+        {
+            Name = RandomIdHelper.GetId()
+        });
+        _greetings = testResponse.Greetings;
+    }
+
+}
