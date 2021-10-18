@@ -241,8 +241,6 @@ namespace Newbe.BookmarkManager.Pages
                 var (tabId, clickTime) = await SimpleDataStorage.GetOrDefaultAsync<LastUserClickIconTabData>();
                 if (Clock.UtcNow - clickTime < TimeSpan.FromSeconds(30).TotalSeconds)
                 {
-                    Logger.LogInformation("{sss}", tabId);
-                    Logger.LogInformation("{sss}", clickTime);
                     if (tabId > 0)
                     {
                         var tab = await WebExtensions.Tabs.Get(tabId);
@@ -289,6 +287,7 @@ namespace Newbe.BookmarkManager.Pages
                 StateHasChanged();
             });
         }
+
         private BkViewItem[] Map(SearchResultItem[] items)
         {
             var re = CreateItem().ToArray();

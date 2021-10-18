@@ -1,7 +1,9 @@
-﻿namespace Newbe.BookmarkManager.Services.EventHubs
+﻿using System.Text.Json.Serialization;
+
+namespace Newbe.BookmarkManager.Services.EventHubs
 {
     public record UserClickAfIconEvent : IAfEvent
     {
-        public int TabId { get; set; }
+        [JsonPropertyName("tabId")] public int TabId { get; set; }
     }
 }
