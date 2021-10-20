@@ -146,16 +146,16 @@ namespace Newbe.BookmarkManager.Services
             _fileId = uploadResult.ItemResponse.Id;
         }
 
-        public async Task<bool> TestAsync()
+        public Task<bool> TestAsync()
         {
             try
             {
-                return TestCoreAsync();
+                return Task.FromResult(TestCoreAsync());
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "error when One Drive test");
-                return false;
+                return Task.FromResult(false);
             }
 
             bool TestCoreAsync()

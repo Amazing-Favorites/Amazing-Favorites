@@ -17,6 +17,8 @@ using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Ai;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.LPC;
+using Newbe.BookmarkManager.Services.MessageBus;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Refit;
 using TG.Blazor.IndexedDB;
@@ -64,7 +66,7 @@ namespace Newbe.BookmarkManager
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
             builder.Services
                 .AddAntDesign()
-                .AddBrowserExtensionServices(options => { options.ProjectNamespace = typeof(Program).Namespace; })
+                .AddBrowserExtensionServices()
                 .AddTransient<IBookmarksApi>(p => p.GetRequiredService<IWebExtensionsApi>().Bookmarks)
                 .AddTransient<ITabsApi>(p => p.GetRequiredService<IWebExtensionsApi>().Tabs)
                 .AddTransient<IWindowsApi>(p => p.GetRequiredService<IWebExtensionsApi>().Windows)
@@ -189,7 +191,7 @@ namespace Newbe.BookmarkManager
             RegisterType<IndexedBkManager, IBkManager>();
             RegisterType<UserOptionsService, IUserOptionsService>();
             builder.RegisterModule<CloudServiceModule>();
-            builder.RegisterModule<EventHubModule>();
+            builder.RegisterModule<BusModule>();
             builder.RegisterModule<SimpleObjectStorageModule>();
             builder.RegisterModule<OneDriveModule>();
             builder.RegisterModule<GoogleDriveModule>();
@@ -262,13 +264,27 @@ namespace Newbe.BookmarkManager
             }
         }
 
-        private class EventHubModule : Module
+        private class BusModule : Module
         {
             protected override void Load(ContainerBuilder builder)
             {
                 base.Load(builder);
+                builder.RegisterType<StorageApiWrapper>()
+                    .As<IStorageApiWrapper>()
+                    .SingleInstance();
                 builder.RegisterType<AfEventHub>()
                     .As<IAfEventHub>()
+                    .SingleInstance();
+                builder.RegisterType<LPCServer>()
+                    .As<ILPCServer>()
+                    .SingleInstance();
+                builder.RegisterGeneric(typeof(LPCClient<>))
+                    .As(typeof(ILPCClient<>))
+                    .SingleInstance();
+                builder.RegisterType<Bus>()
+                    .AsSelf();
+                builder.RegisterType<BusFactory>()
+                    .As<IBusFactory>()
                     .SingleInstance();
             }
         }

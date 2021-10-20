@@ -9,7 +9,7 @@ namespace Newbe.BookmarkManager.Pages
     {
         [Inject] public IJSRuntime JsRuntime { get; set; } = null!;
         [Inject] public IUserOptionsService UserOptionsService { get; set; } = null!;
-        [Inject] public IJobHost JobHost { get; set; }
+        [Inject] public IJobHost JobHost { get; set; } = null!;
 
         private UserOptions _userOptions = null!;
 
@@ -17,7 +17,9 @@ namespace Newbe.BookmarkManager.Pages
         {
             if (command == Consts.Commands.OpenManager)
             {
+#pragma warning disable 4014
                 WebExtensions.Tabs.ActiveOrOpenManagerAsync();
+#pragma warning restore 4014
             }
         }
 

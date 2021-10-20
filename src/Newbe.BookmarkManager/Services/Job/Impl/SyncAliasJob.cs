@@ -37,7 +37,7 @@ namespace Newbe.BookmarkManager.Services
             _fillers = fillers;
         }
 
-        public async ValueTask StartAsync()
+        public ValueTask StartAsync()
         {
             _loadHandler = _jobSubject
                 .Merge(Observable.Interval(TimeSpan.FromSeconds(60)))
@@ -115,6 +115,7 @@ namespace Newbe.BookmarkManager.Services
                 .Concat()
                 .Subscribe(_ => { });
             _jobSubject.OnNext(_clock.UtcNow);
+            return ValueTask.CompletedTask;
         }
     }
 }

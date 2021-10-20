@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using AntDesign;
 using Microsoft.AspNetCore.Components;
@@ -243,8 +241,6 @@ namespace Newbe.BookmarkManager.Pages
                 var (tabId, clickTime) = await SimpleDataStorage.GetOrDefaultAsync<LastUserClickIconTabData>();
                 if (Clock.UtcNow - clickTime < TimeSpan.FromSeconds(30).TotalSeconds)
                 {
-                    Logger.LogInformation("{sss}", tabId);
-                    Logger.LogInformation("{sss}", clickTime);
                     if (tabId > 0)
                     {
                         var tab = await WebExtensions.Tabs.Get(tabId);
@@ -258,6 +254,15 @@ namespace Newbe.BookmarkManager.Pages
                     }
                 }
 
+                await WebExtensions.Tabs.OnUpdated.AddListener(async (tabId, changeInfo, tab) =>
+                {
+                    await BkManager.AddClickAsync(changeInfo.Url, 1);
+                    await InvokeAsync(() =>
+                    {
+                        SearchValue = _searchValue;
+                        StateHasChanged();
+                    });
+                });
                 await ManagePageNotificationService.RunAsync();
                 AfEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
                 AfEventHub.RegisterHandler<TriggerEditBookmarkEvent>(HandleTriggerEditBookmarkEvent);
@@ -421,6 +426,11 @@ namespace Newbe.BookmarkManager.Pages
             {
                 _isFormLoading = false;
             }
+        }
+
+        private void OnSharingButton()
+        {
+            OnClickSharing(BkEditFormData.Url);
         }
 
         private async Task OnClickModalSaveAsync()

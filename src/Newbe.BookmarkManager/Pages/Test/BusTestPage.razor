@@ -1,0 +1,57 @@
+﻿@page "/test/storageChannel/index.html"
+@using Newbe.BookmarkManager.Services.MessageBus
+@using Newbe.BookmarkManager.Services
+@inherits Blazor.BrowserExtension.Pages.IndexPage
+
+<Button OnClick="OnClick">try send message</Button>
+
+<p>
+    @_greetings
+</p>
+
+@code {
+
+    [Inject]
+    public IBusFactory BusFactory { get; set; } = null!;
+
+    private IBus _channel = null!;
+    private string _greetings = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _channel = BusFactory.Create(new BusOptions
+        {
+            EnvelopName = "test_storage"
+        });
+        _channel.RegisterHandler<TestRequest>((scope, message, sourceMessage) =>
+        {
+#pragma warning disable 4014
+            _channel.SendResponse(new TestResponse
+#pragma warning restore 4014
+            {
+                Greetings = $"hi, {message.Name}"
+            }, sourceMessage);
+        });
+        await _channel.EnsureStartAsync();
+    }
+
+    private async Task OnClick(MouseEventArgs obj)
+    {
+        var testResponse = await _channel.SendRequest<TestRequest, TestResponse>(new TestRequest
+        {
+            Name = RandomIdHelper.GetId(),
+        });
+        _greetings = testResponse.Greetings;
+    }
+
+    public record TestRequest : IRequest
+    {
+        public string Name { get; set; } = null!;
+    }
+
+    public record TestResponse : IResponse
+    {
+        public string Greetings { get; set; } = null!;
+    }
+}
