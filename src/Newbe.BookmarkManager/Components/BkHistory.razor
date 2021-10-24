@@ -2,6 +2,8 @@
 @using System.Reactive.Subjects
 @using System.Reactive.Linq
 @using Microsoft.Extensions.Logging
+@using Newbe.BookmarkManager.Services.LPC
+@using Newbe.BookmarkManager.Services.Servers
 
 <Button OnClick="_ => _visible = true">
     <Icon Type="history"/>
@@ -25,17 +27,25 @@
 </Drawer>
 
 @code {
+    
 
     [Inject]
-    public IBkSearcher BkSearcher { get; set; } = null!;
-
+    public ILPCClient<IBkSearcherServer> LPCClient { get; set; } = null!;
     private SearchResultItem[] _targetBks = null!;
     private bool _visible;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+
         await base.OnAfterRenderAsync(firstRender);
-        _targetBks = await BkSearcher.History(20);
+        if (firstRender)
+        {
+            await LPCClient.StartAsync();
+        }
+        _targetBks = (await LPCClient.InvokeAsync<BkSearchHistoryRequest, BkSearchResponse>(new BkSearchHistoryRequest
+        {
+            Limit = 20
+        })).ResultItems;
     }
 
 }

@@ -57,6 +57,22 @@ namespace Newbe.BookmarkManager.Services.MessageBus
             };
             await dispatcher.SendMessage(channelMessage);
         }
+        public static async Task SendResponse<TResponse>(this IBus dispatcher, Task<TResponse> response,
+            BusMessage requestMessage)
+            where TResponse : IResponse
+        {
+            var resp = await response;
+            var parentId = requestMessage.MessageId;
+            var requestTypeName = typeof(TResponse).Name;
+            var channelMessage = new BusMessage
+            {
+                MessageId = RandomIdHelper.GetId(),
+                MessageType = requestTypeName,
+                PayloadJson = JsonSerializer.Serialize((object)resp!),
+                ParentMessageId = parentId
+            };
+            await dispatcher.SendMessage(channelMessage);
+        }
 
         public static async Task<TResponse> SendRequest<TRequest, TResponse>(this IBus dispatcher,
             TRequest request)

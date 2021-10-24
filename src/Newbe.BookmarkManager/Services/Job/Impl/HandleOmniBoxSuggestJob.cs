@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.LPC;
+using Newbe.BookmarkManager.Services.Servers;
 using WebExtensions.Net;
 using WebExtensions.Net.Omnibox;
 using WebExtensions.Net.Tabs;
@@ -14,22 +16,27 @@ namespace Newbe.BookmarkManager.Services
     {
         private readonly ILogger<HandleOmniBoxSuggestJob> _logger;
         private readonly IAfEventHub _afEventHub;
-        private readonly IBkSearcher _bkSearcher;
+        //private readonly IBkSearcher _bkSearcher;
+        private readonly ILPCClient<IBkSearcherServer> _lpcClient;
         private readonly IUserOptionsService _userOptionsService;
         private readonly IWebExtensionsApi _webExtensions;
         public HandleOmniBoxSuggestJob(
             ILogger<HandleOmniBoxSuggestJob> logger,
-            IAfEventHub afEventHub, IBkSearcher bkSearcher, IUserOptionsService userOptionsService, IWebExtensionsApi webExtensions)
+            IAfEventHub afEventHub,
+            IBkSearcher bkSearcher,
+            IUserOptionsService userOptionsService,
+            IWebExtensionsApi webExtensions, ILPCClient<IBkSearcherServer> lpcClient)
         {
             _logger = logger;
             _afEventHub = afEventHub;
-            _bkSearcher = bkSearcher;
             _userOptionsService = userOptionsService;
             _webExtensions = webExtensions;
+            _lpcClient = lpcClient;
         }
 
         public async ValueTask StartAsync()
         {
+            await _lpcClient.StartAsync();
             _afEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
             await _afEventHub.EnsureStartAsync();
         }
@@ -56,12 +63,19 @@ namespace Newbe.BookmarkManager.Services
             {
                 return Array.Empty<SuggestResult>();
             }
-            var searchResult = await _bkSearcher.Search(input, option.SuggestCount);
-            var suggestResults = searchResult.Select(a => new SuggestResult
+
+            var searchResponse = await _lpcClient.InvokeAsync<BkSearchRequest, BkSearchResponse>(new BkSearchRequest
             {
-                Content = a.Bk.Url,
-                Description = a.Bk.Title
-            }).ToArray();
+                SearchText = input,
+                Limit = option.SuggestCount
+            });
+
+            var suggestResults = searchResponse.ResultItems
+                .Select(a => new SuggestResult
+                {
+                    Content = a.Bk.Url,
+                    Description = a.Bk.Title
+                }).ToArray();
 
             return suggestResults;
 

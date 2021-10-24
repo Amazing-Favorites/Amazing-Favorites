@@ -6,7 +6,7 @@ namespace Newbe.BookmarkManager.Services.MessageBus
     {
         [JsonPropertyName("id")] public string? MessageId { get; set; }
         [JsonPropertyName("parentId")] public string? ParentMessageId { get; set; }
-        [JsonPropertyName("messageType")] public string MessageType { get; set; }
+        [JsonPropertyName("messageType")] public string? MessageType { get; set; }
         [JsonPropertyName("payload")] public string? PayloadJson { get; set; }
     }
 }
