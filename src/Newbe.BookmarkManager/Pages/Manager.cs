@@ -14,6 +14,8 @@ using Newbe.BookmarkManager.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.LPC;
+using Newbe.BookmarkManager.Services.Servers;
 using Newbe.BookmarkManager.Services.SimpleData;
 using WebExtensions.Net.Tabs;
 
@@ -21,7 +23,8 @@ namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
     {
-        [Inject] public IBkSearcher BkSearcher { get; set; }
+        //[Inject] public IBkSearcher BkSearcher { get; set; }
+        [Inject] public ILPCClient<IBkSearcherServer> Client { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public ITagsManager TagsManager { get; set; }
         [Inject] public IJSRuntime JsRuntime { get; set; }
@@ -104,6 +107,8 @@ namespace Newbe.BookmarkManager.Pages
         {
             await base.OnInitializedAsync();
             _userOptions = await UserOptionsService.GetOptionsAsync();
+
+            await Client.StartAsync();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -138,8 +143,13 @@ namespace Newbe.BookmarkManager.Pages
                                 }
                             }
 
-                            var target = await BkSearcher.Search(args!, _resultLimit);
-                            _targetBks = Map(target);
+                            //var target = await BkSearcher.Search(args!, _resultLimit);
+                            var target = await Client.InvokeAsync<BkSearchRequest, BkSearchResponse>(new BkSearchRequest
+                            {
+                                SearchText = args!,
+                                Limit = _resultLimit
+                            });
+                            _targetBks = Map(target.ResultItems);
                         }
                         catch (Exception e)
                         {

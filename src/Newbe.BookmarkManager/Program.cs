@@ -19,6 +19,7 @@ using Newbe.BookmarkManager.Services.Configuration;
 using Newbe.BookmarkManager.Services.EventHubs;
 using Newbe.BookmarkManager.Services.LPC;
 using Newbe.BookmarkManager.Services.MessageBus;
+using Newbe.BookmarkManager.Services.Servers;
 using Newbe.BookmarkManager.Services.SimpleData;
 using Refit;
 using TG.Blazor.IndexedDB;
@@ -84,6 +85,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<IRecordService, RecordService>()
                 .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
+            builder.Services
+                .AddSingleton<IBkSearcherServer, BkSearcherServer>();
 
 
             builder.Services.AddLogging(loggingBuilder =>
@@ -325,6 +328,7 @@ namespace Newbe.BookmarkManager
                     yield return typeof(DataFixJob);
                     yield return typeof(HandleUserClickIconJob);
                     yield return typeof(HandleOmniBoxSuggestJob);
+                    yield return typeof(LPCServerJob);
                     yield return typeof(ShowWelcomeJob);
                     yield return typeof(ShowWhatNewJob);
                     yield return typeof(InviteAcceptPrivacyAgreementJob);
