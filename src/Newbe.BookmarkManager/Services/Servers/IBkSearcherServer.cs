@@ -12,18 +12,18 @@ namespace Newbe.BookmarkManager.Services.Servers
 
 
 
-    public record BkSearchRequest: IRequest
+    public record BkSearchRequest : IRequest
     {
         public string SearchText { get; set; }
         public int Limit { get; set; }
     }
-    public record BkSearchHistoryRequest: IRequest
+    public record BkSearchHistoryRequest : IRequest
     {
         public int Limit { get; set; }
     }
-    public record BkSearchResponse: IResponse
+    public record BkSearchResponse : IResponse
     {
         public SearchResultItem[] ResultItems { get; set; }
     }
-    
+
 }

@@ -6,7 +6,7 @@ using Newbe.BookmarkManager.Services.Servers;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class LPCServerJob:ILPCServerJob
+    public class LPCServerJob : ILPCServerJob
     {
 
         private readonly ILPCServer _lpcServer;
@@ -18,7 +18,7 @@ namespace Newbe.BookmarkManager.Services
             _bkSearcherServer = bkSearcherServer;
             _bkSearcher = bkSearcher;
         }
-        
+
         public async ValueTask StartAsync()
         {
             //_lpcServer.AddServerInstance(_bkSearcherServer);

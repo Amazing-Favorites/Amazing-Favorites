@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Newbe.BookmarkManager.Services.Servers
 {
-    public class BkSearcherServer:IBkSearcherServer
+    public class BkSearcherServer : IBkSearcherServer
     {
 
         private readonly IBkSearcher _bkSearcher;
@@ -17,7 +17,7 @@ namespace Newbe.BookmarkManager.Services.Servers
         {
             _bkSearcher = bkSearcher;
         }
-        
+
         public async Task<BkSearchResponse> Search(BkSearchRequest request)
         {
             var result = await _bkSearcher.Search(request.SearchText, request.Limit);

@@ -69,13 +69,13 @@ namespace Newbe.BookmarkManager.Services
                 SearchText = input,
                 Limit = option.SuggestCount
             });
-            
+
             var suggestResults = searchResponse.ResultItems
                 .Select(a => new SuggestResult
-            {
-                Content = a.Bk.Url,
-                Description = a.Bk.Title
-            }).ToArray();
+                {
+                    Content = a.Bk.Url,
+                    Description = a.Bk.Title
+                }).ToArray();
 
             return suggestResults;
 

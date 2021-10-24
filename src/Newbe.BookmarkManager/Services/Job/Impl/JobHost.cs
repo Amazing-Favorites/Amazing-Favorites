@@ -31,7 +31,7 @@ namespace Newbe.BookmarkManager.Services
             ISyncCloudStatusCheckJob syncCloudStatusCheckJob,
             IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob,
             IHandleUserClickIconJob handleUserClickIconJob,
-            IHandleOmniBoxSuggestJob handleOmniBoxSuggestJob, 
+            IHandleOmniBoxSuggestJob handleOmniBoxSuggestJob,
             ILPCServerJob lpcServer)
         {
             _logger = logger;

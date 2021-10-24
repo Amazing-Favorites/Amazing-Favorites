@@ -36,6 +36,7 @@ namespace Newbe.BookmarkManager
 {
     public class Program
     {
+        [Obsolete]
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
