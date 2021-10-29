@@ -30,7 +30,7 @@
         <PackageReference Include="Nanoid" Version="2.1.0" />
         <PackageReference Include="Seq.Extensions.Logging" Version="6.0.0" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0-rc.2.21480.5" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.13.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.0" />
         <PackageReference Include="Refit" Version="6.1.15" />
         <PackageReference Include="Refit.HttpClientFactory" Version="6.1.15" />
         <PackageReference Include="System.Reactive" Version="5.0.0" />
