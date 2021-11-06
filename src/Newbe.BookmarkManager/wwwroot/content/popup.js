@@ -1,4 +1,16 @@
 ﻿(async () => {
+    async function publish_afEvent(type, e) {
+        await browser.storage.local.set({
+            "afEvent": {
+                message: {
+                    messageType: type,
+                    payload: JSON.stringify(e)
+                },
+                utcNow: Math.floor(Date.now() / 1000)
+            }
+        });
+    }
+
     const folderTitle = "Amazing Favorites"
     const managerTabTitle = "Amazing Favorites";
     const tabs = await browser.tabs.query({
@@ -51,34 +63,18 @@
                 active: true
             });
 
-            await browser.storage.local.set({
-                "afEvent": {
-                    message: {
-                        typeCode: "TriggerEditBookmarkEvent",
-                        payloadJson: JSON.stringify({
-                            title: bkNode.title,
-                            url: bkNode.url,
-                            tabId: tab.id
-                        })
-                    },
-                    utcNow: Math.floor(Date.now() / 1000)
-                }
+            await publish_afEvent("TriggerEditBookmarkEvent", {
+                title: bkNode.title,
+                url: bkNode.url,
+                tabId: tab.id
             });
         } else {
             await browser.tabs.create({
                 url: "/Manager/index.html"
             });
 
-            await browser.storage.local.set({
-                "afEvent": {
-                    message: {
-                        typeCode: 'UserClickAfIconEvent',
-                        payloadJson: JSON.stringify({
-                            tabId: tab.id
-                        })
-                    },
-                    utcNow: Math.floor(Date.now() / 1000)
-                }
+            await publish_afEvent("UserClickAfIconEvent", {
+                tabId: tab.id
             });
         }
     }

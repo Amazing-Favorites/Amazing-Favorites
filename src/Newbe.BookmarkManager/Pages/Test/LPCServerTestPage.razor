@@ -1,0 +1,37 @@
+﻿@page "/test/LPCServerTestPage/index.html"
+@using Newbe.BookmarkManager.Services.LPC
+@inherits Blazor.BrowserExtension.Pages.IndexPage
+
+<p>
+    LPCServer is on, please send request from <a href="/test/LPCClientTestPage/index.html" target="_blank">LPCClientTestPage</a>
+</p>
+
+@code {
+
+    [Inject]
+    public ILPCServer LPCServer { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        LPCServer.AddServerInstance(new TestServer());
+        await LPCServer.StartAsync();
+    }
+
+    public interface ITestServer
+    {
+        Task<BusTestPage.TestResponse> GoAsync(BusTestPage.TestRequest request);
+    }
+
+    public class TestServer : ITestServer
+    {
+        public Task<BusTestPage.TestResponse> GoAsync(BusTestPage.TestRequest request)
+        {
+            return Task.FromResult(new BusTestPage.TestResponse
+            {
+                Greetings = $"hi, {request.Name}"
+            });
+        }
+    }
+
+}

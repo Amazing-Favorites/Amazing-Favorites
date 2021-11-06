@@ -1,0 +1,32 @@
+﻿@page "/test/AfEventHubReceiver/index.html"
+@using Newbe.BookmarkManager.Services.EventHubs
+@inherits Blazor.BrowserExtension.Pages.IndexPage
+AfEventHubReceiver is on
+<p>
+    @_greetings
+</p>
+
+@code {
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; } = null!;
+
+    private string _greetings = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        AfEventHub.RegisterHandler<AfEventHubSender.TestAfEvent>(OnReceiveEvent);
+        await AfEventHub.EnsureStartAsync();
+    }
+
+    private async Task OnReceiveEvent(AfEventHubSender.TestAfEvent evt)
+    {
+        await InvokeAsync(() =>
+        {
+            _greetings = $"Hi, {evt.Name} at {DateTimeOffset.FromUnixTimeSeconds(evt.Time)}";
+            StateHasChanged();
+        });
+    }
+
+}

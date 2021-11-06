@@ -1,0 +1,51 @@
+﻿@page "/test/AfEventHubSender/index.html"
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Newbe.BookmarkManager.Services
+@inherits Blazor.BrowserExtension.Pages.IndexPage
+<a href="/test/AfEventHubReceiver/index.html" target="_blank">open receive</a>
+
+<p>
+    <Button OnClick="OnClickSend">send</Button>
+    @if (_sendEvent != null)
+    {
+        <ul>
+            <li> @_sendEvent.Name</li>
+            <li> @DateTimeOffset.FromUnixTimeSeconds(_sendEvent.Time)</li>
+        </ul>
+    }
+</p>
+
+@code {
+
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; } = null!;
+
+    [Inject]
+    public IClock Clock { get; set; } = null!;
+
+    private TestAfEvent? _sendEvent;
+    private int _index = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await AfEventHub.EnsureStartAsync();
+    }
+
+    private async Task OnClickSend(MouseEventArgs obj)
+    {
+        _sendEvent = new TestAfEvent
+        {
+            Name = (_index++).ToString(),
+            Time = Clock.UtcNow
+        };
+        await AfEventHub.PublishAsync(_sendEvent);
+    }
+
+    public record TestAfEvent : IAfEvent
+    {
+        public string Name { get; set; } = null!;
+        public long Time { get; set; }
+    }
+
+}

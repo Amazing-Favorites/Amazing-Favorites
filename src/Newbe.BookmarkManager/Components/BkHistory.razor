@@ -1,0 +1,41 @@
+﻿@using Newbe.BookmarkManager.Services
+@using System.Reactive.Subjects
+@using System.Reactive.Linq
+@using Microsoft.Extensions.Logging
+
+<Button OnClick="_ => _visible = true">
+    <Icon Type="history"/>
+</Button>
+<Drawer Visible="@_visible" Width="600" OnClose="_ => _visible = false">
+    <Collapse>
+        <AntList DataSource="@_targetBks">
+            <ChildContent Context="item">
+                <Row>
+                    <Col style=" white-space: nowrap;  overflow: hidden; text-overflow: ellipsis;width: 90%;" Span="18">
+
+                        <a href="@item.Bk.Url" target="_blank">@item.Bk.Title</a>
+                    </Col>
+                    <Col Span="6">
+                        @item.LastClickTime.ToLocalTime()
+                    </Col>
+                </Row>
+            </ChildContent>
+        </AntList>
+    </Collapse>
+</Drawer>
+
+@code {
+
+    [Inject]
+    public IBkSearcher BkSearcher { get; set; } = null!;
+
+    private SearchResultItem[] _targetBks = null!;
+    private bool _visible;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        _targetBks = await BkSearcher.History(20);
+    }
+
+}

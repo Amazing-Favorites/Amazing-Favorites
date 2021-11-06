@@ -110,5 +110,7 @@ namespace Newbe.BookmarkManager.Services.Ai
         {
             return Task.CompletedTask;
         }
+
+        public bool EnableAutoRouteTracking { get; set; } = false;
     }
 }
