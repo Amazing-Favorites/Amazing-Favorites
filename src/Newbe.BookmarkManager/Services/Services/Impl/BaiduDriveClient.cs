@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,23 +14,21 @@ using WebExtensions.Net;
 using WebExtensions.Net.Cookies;
 using WebExtensions.Net.Identity;
 using WebExtensions.Net.Manifest;
-using WebExtensions.Net.WebRequest;
 
 namespace Newbe.BookmarkManager.Services
 {
     public class BaiduDriveClient : IBaiduDriveClient
     {
-
-        private const string Dir = "/apps/AmazingFavoritesZ/";
+        private const string Dir = "/apps/AmazingFavorites/";
         private const string DataFileName = "af.json";
         private const string Path = Dir + DataFileName;
         private readonly IIdentityApi _identityApi;
         private readonly ILogger<BaiduDriveClient> _logger;
         private readonly IUserOptionsService _userOptionsService;
         private readonly IBaiduApi _baiduApi;
-        private static string? _authUrl = null;
+        private static string? _authUrl;
         private readonly IBaiduPCSApi _baiduPcsApi;
-        private readonly CryptoJS _cryptoJS;
+        private readonly CryptoJS _cryptoJs;
         private readonly IWebExtensionsApi _webExtensionsApi;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IOptions<BaiduDriveOAuthOptions> _baiduDriveOauthOptions;
@@ -51,12 +46,12 @@ namespace Newbe.BookmarkManager.Services
             IHttpClientFactory httpClientFactory,
             IUserOptionsService userOptionsService,
             IOptions<BaiduDriveOAuthOptions> baiduDriveOauthOptions
-            )
+        )
         {
             _identityApi = identityApi;
             _logger = logger;
             _baiduApi = baiduApi;
-            _cryptoJS = cryptoJs;
+            _cryptoJs = cryptoJs;
             _clock = clock;
             _baiduPcsApi = baiduPcsApi;
             _webExtensionsApi = webExtensionsApi;
@@ -72,7 +67,6 @@ namespace Newbe.BookmarkManager.Services
 
         public async Task<string?> LoginAsync(bool interactive)
         {
-
             try
             {
                 return await LoginCoreAsync();
@@ -85,7 +79,9 @@ namespace Newbe.BookmarkManager.Services
                     throw;
                 }
             }
+
             return default;
+
             async Task<string?> LoginCoreAsync()
             {
                 var options = _baiduDriveOauthOptions.Value;
@@ -101,28 +97,21 @@ namespace Newbe.BookmarkManager.Services
                     _authUrl += "&response_type=token";
                     _authUrl += $"&redirect_uri={redirectUrl}";
                     _authUrl += $"&scope={WebUtility.UrlEncode(string.Join(",", options.Scopes))}";
-                    _authUrl += $"&state=STATE";
+                    _authUrl += $"&state={Guid.NewGuid()}";
+                    _authUrl += $"&display=popup";
                 }
+
                 var callbackUrl = await _identityApi.LaunchWebAuthFlow(new LaunchWebAuthFlowDetails
                 {
                     Interactive = interactive,
                     Url = new HttpURL(_authUrl)
                 });
                 var token = callbackUrl.Split('#')[1].Split('&')[1].Split('=')[1];
-                var exp = callbackUrl.Split('#')[1].Split('&')[0].Split('=')[1];
-                await LoadTokenAsync(token, exp);
+                LoadToken(token);
                 return token;
             }
         }
 
-        private async Task LoadTokenAsync(string token, string exp)
-        {
-            var options = await _userOptionsService.GetOptionsAsync();
-            options.CloudBkFeature.AccessToken = token;
-            if (Int64.TryParse(exp, out var time))
-                options.CloudBkFeature.ExpireDate = DateTime.Now.ToLocalTime().AddSeconds(time);
-            await _userOptionsService.SaveAsync(options);
-        }
         public async Task<bool> TestAsync()
         {
             try
@@ -155,23 +144,25 @@ namespace Newbe.BookmarkManager.Services
                 return false;
             }
         }
+
         public async Task<long?> UploadAsync(CloudBkCollection cloudBkCollection)
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().ToArray();
             await using var stream = JsonSerializer.SerializeToUtf8Bytes(cloudBkCollection).AsMemory().AsStream();
             var size = stream.Length;
-            var md5Str = await _cryptoJS.MD5(bytes);
+            var md5Str = await _cryptoJs.MD5(bytes);
             var request = new Dictionary<string, object>
             {
-                {"path", Path},
-                {"size", size},
-                {"rtype", "3"},
-                {"isdir", "0"},
-                {"autoinit", "1"},
-                {"block_list", JsonSerializer.Serialize(new string[] {md5Str})}
+                { "path", Path },
+                { "size", size },
+                { "rtype", "3" },
+                { "isdir", "0" },
+                { "autoinit", "1" },
+                { "block_list", JsonSerializer.Serialize(new[] { md5Str }) }
             };
             var reCreateResponse = await _baiduApi.PreCreateAsync(request);
-            if (reCreateResponse.IsSuccessStatusCode && reCreateResponse.Content != null && reCreateResponse.Content.Errno == 0)
+            if (reCreateResponse.IsSuccessStatusCode && reCreateResponse.Content != null &&
+                reCreateResponse.Content.Errno == 0)
             {
                 var upLoadResponse = await _baiduPcsApi.UploadAsync(new UploadRequest()
                 {
@@ -181,18 +172,20 @@ namespace Newbe.BookmarkManager.Services
                     PartSeq = 0
                 }, new StreamPart(stream, "af.json", "application/json"));
                 _logger.LogInformation(upLoadResponse?.Content?.UploadId);
-                if (!upLoadResponse.IsSuccessStatusCode || reCreateResponse.Content == null || string.IsNullOrEmpty(upLoadResponse.Content.UploadId))
+                if (!upLoadResponse.IsSuccessStatusCode || reCreateResponse.Content == null ||
+                    string.IsNullOrEmpty(upLoadResponse.Content.UploadId))
                 {
                     return null;
                 }
+
                 request = new Dictionary<string, object>
                 {
-                    {"path", Path},
-                    {"size", size},
-                    {"rtype", 3},
-                    {"isdir", "0"},
-                    {"uploadid", reCreateResponse.Content.UploadId},
-                    {"block_list", JsonSerializer.Serialize(new string[] {md5Str})},
+                    { "path", Path },
+                    { "size", size },
+                    { "rtype", 3 },
+                    { "isdir", "0" },
+                    { "uploadid", reCreateResponse.Content.UploadId },
+                    { "block_list", JsonSerializer.Serialize(new string[] { md5Str }) },
                 };
                 await _webExtensionsApi.Cookies.Remove(new RemoveDetails()
                 {
@@ -205,10 +198,7 @@ namespace Newbe.BookmarkManager.Services
                 return mergeResponse.Content.FsId;
             }
 
-
             return null;
-
-
         }
 
         public async Task<CloudBkCollection?> DownLoadFileByFileIdAsync()
@@ -220,6 +210,7 @@ namespace Newbe.BookmarkManager.Services
                     return null;
                 }
             }
+
             var options = await _userOptionsService.GetOptionsAsync();
             var accessToken = options.CloudBkFeature.AccessToken;
             var dLinkResponse = await _baiduApi.GetFileMatesAsync(new BaiduFileMetasRequest()
@@ -232,6 +223,7 @@ namespace Newbe.BookmarkManager.Services
             {
                 return null;
             }
+
             var dlink = dLinkResponse.Content.List.FirstOrDefault().DLink;
             dlink = dlink + "&access_token=" + accessToken;
             _logger.LogInformation("DLINK:" + dlink);
@@ -242,7 +234,7 @@ namespace Newbe.BookmarkManager.Services
             var response = await client.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
-                using var responseStream = await response.Content.ReadAsStreamAsync();
+                await using var responseStream = await response.Content.ReadAsStreamAsync();
                 var re = await JsonSerializer.DeserializeAsync<CloudBkCollection>(responseStream);
                 return re;
             }
@@ -258,7 +250,8 @@ namespace Newbe.BookmarkManager.Services
                 Dir = Dir,
             });
 
-            if (response.IsSuccessStatusCode && response.Content != null && response.Content.Errno == 0 && response.Content.List.Any())
+            if (response.IsSuccessStatusCode && response.Content != null && response.Content.Errno == 0 &&
+                response.Content.List.Any())
             {
                 _fileId = response.Content.List.FirstOrDefault().FsId;
                 return _fileId;

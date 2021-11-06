@@ -31,9 +31,7 @@ namespace Newbe.BookmarkManager.Services
         Task<ApiResponse<BaiduPreCreateResponse>> PreCreateAsync(
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
-
         [Post("/rest/2.0/xpan/file?method=create")]
-        [Headers("Cookie:", "Test1:")]
         Task<ApiResponse<BaiduCreateResponse>> CreateAsync(
             [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
