@@ -27,16 +27,16 @@ namespace Newbe.BookmarkManager.Services.EventHubs
             });
         }
 
+        public string AfEventHubId => _bus.BusId;
+
         public async Task EnsureStartAsync()
         {
             await _bus.EnsureStartAsync();
         }
 
-        public void RegisterHandler<TEventType>(Action<ILifetimeScope, IAfEvent> action)
+        public void RegisterHandler<TEventType>(Action<ILifetimeScope, IAfEvent, BusMessage> action)
         {
-            _bus.RegisterHandler(
-                (scope, message, sourceMessage) => { action.Invoke(scope, message); },
-                typeof(TEventType));
+            _bus.RegisterHandler(action.Invoke, typeof(TEventType));
         }
 
         public async Task PublishAsync(IAfEvent afEvent)

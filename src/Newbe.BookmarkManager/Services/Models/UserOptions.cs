@@ -65,7 +65,7 @@ namespace Newbe.BookmarkManager.Services
         {
             get =>
                 _suggestCount;
-            set => _suggestCount = Math.Clamp(value, Consts.OmniboxSuggestMin, Consts.OmniboxSuggestMax);
+            set => _suggestCount = Math.Clamp(value, Consts.Omnibox.SuggestMin, Consts.Omnibox.SuggestMax);
         }
     }
 }

@@ -50,6 +50,7 @@ jobs:
           cd $GITHUB_WORKSPACE/src
           dotnet publish Newbe.BookmarkManager -c Release -o out -p:AssemblyVersion=${{ steps.gitversion.outputs.MajorMinorPatch }} -p:Version=${{ steps.gitversion.outputs.SemVer }} -p:EnableAOT=${{ matrix.enable-aot }}
           mv out/browserextension Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
+          cp Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}/content/manifest_prod.json Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}/manifest.json -f
           zip -r Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
       - uses: gittools/actions/gitreleasemanager/setup@v0.9.10
         name: Install GitReleaseManager

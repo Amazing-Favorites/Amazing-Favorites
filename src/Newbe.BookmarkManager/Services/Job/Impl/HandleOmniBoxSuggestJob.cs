@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services.EventHubs;
@@ -46,7 +47,7 @@ namespace Newbe.BookmarkManager.Services
             await _lpcClient.StartAsync();
             _afEventHub.RegisterHandler<UserOptionSaveEvent>(HandleUserOptionSaveEvent);
             await _afEventHub.EnsureStartAsync();
-            _subject.Throttle(TimeSpan.FromMilliseconds(100))
+            _subject.Throttle(TimeSpan.FromMilliseconds(500))
                 .Subscribe(HandleSearch);
             _userOptions = await _userOptionsService.GetOptionsAsync();
             if (_userOptions.OmniboxSuggestFeature?.Enabled == true)
@@ -55,11 +56,19 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
+        private int _searchSequence = 0;
+
         private void HandleSearch(SearchItem item)
         {
             var input = item.Input;
             Task.Run(async () =>
             {
+                // always search in the latest sequence
+                if (_searchSequence != item.SearchSeqId)
+                {
+                    return;
+                }
+
                 var result = await GetOmniBoxSuggest(input);
                 item.CallBack(result);
             });
@@ -69,9 +78,10 @@ namespace Newbe.BookmarkManager.Services
         {
             var enableStateChange = _userOptions.OmniboxSuggestFeature?.Enabled !=
                                     arg.UserOptions.OmniboxSuggestFeature?.Enabled;
+            _userOptions = arg.UserOptions;
             if (enableStateChange)
             {
-                if (arg?.UserOptions?.OmniboxSuggestFeature?.Enabled == true)
+                if (_userOptions.OmniboxSuggestFeature?.Enabled == true)
                 {
                     await AddOmniBoxSuggestAsync();
                 }
@@ -130,7 +140,8 @@ namespace Newbe.BookmarkManager.Services
             _subject.OnNext(new SearchItem
             {
                 Input = input,
-                CallBack = suggest
+                CallBack = suggest,
+                SearchSeqId = Interlocked.Increment(ref _searchSequence)
             });
         }
 
@@ -162,6 +173,7 @@ namespace Newbe.BookmarkManager.Services
         {
             public string Input { get; set; }
             public Action<IEnumerable<SuggestResult>> CallBack { get; set; }
+            public int SearchSeqId { get; set; }
         }
     }
 
