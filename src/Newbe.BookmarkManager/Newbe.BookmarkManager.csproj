@@ -45,4 +45,10 @@
     <ItemGroup>
       <ProjectReference Include="..\Newbe.BookmarkManager.WebApi.Models\Newbe.BookmarkManager.WebApi.Models.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="wwwroot\content\manifest_prod.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
 </Project>

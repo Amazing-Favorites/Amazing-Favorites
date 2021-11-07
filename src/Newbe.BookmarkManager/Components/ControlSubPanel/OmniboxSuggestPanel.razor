@@ -12,9 +12,9 @@
         @if (FeatureEnabled)
         {
             <Text>Max Suggest Count</Text>
-            <AntDesign.InputNumber DefaultValue="Consts.OmniboxSuggestDefault"
-                                   Min="Consts.OmniboxSuggestMin"
-                                   Max="Consts.OmniboxSuggestMax"
+            <AntDesign.InputNumber DefaultValue="Consts.Omnibox.SuggestDefault"
+                                   Min="Consts.Omnibox.SuggestMin"
+                                   Max="Consts.Omnibox.SuggestMax"
                                    @bind-Value="@UserOptions.OmniboxSuggestFeature.SuggestCount">
 
             </AntDesign.InputNumber>
@@ -22,6 +22,9 @@
         else
         {
             <Paragraph>Enter the "af" keyword in the Browser's address bar, and AF can provide suggestions in response</Paragraph>
+            <Paragraph>
+                you can find more details at <a href="https://af.newbe.pro/docs/02-2-Searching#address-bar-search">Search in omnibox</a>
+            </Paragraph>
         }
     </ChildContent>
 </Panel>

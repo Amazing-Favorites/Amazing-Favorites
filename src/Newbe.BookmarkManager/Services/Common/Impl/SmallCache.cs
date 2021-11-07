@@ -1,19 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Newbe.BookmarkManager.Services.EventHubs;
 
 namespace Newbe.BookmarkManager.Services
 {
     public class SmallCache : ISmallCache
     {
-        private readonly IAfEventHub _afEventHub;
-
-        public SmallCache(
-            IAfEventHub afEventHub)
-        {
-            _afEventHub = afEventHub;
-        }
-
         internal readonly ConcurrentDictionary<string, object> Cache = new();
 
         public bool TryGetValue<T>(string key, out T? value)
@@ -35,13 +26,7 @@ namespace Newbe.BookmarkManager.Services
 
         public void Remove(string key)
         {
-            if (Cache.Remove(key, out _))
-            {
-                _afEventHub.PublishAsync(new SmallCacheExpiredEvent
-                {
-                    CacheKey = key
-                });
-            }
+            Cache.Remove(key, out _);
         }
     }
 }

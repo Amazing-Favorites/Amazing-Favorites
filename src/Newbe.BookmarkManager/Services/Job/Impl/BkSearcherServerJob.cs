@@ -1,8 +1,10 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using Microsoft.Extensions.Logging;
 using Newbe.BookmarkManager.Services.EventHubs;
 using Newbe.BookmarkManager.Services.LPC;
+using Newbe.BookmarkManager.Services.MessageBus;
 using Newbe.BookmarkManager.Services.Servers;
 
 namespace Newbe.BookmarkManager.Services
@@ -36,15 +38,18 @@ namespace Newbe.BookmarkManager.Services
                 methodInfos.Select(x => x.Name));
             await _lpcServer.StartAsync();
 
-            _afEventHub.RegisterHandler<SmallCacheExpiredEvent>(HandleSmallCacheExpiredEvent);
+            _afEventHub.RegisterHandler<SmallCacheExpiredEvent>(Action);
             await _afEventHub.EnsureStartAsync();
         }
 
-        private Task HandleSmallCacheExpiredEvent(SmallCacheExpiredEvent evt)
+        private void Action(ILifetimeScope arg1, IAfEvent arg2, BusMessage sourceMessage)
         {
-            _logger.LogInformation("cache expired and remove it");
-            _smallCache.Remove(evt.CacheKey);
-            return Task.CompletedTask;
+            if (arg2 is SmallCacheExpiredEvent evt &&
+                sourceMessage.SenderId != _afEventHub.AfEventHubId)
+            {
+                _logger.LogInformation("cache expired and remove it");
+                _smallCache.Remove(evt.CacheKey);
+            }
         }
     }
 }

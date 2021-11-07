@@ -74,7 +74,8 @@ namespace Newbe.BookmarkManager.Services
 
             options.OmniboxSuggestFeature ??= new OmniboxSuggestFeature
             {
-                Enabled = false
+                Enabled = true,
+                SuggestCount = Consts.Omnibox.SuggestDefault
             };
 
             return options;

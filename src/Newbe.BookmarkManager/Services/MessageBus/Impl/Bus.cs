@@ -33,9 +33,12 @@ namespace Newbe.BookmarkManager.Services.MessageBus
             _lifetimeScope = lifetimeScope;
             _clock = clock;
             MessageHandlerCollection = new MessageHandlerCollection(_clock);
+            BusId = RandomIdHelper.GetId();
         }
 
         private int _locker;
+
+        public string BusId { get; }
 
         public async Task EnsureStartAsync()
         {
@@ -89,6 +92,7 @@ namespace Newbe.BookmarkManager.Services.MessageBus
         public async Task SendMessage(BusMessage message)
         {
             var messageType = message.MessageType;
+            message.SenderId = BusId;
             _logger.LogInformation("Event published {MessageType}", messageType);
             try
             {
