@@ -1,0 +1,59 @@
+﻿@using Newbe.BookmarkManager.Services
+@using Newbe.BookmarkManager.Services.EventHubs
+@using Microsoft.Extensions.Logging
+@using System.Text.Json
+@using Newbe.BookmarkManager.WebApi
+@using System.Text
+<Spin Spinning="@_loading">
+    <Tooltip Placement="@Placement.Bottom" Title="@("Sync data to BaiduDrive")">
+        <Button OnClick="ClickLoginAsync">
+            <Icon Type="cloud-sync" Theme="outline"/>
+        </Button>
+    </Tooltip>
+</Spin>
+
+
+@code {
+
+    [Inject]
+    public IBaiduDriveClient BaiduDriveClient { get; set; }
+    
+    [Inject]
+    public IBaiduApi BaiduAPi { get; set; }
+
+    [Inject]
+    public ILogger<BaiduLoginButton> Logger { get; set; }
+    
+    [Inject]
+    public  IUserOptionsService UserOptionsService { get; set; }
+    [Inject]
+    public CryptoJS CryptoJS { get; set; }
+    [Inject]
+    public IAfEventHub AfEventHub { get; set; }
+    
+    private bool _loading;
+
+    private async Task ClickLoginAsync()
+    {
+        try
+        {
+            _loading = true;
+            var token = await BaiduDriveClient.LoginAsync(true);
+            Console.WriteLine(token);
+            if (!string.IsNullOrEmpty(token))
+            {
+                await AfEventHub.PublishAsync(new UserLoginSuccessEvent(CloudBkProviderType.BaiduDrive, token));
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "failed to login with Baidu");
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+}

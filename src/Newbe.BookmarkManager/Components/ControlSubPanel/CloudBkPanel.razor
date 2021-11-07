@@ -18,6 +18,9 @@
                 case CloudBkProviderType.OneDrive:
                     <Text>@_oneDriveStatics.LastSuccessUploadTime.ToLocalTime() OneDrive </Text>
                     break;
+                case CloudBkProviderType.BaiduDrive:
+                    <Text>@_baiduDriveStatics.LastSuccessUploadTime.ToLocalTime() BaiduDrive </Text>
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -39,6 +42,7 @@
                         <Radio RadioButton Value="@(CloudBkProviderType.OneDrive)"><Icon Type="windows" Theme="outline"/> OneDrive</Radio>
                         <Radio RadioButton Value="@(CloudBkProviderType.GoogleDrive)"><Icon Type="google-square" Theme="fill"/> GoogleDrive</Radio>
                         <Radio RadioButton Value="@(CloudBkProviderType.NewbeApi)">☁ Newbe API</Radio>
+                        <Radio RadioButton Value="@(CloudBkProviderType.BaiduDrive)"><Icon Type="ant-cloud" Theme="outline"/> BaiduDrive</Radio>
                     </RadioGroup>
                 </FormItem>
                 @switch (context.CloudBkFeature.CloudBkProviderType)
@@ -96,6 +100,17 @@
                             <GoogleLoginButton></GoogleLoginButton>
                         </FormItem>
                         break;
+                    case CloudBkProviderType.BaiduDrive:
+                        <FormItem Label="BaiduDrive">
+                            <Paragraph>
+                                When this is enabled, you can sign in via the button in the upper right corner of the Manager page and sync your data via BaiduDrive to synchronize your Tag data across multiple devices.
+                            </Paragraph>
+                            <Paragraph>
+                                Last upload success time: @_baiduDriveStatics.LastSuccessUploadTime.ToLocalTime()
+                            </Paragraph>
+                            <BaiduLoginButton></BaiduLoginButton>
+                        </FormItem>
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -121,6 +136,7 @@
     private Panel _panel = null!;
     private OneDriveStatics _oneDriveStatics = new();
     private GoogleDriveStatics _googleDriveStatics = new();
+    private BaiduDriveStatics _baiduDriveStatics = new();
 
     private bool FeatureEnabled => UserOptions?.CloudBkFeature?.Enabled == true;
 
@@ -154,13 +170,18 @@
         await base.OnInitializedAsync();
         _googleDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<GoogleDriveStatics>();
         _oneDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<OneDriveStatics>();
+        _baiduDriveStatics = await SimpleDataStorage.GetOrDefaultAsync<BaiduDriveStatics>();
+
     }
 
     private Task OnChangeCloudBkFeatureAccessToken(string accessToken)
     {
         try
         {
-            UserOptions.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);
+            if (UserOptions.CloudBkFeature.CloudBkProviderType != CloudBkProviderType.BaiduDrive)
+            {
+                UserOptions.CloudBkFeature.ExpireDate = WebHelper.GetJwtExp(accessToken);   
+            }
         }
         catch (Services.Common.AccessTokenInvalidException)
         {

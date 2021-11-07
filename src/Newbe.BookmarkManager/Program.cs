@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ using WebExtensions.Net.Identity;
 using WebExtensions.Net.Runtime;
 using WebExtensions.Net.Storage;
 using WebExtensions.Net.Tabs;
+using WebExtensions.Net.WebRequest;
 using WebExtensions.Net.Windows;
 using Module = Autofac.Module;
 
@@ -61,6 +63,7 @@ namespace Newbe.BookmarkManager
                 .Configure<DevOptions>(builder.Configuration.GetSection(nameof(DevOptions)))
                 .Configure<GoogleDriveOAuthOptions>(builder.Configuration.GetSection(nameof(GoogleDriveOAuthOptions)))
                 .Configure<OneDriveOAuthOptions>(builder.Configuration.GetSection(nameof(OneDriveOAuthOptions)))
+                .Configure<BaiduDriveOAuthOptions>(builder.Configuration.GetSection(nameof(BaiduDriveOAuthOptions)))
                 .Configure<StaticUrlOptions>(builder.Configuration.GetSection(nameof(StaticUrlOptions)));
             builder.Services
                 .AddSingleton(typeof(IIndexedDbRepo<,>), typeof(IndexedDbRepo<,>));
@@ -84,8 +87,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<IRecordService, RecordService>()
                 .AddSingleton<ITextAliasProvider, PinyinTextAliasProvider>()
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
-
-
+            builder.Services.AddJsBind();
+            builder.Services.AddTransient<CryptoJS>();
             builder.Services.AddLogging(loggingBuilder =>
             {
 #if DEBUG
@@ -97,6 +100,8 @@ namespace Newbe.BookmarkManager
 
             builder.Services
                 .AddTransient<NewbeApiAuthHeaderHandler>();
+            builder.Services
+                .AddTransient<BaiduApiAuthHeaderHandler>();
             builder.Services
                 .AddRefitClient<IPinyinApi>()
                 .ConfigureHttpClient((sp, client) =>
@@ -118,6 +123,20 @@ namespace Newbe.BookmarkManager
                 })
                 .AddHttpMessageHandler<NewbeApiAuthHeaderHandler>();
 
+            builder.Services
+                .AddRefitClient<IBaiduPCSApi>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    client.BaseAddress = new Uri("https://d.pcs.baidu.com/");
+                })
+                .AddHttpMessageHandler<BaiduApiAuthHeaderHandler>();
+            builder.Services
+                .AddRefitClient<IBaiduApi>()
+                .ConfigureHttpClient((sp, client) =>
+                {
+                    client.BaseAddress = new Uri("https://pan.baidu.com/");
+                })
+                .AddHttpMessageHandler<BaiduApiAuthHeaderHandler>();
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
@@ -195,6 +214,7 @@ namespace Newbe.BookmarkManager
             builder.RegisterModule<SimpleObjectStorageModule>();
             builder.RegisterModule<OneDriveModule>();
             builder.RegisterModule<GoogleDriveModule>();
+            builder.RegisterModule<BaiduDriveModule>();
             builder.RegisterModule<JobModule>();
 
             void RegisterType<TType, TInterface>()
@@ -246,6 +266,23 @@ namespace Newbe.BookmarkManager
                     .SingleInstance();
                 builder.RegisterType<OneDriveClient>()
                     .As<IOneDriveClient>()
+                    .SingleInstance();
+            }
+        }
+
+        private class BaiduDriveModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                base.Load(builder);
+
+                builder.RegisterType<BaiduDriveCloudService>()
+                    .Keyed<ICloudService>(CloudBkProviderType.BaiduDrive)
+                    .SingleInstance()
+                    .EnableInterfaceInterceptors()
+                    .InterceptedBy(typeof(ApplicationInsightAop));
+                builder.RegisterType<BaiduDriveClient>()
+                    .As<IBaiduDriveClient>()
                     .SingleInstance();
             }
         }

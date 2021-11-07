@@ -17,6 +17,9 @@
         case CloudBkProviderType.OneDrive:
             <MicrosoftLogin/>
             break;
+        case CloudBkProviderType.BaiduDrive:
+            <BaiduLoginButton/>
+            break;
         default:
             throw new ArgumentOutOfRangeException();
     }

@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Newbe.BookmarkManager.WebApi
 {
+    [Serializable]
     public record CloudBkCollection
     {
         [JsonPropertyName("d")] public long LastUpdateTime { get; init; }
