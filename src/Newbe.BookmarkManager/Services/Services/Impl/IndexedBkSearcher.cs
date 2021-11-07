@@ -10,18 +10,15 @@ namespace Newbe.BookmarkManager.Services
 {
     public class IndexedBkSearcher : IBkSearcher
     {
-        private readonly IApplicationInsights _insights;
         private readonly IIndexedDbRepo<Bk, string> _bkRepo;
         private readonly ILogger<IndexedBkSearcher> _logger;
         private readonly IIndexedDbRepo<BkTag, string> _tagRepo;
 
         public IndexedBkSearcher(
-            IApplicationInsights insights,
             ILogger<IndexedBkSearcher> logger,
             IIndexedDbRepo<Bk, string> bkRepo,
             IIndexedDbRepo<BkTag, string> tagRepo)
         {
-            _insights = insights;
             _bkRepo = bkRepo;
             _logger = logger;
             _tagRepo = tagRepo;

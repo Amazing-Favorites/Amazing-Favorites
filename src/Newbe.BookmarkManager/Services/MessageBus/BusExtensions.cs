@@ -46,13 +46,21 @@ namespace Newbe.BookmarkManager.Services.MessageBus
             BusMessage requestMessage)
             where TResponse : IResponse
         {
+            await SendResponse(dispatcher, Task.FromResult(response), requestMessage);
+        }
+
+        public static async Task SendResponse<TResponse>(this IBus dispatcher, Task<TResponse> responseTask,
+            BusMessage requestMessage)
+            where TResponse : IResponse
+        {
+            var resp = await responseTask;
             var parentId = requestMessage.MessageId;
             var requestTypeName = typeof(TResponse).Name;
             var channelMessage = new BusMessage
             {
                 MessageId = RandomIdHelper.GetId(),
                 MessageType = requestTypeName,
-                PayloadJson = JsonSerializer.Serialize((object)response!),
+                PayloadJson = JsonSerializer.Serialize((object)resp!),
                 ParentMessageId = parentId
             };
             await dispatcher.SendMessage(channelMessage);
