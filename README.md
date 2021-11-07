@@ -17,11 +17,19 @@ You can install this extension from stores below:
 
 ### Add a new page as bookmark
 
-![Add a new page as bookmark](https://af.newbe.pro/images/20210805-002.gif)
+![Add a new page as bookmark](https://af.newbe.pro/assets/images/20210805-002-819348ffa4fcf3a966ba14bedc367f32.gif)
 
-### Amazing Favorites Manager
+### Search
 
-![open_manager](./assets/open_manager.gif)
+![open_manager](https://af.newbe.pro/assets/images/20210815-009-2815ae7ce4e70834b456736dcb2cd070.gif)
+
+### Sharing
+
+![sharing](https://af.newbe.pro/assets/images/20210805-001-333ad5c1a95f7a65765a92cfa0eea289.gif)
+
+### Cloud Sync
+
+![cloud sync](https://af.newbe.pro/assets/images/20210829-001-ee34a0ab1a739593b56693bb542cd460.png)
 
 ## Install from source
 
