@@ -13,29 +13,31 @@ namespace Newbe.BookmarkManager.Services
     {
         private readonly ILogger<IndexedDbRepo<T, TKey>> _logger;
         private readonly IndexedDBManager _indexedDbManager;
+        private readonly ISmallCache _smallCache;
         private readonly string _storeName;
 
         public IndexedDbRepo(
             ILogger<IndexedDbRepo<T, TKey>> logger,
-            IndexedDBManager indexedDbManager)
+            IndexedDBManager indexedDbManager,
+            ISmallCache smallCache)
         {
             _logger = logger;
             _indexedDbManager = indexedDbManager;
+            _smallCache = smallCache;
             _storeName = TableNameCache.StoreName;
         }
 
-        private bool _cacheInvalid = true;
-        private List<T> _cache = new();
+        private readonly string _cacheKey = $"IndexedDbRepoCache_{typeof(T).Name}";
 
         public virtual async Task<List<T>> GetAllAsync()
         {
-            if (_cacheInvalid)
+            if (!_smallCache.TryGetValue<List<T>>(_cacheKey, out var cache))
             {
-                _cache = await _indexedDbManager.GetRecords<T>(_storeName);
-                _cacheInvalid = false;
+                cache = await _indexedDbManager.GetRecords<T>(_storeName);
+                _smallCache.Set(_cacheKey, cache);
             }
 
-            return _cache;
+            return cache;
         }
 
         public virtual async Task UpsertAsync(T entity)
@@ -66,7 +68,7 @@ namespace Newbe.BookmarkManager.Services
             }
             finally
             {
-                _cacheInvalid = true;
+                _smallCache.Remove(_cacheKey);
             }
         }
 
@@ -88,7 +90,7 @@ namespace Newbe.BookmarkManager.Services
             }
             finally
             {
-                _cacheInvalid = true;
+                _smallCache.Remove(_cacheKey);
             }
         }
 
@@ -107,7 +109,7 @@ namespace Newbe.BookmarkManager.Services
             }
             finally
             {
-                _cacheInvalid = true;
+                _smallCache.Remove(_cacheKey);
             }
         }
 

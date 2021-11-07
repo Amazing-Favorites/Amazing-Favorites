@@ -78,6 +78,7 @@ namespace Newbe.BookmarkManager
                 .AddTransient<INotificationCenterCore, NotificationCenterCore>()
                 .AddTransient<INewNotification, NewNotification>()
                 .AddTransient<IClock, SystemClock>()
+                .AddSingleton<ISmallCache, SmallCache>()
                 .AddTransient<ITagsManager, TagsManager>()
                 .AddSingleton<IRecentSearchHolder, RecentSearchHolder>()
                 .AddSingleton<IUrlHashService, UrlHashService>()
@@ -328,7 +329,7 @@ namespace Newbe.BookmarkManager
                     yield return typeof(DataFixJob);
                     yield return typeof(HandleUserClickIconJob);
                     yield return typeof(HandleOmniBoxSuggestJob);
-                    yield return typeof(LPCServerJob);
+                    yield return typeof(BkSearcherServerJob);
                     yield return typeof(ShowWelcomeJob);
                     yield return typeof(ShowWhatNewJob);
                     yield return typeof(InviteAcceptPrivacyAgreementJob);

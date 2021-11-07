@@ -1,6 +1,6 @@
 ﻿namespace Newbe.BookmarkManager.Services
 {
-    public interface ILPCServerJob : IJob
+    public interface IBkSearcherServerJob : IJob
     {
 
     }

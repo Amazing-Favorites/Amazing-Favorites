@@ -36,8 +36,8 @@
             </Panel>
         }
         <HotTagsPanel UserOptions="_modal"></HotTagsPanel>
-        <SystemActionsPanel></SystemActionsPanel>
         <OmniboxSuggestPanel UserOptions="_modal"></OmniboxSuggestPanel>
+        <SystemActionsPanel></SystemActionsPanel>
     </Collapse>
 </Modal>
 
@@ -90,8 +90,6 @@
         public HotTagsFeature HotTagsFeature { get; set; }
         public ApplicationInsightFeature ApplicationInsightFeature { get; set; }
         public OmniboxSuggestFeature OmniboxSuggestFeature { get; set; }
-
-        public bool OminiboxSuggestChanged { get; set; }
     }
 
     private async Task OnClickAgreeUserPrivacyAgreement()
@@ -113,8 +111,7 @@
         await UserOptionsService.SaveAsync(userOptions);
         await AfEventHub.PublishAsync(new UserOptionSaveEvent
         {
-            UserOptions = userOptions,
-            OminiboxSuggestChanged = _modal.OminiboxSuggestChanged
+            UserOptions = userOptions
         });
         await OnUserOptionSave.InvokeAsync(new OnUserOptionSaveArgs(userOptions));
         await CloseControlPanel();

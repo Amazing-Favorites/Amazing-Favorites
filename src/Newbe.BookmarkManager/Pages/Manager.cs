@@ -23,7 +23,6 @@ namespace Newbe.BookmarkManager.Pages
 {
     public partial class Manager : IAsyncDisposable
     {
-        //[Inject] public IBkSearcher BkSearcher { get; set; }
         [Inject] public ILPCClient<IBkSearcherServer> Client { get; set; }
         [Inject] public IBkManager BkManager { get; set; }
         [Inject] public ITagsManager TagsManager { get; set; }
@@ -122,6 +121,7 @@ namespace Newbe.BookmarkManager.Pages
                 _searchSubject
                     .Throttle(TimeSpan.FromMilliseconds(100))
                     .Select(x => x?.Trim())
+                    // ReSharper disable once AsyncVoidLambda
                     .Subscribe(async args =>
                     {
                         _searchInputLoading = true;
@@ -143,7 +143,6 @@ namespace Newbe.BookmarkManager.Pages
                                 }
                             }
 
-                            //var target = await BkSearcher.Search(args!, _resultLimit);
                             var target = await Client.InvokeAsync<BkSearchRequest, BkSearchResponse>(new BkSearchRequest
                             {
                                 SearchText = args!,

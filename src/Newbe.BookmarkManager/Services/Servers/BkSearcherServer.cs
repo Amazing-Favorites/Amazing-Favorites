@@ -1,16 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Autofac.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using System.Threading.Tasks;
 
 namespace Newbe.BookmarkManager.Services.Servers
 {
     public class BkSearcherServer : IBkSearcherServer
     {
-
         private readonly IBkSearcher _bkSearcher;
 
         public BkSearcherServer(IBkSearcher bkSearcher)
@@ -18,7 +11,7 @@ namespace Newbe.BookmarkManager.Services.Servers
             _bkSearcher = bkSearcher;
         }
 
-        public async Task<BkSearchResponse> Search(BkSearchRequest request)
+        public async Task<BkSearchResponse> SearchAsync(BkSearchRequest request)
         {
             var result = await _bkSearcher.Search(request.SearchText, request.Limit);
             var response = new BkSearchResponse
@@ -28,7 +21,7 @@ namespace Newbe.BookmarkManager.Services.Servers
             return response;
         }
 
-        public async Task<BkSearchResponse> History(BkSearchHistoryRequest request)
+        public async Task<BkSearchResponse> GetHistoryAsync(BkSearchHistoryRequest request)
         {
             var result = await _bkSearcher.History(request.Limit);
             var response = new BkSearchResponse

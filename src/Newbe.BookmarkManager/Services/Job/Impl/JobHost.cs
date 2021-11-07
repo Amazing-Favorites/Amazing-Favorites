@@ -18,7 +18,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly IInviteAcceptPrivacyAgreementJob _inviteAcceptPrivacyAgreementJob;
         private readonly IHandleUserClickIconJob _handleUserClickIconJob;
         private readonly IHandleOmniBoxSuggestJob _handleOmniBoxSuggestJob;
-        private readonly ILPCServerJob _lpcServer;
+        private readonly IBkSearcherServerJob _bkSearcherServer;
         public JobHost(
             ILogger<JobHost> logger,
             ISyncBookmarkJob syncBookmarkJob,
@@ -32,7 +32,7 @@ namespace Newbe.BookmarkManager.Services
             IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob,
             IHandleUserClickIconJob handleUserClickIconJob,
             IHandleOmniBoxSuggestJob handleOmniBoxSuggestJob,
-            ILPCServerJob lpcServer)
+            IBkSearcherServerJob bkSearcherServer)
         {
             _logger = logger;
             _syncBookmarkJob = syncBookmarkJob;
@@ -46,7 +46,7 @@ namespace Newbe.BookmarkManager.Services
             _inviteAcceptPrivacyAgreementJob = inviteAcceptPrivacyAgreementJob;
             _handleUserClickIconJob = handleUserClickIconJob;
             _handleOmniBoxSuggestJob = handleOmniBoxSuggestJob;
-            _lpcServer = lpcServer;
+            _bkSearcherServer = bkSearcherServer;
         }
 
         public async Task StartAsync()
@@ -68,7 +68,7 @@ namespace Newbe.BookmarkManager.Services
                 yield return _dataFixJob;
                 yield return _handleUserClickIconJob;
                 yield return _handleOmniBoxSuggestJob;
-                yield return _lpcServer;
+                yield return _bkSearcherServer;
                 yield return _showWelcomeJob;
                 yield return _showWhatNewJob;
                 yield return _syncBookmarkJob;

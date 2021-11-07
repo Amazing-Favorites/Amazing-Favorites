@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace Newbe.BookmarkManager.Services.LPC
 {
     public static class LPCServerExtensions
     {
-        public static void AddServerInstance<T>(this ILPCServer server, T instance)
+        public static IReadOnlyList<MethodInfo> AddServerInstance<T>(this ILPCServer server, T instance)
         {
             var remoteMethods = typeof(T).GetMethods()
                 .Where(IsRemoteMethod)
@@ -20,6 +21,8 @@ namespace Newbe.BookmarkManager.Services.LPC
                     method.GetParameters()[0].ParameterType,
                     method.ReturnType.GenericTypeArguments[0]);
             }
+
+            return remoteMethods;
         }
 
         internal static bool IsRemoteMethod(MethodInfo methodInfo)
@@ -29,10 +32,12 @@ namespace Newbe.BookmarkManager.Services.LPC
             {
                 return false;
             }
+
             if (parameterInfos[0].ParameterType.GetInterface(nameof(IRequest)) == null)
             {
                 return false;
             }
+
             if (methodInfo.ReturnType.Name != typeof(Task<>).Name)
             {
                 return false;
@@ -67,9 +72,8 @@ namespace Newbe.BookmarkManager.Services.LPC
         {
             server.AddHandler<TRequest, TResponse>(req =>
             {
-                var task = (dynamic)method.Invoke(instance, new object?[] { req })!;
-                var result = task.Result;
-                return (TResponse)result;
+                var task = method.Invoke(instance, new object?[] { req })!;
+                return (Task<TResponse>)task;
             });
         }
     }
