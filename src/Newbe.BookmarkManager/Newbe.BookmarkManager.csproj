@@ -21,15 +21,15 @@
         <PackageReference Include="Excubo.Blazor.ScriptInjection" Version="3.0.47" />
         <PackageReference Include="Excubo.Generators.Blazor" Version="1.14.2" />
         <PackageReference Include="Google.Apis.Drive.v3" Version="1.55.0.2481" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-rc.2.21480.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="6.0.0-rc.2.21480.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-rc.2.21480.10" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-rc.2.21480.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Graph" Version="4.9.0" />
         <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.1" />
         <PackageReference Include="Nanoid" Version="2.1.0" />
         <PackageReference Include="Seq.Extensions.Logging" Version="6.0.0" />
-        <PackageReference Include="System.Net.Http.Json" Version="6.0.0-rc.2.21480.5" />
+        <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.1" />
         <PackageReference Include="Refit" Version="6.1.15" />
         <PackageReference Include="Refit.HttpClientFactory" Version="6.1.15" />
