@@ -53,6 +53,7 @@ namespace Newbe.BookmarkManager.Services
         TitleAlias,
         Url,
         Tags,
-        TagAlias
+        TagAlias,
+        Default
     }
 }
