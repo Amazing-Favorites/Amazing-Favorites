@@ -23,8 +23,8 @@ public class IndexedBkSearcherTest
 
     public IndexedBkSearcherTest()
     {
-        _bkTagList = new BkTagGenerator().Generate(5);
-        _bkList = new BkGenerator(_bkTagList).Generate(10);
+        _bkTagList = new BkTagGenerator().Generate(20);
+        _bkList = new BkGenerator(_bkTagList).Generate(100);
         _validBkList = _bkList
             .Select(a => new Tuple<Bk, int>(a, _bkTagList.FindIndex(b => b.Tag == a.Tags.LastOrDefault())))
             .OrderBy(a=>a.Item2)
@@ -56,7 +56,7 @@ public class IndexedBkSearcherTest
             RuleFor(x => x.Id, f => f.Internet.Url());
             RuleFor(x => x.Title, f => f.Random.Word());
             RuleFor(x => x.Url, f => f.Random.Word());
-            RuleFor(x => x.Tags, f => tagList.Select(x => x.Tag).Where(x=>f.Random.Bool(.5f)).ToList());
+            RuleFor(x => x.Tags, f => tagList.Select(x => x.Tag).Skip(f.Random.Int(0,4)).Take(f.Random.Int(1,3)).ToList());
         }
     }
 
