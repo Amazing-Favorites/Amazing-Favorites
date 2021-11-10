@@ -18,8 +18,8 @@ public class IndexedBkSearcherTest
     private List<Bk> _bkList;
 
     private List<BkTag> _bkTagList;
-    
-    private List<Tuple<Bk,int>> _validBkList;
+
+    private List<Tuple<Bk, int>> _validBkList;
 
     public IndexedBkSearcherTest()
     {
@@ -27,7 +27,7 @@ public class IndexedBkSearcherTest
         _bkList = new BkGenerator(_bkTagList).Generate(100);
         _validBkList = _bkList
             .Select(a => new Tuple<Bk, int>(a, _bkTagList.FindIndex(b => b.Tag == a.Tags.LastOrDefault())))
-            .OrderBy(a=>a.Item2)
+            .OrderBy(a => a.Item2)
             .ToList();
 
     }
@@ -37,12 +37,12 @@ public class IndexedBkSearcherTest
         using var mocker = AutoMock.GetLoose();
         mocker.Mock<IIndexedDbRepo<Bk, string>>()
         .Setup(x => x.GetAllAsync()).ReturnsAsync(_bkList);
-        
+
         mocker.Mock<IIndexedDbRepo<BkTag, string>>()
             .Setup(x => x.GetAllAsync()).ReturnsAsync(_bkTagList);
 
         var service = mocker.Create<IndexedBkSearcher>();
-        var result =  await service.Search(string.Empty, 100);
+        var result = await service.Search(string.Empty, 100);
 
         result.Select(a => a.Bk.Id)
             .Should()
@@ -56,7 +56,7 @@ public class IndexedBkSearcherTest
             RuleFor(x => x.Id, f => f.Internet.Url());
             RuleFor(x => x.Title, f => f.Random.Word());
             RuleFor(x => x.Url, f => f.Random.Word());
-            RuleFor(x => x.Tags, f => tagList.Select(x => x.Tag).Skip(f.Random.Int(0,4)).Take(f.Random.Int(1,3)).ToList());
+            RuleFor(x => x.Tags, f => tagList.Select(x => x.Tag).Skip(f.Random.Int(0, 4)).Take(f.Random.Int(1, 3)).ToList());
         }
     }
 
@@ -68,5 +68,5 @@ public class IndexedBkSearcherTest
             RuleFor(x => x.Tag, f => f.Random.Word());
         }
     }
-    
+
 }

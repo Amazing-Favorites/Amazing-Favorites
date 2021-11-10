@@ -55,13 +55,13 @@ namespace Newbe.BookmarkManager.Services
                             LastClickTime = x.LastClickTime
                         };
                         r.AddScore(ScoreReason.Const, 10);
-                        
+
                         int lastScore = -tags.TakeWhile(a => r?.Bk?.Tags?.LastOrDefault() != a.Tag).Count();
-                        r.AddScore(ScoreReason.Default,lastScore);
+                        r.AddScore(ScoreReason.Default, lastScore);
                         _logger.LogInformation($"bk:{r.Bk.Id}_score:{lastScore}");
                         return r;
                     });
-                
+
             }
 
             var input = SearchInput.Parse(searchText);
@@ -70,7 +70,7 @@ namespace Newbe.BookmarkManager.Services
                 input.SourceText,
                 input.Keywords,
                 input.Tags);
-            
+
             var tagDict = tags.ToDictionary(x => x.Tag);
             var matchTags = tagDict
                 .Where(tag =>
@@ -98,7 +98,7 @@ namespace Newbe.BookmarkManager.Services
                     ClickCount = item.ClickedCount,
                     LastClickTime = item.LastClickTime
                 };
-                
+
                 result.AddScore(ScoreReason.Title, input.Keywords.Any(x => StringContains(item.Title, x)));
 
                 result.AddScore(ScoreReason.TitleAlias, item.TitleAlias?.Values != null &&
