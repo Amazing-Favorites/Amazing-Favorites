@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Autofac.Extras.Moq;
 using Microsoft.Extensions.Options;
@@ -17,11 +18,18 @@ public class IndexedBkSearcherTest
     private List<Bk> _bkList;
 
     private List<BkTag> _bkTagList;
+    
+    private List<Tuple<Bk,int>> _validBkList;
 
     public IndexedBkSearcherTest()
     {
         _bkTagList = new BkTagGenerator().Generate(5);
         _bkList = new BkGenerator(_bkTagList).Generate(10);
+        _validBkList = _bkList
+            .Select(a => new Tuple<Bk, int>(a, _bkTagList.FindIndex(b => b.Tag == a.Tags.LastOrDefault())))
+            .OrderBy(a=>a.Item2)
+            .ToList();
+
     }
     [Test]
     public async Task DefaultSort_Search()
@@ -36,7 +44,9 @@ public class IndexedBkSearcherTest
         var service = mocker.Create<IndexedBkSearcher>();
         var result =  await service.Search(string.Empty, 100);
 
-        result.Count().Should().Be(_bkList.Count());
+        result.Select(a => a.Bk.Id)
+            .Should()
+            .BeEquivalentTo(_validBkList.Select(a => a.Item1.Id));
     }
 
     public class BkGenerator : AutoFaker<Bk>
