@@ -31,6 +31,8 @@ namespace Newbe.BookmarkManager.Services
             var source = await SearchCore(searchText);
             source = source
                 .OrderByDescending(x => x.Score)
+                .ThenBy(x=>x.Bk.ParentNodeOffset)
+                .ThenBy(x=>x.Bk.OffsetPosition)
                 .ThenByDescending(x => x.LastClickTime)
                 .ThenByDescending(x => x.ClickCount)
                 .Take(limit)
@@ -56,9 +58,8 @@ namespace Newbe.BookmarkManager.Services
                         };
                         r.AddScore(ScoreReason.Const, 10);
 
-                        int lastScore = -tags.TakeWhile(a => r?.Bk?.Tags?.LastOrDefault() != a.Tag).Count();
-                        r.AddScore(ScoreReason.Default, lastScore);
-                        _logger.LogInformation($"bk:{r.Bk.Id}_score:{lastScore}");
+                        // int lastScore = -tags.TakeWhile(a => r?.Bk?.Tags?.LastOrDefault() != a.Tag).Count();
+                        // r.AddScore(ScoreReason.Default, lastScore);
                         return r;
                     });
 

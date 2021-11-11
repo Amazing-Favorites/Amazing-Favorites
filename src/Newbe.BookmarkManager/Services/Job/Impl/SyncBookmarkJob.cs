@@ -75,7 +75,10 @@ namespace Newbe.BookmarkManager.Services
                 var all = await GetAllBookmarkAsync();
                 _logger.LogInformation("Found {Count} bookmarks, try to load them", all.Count);
                 // make init order look like bookmarks tree
-                await _bkManager.AppendBookmarksAsync(all.OrderByDescending(x => x.DateAdded));
+                //await _bkManager.AppendBookmarksAsync(all.OrderByDescending(x => x.DateAdded));
+                await _bkManager.AppendBookmarksAsync(all.OrderBy(x => x.ParentNodeOffset)
+                    .OrderBy(x=>x.OffsetPosition)
+                    .ThenByDescending(x=>x.DateAdded));
             });
         }
 
@@ -97,6 +100,8 @@ namespace Newbe.BookmarkManager.Services
                 Tags = new List<string>()
             })));
             var result = new List<BookmarkNode>();
+            int prevTotal = 0;
+            int count = 0;
             while (queue.TryDequeue(out var item))
             {
                 var (node, bookmarkNode) = item;
@@ -109,6 +114,7 @@ namespace Newbe.BookmarkManager.Services
 
                 if (node.Children != null)
                 {
+                    prevTotal += node.Index ?? 0;
                     foreach (var child in node.Children)
                     {
                         var tags = new List<string>(bookmarkNode.Tags);
@@ -120,9 +126,11 @@ namespace Newbe.BookmarkManager.Services
 
                         queue.Enqueue(new BkItem(child, new BookmarkNode(child)
                         {
-                            Tags = tags
+                            Tags = tags,
+                            ParentNodeOffset = prevTotal
                         }));
                     }
+                    
                 }
             }
 

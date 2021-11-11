@@ -64,11 +64,19 @@ namespace Newbe.BookmarkManager.Services
             Title = node.Title;
             Url = node.Url;
             DateAdded = node.DateAdded;
+            OffsetPosition = node.Index ?? 0;
         }
 
         public double? DateAdded { get; set; }
         public string Title { get; set; }
         public string Url { get; set; }
         public List<string> Tags { get; set; }
+        
+        
+        public int ParentNodeOffset { get; set; }
+        /// <summary>
+        /// Position offset for the parent node
+        /// </summary>
+        public int OffsetPosition { get; set; }
     }
 }

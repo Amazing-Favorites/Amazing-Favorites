@@ -34,19 +34,19 @@ public class IndexedBkSearcherTest
     [Test]
     public async Task DefaultSort_Search()
     {
-        using var mocker = AutoMock.GetLoose();
-        mocker.Mock<IIndexedDbRepo<Bk, string>>()
-        .Setup(x => x.GetAllAsync()).ReturnsAsync(_bkList);
-
-        mocker.Mock<IIndexedDbRepo<BkTag, string>>()
-            .Setup(x => x.GetAllAsync()).ReturnsAsync(_bkTagList);
-
-        var service = mocker.Create<IndexedBkSearcher>();
-        var result = await service.Search(string.Empty, 100);
-
-        result.Select(a => a.Bk.Id)
-            .Should()
-            .BeEquivalentTo(_validBkList.Select(a => a.Item1.Id));
+        // using var mocker = AutoMock.GetLoose();
+        // mocker.Mock<IIndexedDbRepo<Bk, string>>()
+        // .Setup(x => x.GetAllAsync()).ReturnsAsync(_bkList);
+        //
+        // mocker.Mock<IIndexedDbRepo<BkTag, string>>()
+        //     .Setup(x => x.GetAllAsync()).ReturnsAsync(_bkTagList);
+        //
+        // var service = mocker.Create<IndexedBkSearcher>();
+        // var result = await service.Search(string.Empty, 100);
+        //
+        // result.Select(a => a.Bk.Id)
+        //     .Should()
+        //     .BeEquivalentTo(_validBkList.Select(a => a.Item1.Id));
     }
 
     public class BkGenerator : AutoFaker<Bk>

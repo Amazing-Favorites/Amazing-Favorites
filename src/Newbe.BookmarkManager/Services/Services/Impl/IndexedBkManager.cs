@@ -189,7 +189,9 @@ namespace Newbe.BookmarkManager.Services
                 LastCreateTime = x.DateAdded.HasValue
                     ? DateTimeOffset.FromUnixTimeMilliseconds((long)x.DateAdded.Value).ToUnixTimeSeconds()
                     : 0L,
-                Tags = x.Tags.Distinct().ToList()
+                Tags = x.Tags.Distinct().ToList(),
+                ParentNodeOffset = x.ParentNodeOffset,
+                OffsetPosition =  x.OffsetPosition,
             });
             var bookmarksKeys = bkDic.Select(x => x.Key).ToHashSet();
             _logger.LogDebug("Found {Count} bookmark", bookmarksKeys.Count);

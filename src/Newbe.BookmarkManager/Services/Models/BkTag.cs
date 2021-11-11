@@ -11,6 +11,10 @@ namespace Newbe.BookmarkManager.Services
         public int ClickedCount { get; set; }
         public long LastClickTime { get; set; }
         public int RelatedBkCount { get; set; }
+
+        public int ParentNodeOffset { get; set; }
+        
+        public int OffsetPosition { get; set; }
         public Dictionary<TextAliasType, TextAlias> TagAlias { get; set; } = new();
     }
 }

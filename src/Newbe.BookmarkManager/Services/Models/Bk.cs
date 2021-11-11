@@ -17,5 +17,9 @@ namespace Newbe.BookmarkManager.Services
         public long LastClickTime { get; set; }
         public long TitleLastUpdateTime { get; set; }
         public long LastCreateTime { get; init; }
+        
+        public int ParentNodeOffset { get; set; }
+
+        public int OffsetPosition { get; set; }
     }
 }
