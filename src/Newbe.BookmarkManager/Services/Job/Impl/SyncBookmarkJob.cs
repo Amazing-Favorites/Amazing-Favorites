@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -75,10 +76,7 @@ namespace Newbe.BookmarkManager.Services
                 var all = await GetAllBookmarkAsync();
                 _logger.LogInformation("Found {Count} bookmarks, try to load them", all.Count);
                 // make init order look like bookmarks tree
-                //await _bkManager.AppendBookmarksAsync(all.OrderByDescending(x => x.DateAdded));
-                await _bkManager.AppendBookmarksAsync(all.OrderBy(x => x.ParentNodeOffset)
-                    .OrderBy(x=>x.OffsetPosition)
-                    .ThenByDescending(x=>x.DateAdded));
+                await _bkManager.AppendBookmarksAsync(all);
             });
         }
 
@@ -93,45 +91,52 @@ namespace Newbe.BookmarkManager.Services
             return GetAllChildren(bookmarkTreeNodes);
         }
 
-        private static List<BookmarkNode> GetAllChildren(IEnumerable<BookmarkTreeNode> bookmarkTreeNodes)
+        private  List<BookmarkNode> GetAllChildren(IEnumerable<BookmarkTreeNode> bookmarkTreeNodes)
         {
             var queue = new Queue<BkItem>(bookmarkTreeNodes.Select(x => new BkItem(x, new BookmarkNode(x)
             {
                 Tags = new List<string>()
             })));
             var result = new List<BookmarkNode>();
-            int prevTotal = 0;
-            int count = 0;
-            while (queue.TryDequeue(out var item))
+            int deepth = 0;
+            while (queue.Any())
             {
-                var (node, bookmarkNode) = item;
-                if (!string.IsNullOrWhiteSpace(node.Url) &&
-                    !string.IsNullOrWhiteSpace(node.Title) &&
-                    node.Unmodifiable != BookmarkTreeNodeUnmodifiable.Managed)
-                {
-                    result.Add(bookmarkNode);
-                }
+                int level = queue.Count();
 
-                if (node.Children != null)
+                while (level-- > 0)
                 {
-                    prevTotal += node.Index ?? 0;
-                    foreach (var child in node.Children)
+                    var item = queue.Dequeue();
+                    var (node, bookmarkNode) = item;
+                    if (!string.IsNullOrWhiteSpace(node.Url) &&
+                        !string.IsNullOrWhiteSpace(node.Title) &&
+                        node.Unmodifiable != BookmarkTreeNodeUnmodifiable.Managed)
                     {
-                        var tags = new List<string>(bookmarkNode.Tags);
-                        if (!string.IsNullOrWhiteSpace(node.Title)
-                            && !Consts.IsReservedBookmarkFolder(node.Title))
-                        {
-                            tags.Add(node.Title);
-                        }
-
-                        queue.Enqueue(new BkItem(child, new BookmarkNode(child)
-                        {
-                            Tags = tags,
-                            ParentNodeOffset = prevTotal
-                        }));
+                        _logger.LogInformation($"deepth sum {deepth}");
+                        bookmarkNode.Deepth = deepth;
+                        result.Add(bookmarkNode);
                     }
+                    if (node.Children != null)
+                    {
+                        _logger.LogInformation($"folder :{node.Title}_index : {node.Index}_child : {node.Children.Count()}");
+                        foreach (var child in node.Children)
+                        {
+                            var tags = new List<string>(bookmarkNode.Tags);
+                            if (!string.IsNullOrWhiteSpace(node.Title)
+                                && !Consts.IsReservedBookmarkFolder(node.Title))
+                            {
+                                tags.Add(node.Title);
+                            }
+
+                            queue.Enqueue(new BkItem(child, new BookmarkNode(child)
+                            {
+                                ParentNodeOffset = node.Index??0,
+                                Tags = tags,
+                            }));
+                        }
                     
+                    }
                 }
+                deepth++;
             }
 
             return result;

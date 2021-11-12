@@ -190,6 +190,7 @@ namespace Newbe.BookmarkManager.Services
                     ? DateTimeOffset.FromUnixTimeMilliseconds((long)x.DateAdded.Value).ToUnixTimeSeconds()
                     : 0L,
                 Tags = x.Tags.Distinct().ToList(),
+                Deepth = x.Deepth,
                 ParentNodeOffset = x.ParentNodeOffset,
                 OffsetPosition =  x.OffsetPosition,
             });
@@ -221,6 +222,7 @@ namespace Newbe.BookmarkManager.Services
                 foreach (var key in newKeys)
                 {
                     var bk = bkDic[key].First();
+                    _logger.LogInformation($"Current Upsert Node :{bk.Title}");
                     await _bkRepo.UpsertAsync(bk);
                     if (bk.Tags?.Any() == true)
                     {

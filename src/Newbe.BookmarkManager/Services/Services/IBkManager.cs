@@ -71,8 +71,8 @@ namespace Newbe.BookmarkManager.Services
         public string Title { get; set; }
         public string Url { get; set; }
         public List<string> Tags { get; set; }
-        
-        
+
+        public int Deepth { get; set; }
         public int ParentNodeOffset { get; set; }
         /// <summary>
         /// Position offset for the parent node

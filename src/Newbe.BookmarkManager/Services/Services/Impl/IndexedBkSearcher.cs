@@ -31,6 +31,7 @@ namespace Newbe.BookmarkManager.Services
             var source = await SearchCore(searchText);
             source = source
                 .OrderByDescending(x => x.Score)
+                .ThenBy(x=>x.Bk.Deepth)
                 .ThenBy(x=>x.Bk.ParentNodeOffset)
                 .ThenBy(x=>x.Bk.OffsetPosition)
                 .ThenByDescending(x => x.LastClickTime)
