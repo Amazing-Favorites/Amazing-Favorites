@@ -192,7 +192,7 @@ namespace Newbe.BookmarkManager.Services
                 Tags = x.Tags.Distinct().ToList(),
                 Deepth = x.Deepth,
                 ParentNodeOffset = x.ParentNodeOffset,
-                OffsetPosition =  x.OffsetPosition,
+                Offset =  x.Offset,
             });
             var bookmarksKeys = bkDic.Select(x => x.Key).ToHashSet();
             _logger.LogDebug("Found {Count} bookmark", bookmarksKeys.Count);

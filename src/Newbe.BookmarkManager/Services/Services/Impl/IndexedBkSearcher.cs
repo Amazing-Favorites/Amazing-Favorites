@@ -33,7 +33,7 @@ namespace Newbe.BookmarkManager.Services
                 .OrderByDescending(x => x.Score)
                 .ThenBy(x=>x.Bk.Deepth)
                 .ThenBy(x=>x.Bk.ParentNodeOffset)
-                .ThenBy(x=>x.Bk.OffsetPosition)
+                .ThenBy(x=>x.Bk.Offset)
                 .ThenByDescending(x => x.LastClickTime)
                 .ThenByDescending(x => x.ClickCount)
                 .Take(limit)
