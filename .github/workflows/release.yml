@@ -32,12 +32,12 @@ jobs:
         with:
           dotnet-version: "5.0.x"
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.10
+        uses: gittools/actions/gitversion/setup@v0.9.11
         with:
           versionSpec: 5.x
       - name: Determine Version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v0.9.10
+        uses: gittools/actions/gitversion/execute@v0.9.11
         with:
           useConfigFile: true
       - name: Restore dependencies
@@ -52,12 +52,12 @@ jobs:
           mv out/browserextension Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
           cp Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}/content/manifest_prod.json Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}/manifest.json -f
           zip -r Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
-      - uses: gittools/actions/gitreleasemanager/setup@v0.9.10
+      - uses: gittools/actions/gitreleasemanager/setup@v0.9.11
         name: Install GitReleaseManager
         with:
           versionSpec: "0.11.x"
 
-      - uses: gittools/actions/gitreleasemanager/addasset@v0.9.10
+      - uses: gittools/actions/gitreleasemanager/addasset@v0.9.11
         name: Add asset to a release with GitReleaseManager
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
