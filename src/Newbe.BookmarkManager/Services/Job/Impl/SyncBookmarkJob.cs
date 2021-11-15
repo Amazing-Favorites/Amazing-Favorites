@@ -47,7 +47,6 @@ namespace Newbe.BookmarkManager.Services
             });
             await _bookmarksApi.OnCreated.AddListener(async (s, node) =>
             {
-                _logger.LogInformation($"OnCreated_index:{node.Index},parentId:{node.ParentId},Title:{node.Title},Type{node.Type}");
                 if (!string.IsNullOrWhiteSpace(node.Url) &&
                     !string.IsNullOrWhiteSpace(node.Title))
                 {
@@ -57,7 +56,6 @@ namespace Newbe.BookmarkManager.Services
                     var parentOffset = 0;
                     await foreach (var parentNode in nodes)
                     {
-                        _logger.LogInformation($"parentNode:{parentNode.Title}_index:{parentNode.Index}_url:{parentNode.Url}_parentId:{parentNode.ParentId}");
                         if (deepth == 0)
                         {
                             parentOffset = parentNode.Index ?? 0;
@@ -68,11 +66,6 @@ namespace Newbe.BookmarkManager.Services
                             deepth++;
                             tags.Add(parentNode.Title);
                         }
-                    }
-                    _logger.LogInformation($"Deepth:{deepth}");
-                    foreach (var t in tags)
-                    {
-                        _logger.LogInformation($"tags:{t}");
                     }
                     await _bkManager.AppendBookmarksAsync(new[] {new BookmarkNode(node)
                     {
@@ -94,7 +87,6 @@ namespace Newbe.BookmarkManager.Services
                 var parentOffset = 0;
                 await foreach (var parentNode in nodes)
                 {
-                    _logger.LogInformation($"parentNode:{parentNode.Title}_index:{parentNode.Index}_url:{parentNode.Url}_parentId:{parentNode.ParentId}");
                     if (deepth == 0)
                     {
                         parentOffset = parentNode.Index ?? 0;
