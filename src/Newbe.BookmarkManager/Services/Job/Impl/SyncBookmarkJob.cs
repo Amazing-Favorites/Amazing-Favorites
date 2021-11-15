@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using WebExtensions.Net.Bookmarks;
-
 namespace Newbe.BookmarkManager.Services
 {
     public class SyncBookmarkJob : ISyncBookmarkJob
@@ -48,26 +47,70 @@ namespace Newbe.BookmarkManager.Services
             });
             await _bookmarksApi.OnCreated.AddListener(async (s, node) =>
             {
+                _logger.LogInformation($"OnCreated_index:{node.Index},parentId:{node.ParentId},Title:{node.Title},Type{node.Type}");
                 if (!string.IsNullOrWhiteSpace(node.Url) &&
                     !string.IsNullOrWhiteSpace(node.Title))
                 {
                     var tags = new HashSet<string>();
                     var nodes = _bookmarksApi.GetAllParentAsync(node.ParentId);
+                    var deepth = 0;
+                    var parentOffset = 0;
                     await foreach (var parentNode in nodes)
                     {
+                        _logger.LogInformation($"parentNode:{parentNode.Title}_index:{parentNode.Index}_url:{parentNode.Url}_parentId:{parentNode.ParentId}");
+                        if (deepth == 0)
+                        {
+                            parentOffset = parentNode.Index ?? 0;
+                        }
                         if (!string.IsNullOrWhiteSpace(parentNode.Title)
                             && !Consts.IsReservedBookmarkFolder(parentNode.Title))
                         {
+                            deepth++;
                             tags.Add(parentNode.Title);
                         }
                     }
+                    _logger.LogInformation($"Deepth:{deepth}");
+                    foreach (var t in tags)
+                    {
+                        _logger.LogInformation($"tags:{t}");
+                    }
                     await _bkManager.AppendBookmarksAsync(new[] {new BookmarkNode(node)
                     {
+                        Deepth = deepth + 1,
+                        ParentNodeOffset = parentOffset,
                         Tags = tags.ToList()
                     }});
                 }
 
                 _logger.LogInformation("Bookmark data reload since item added");
+            });
+
+            await _bookmarksApi.OnMoved.AddListener(async (s, info) =>
+            {
+                var tags = new HashSet<string>();
+                var node = (await _bookmarksApi.Get(s)).FirstOrDefault();
+                var nodes = _bookmarksApi.GetAllParentAsync(node.ParentId);
+                var deepth = 0;
+                var parentOffset = 0;
+                await foreach (var parentNode in nodes)
+                {
+                    _logger.LogInformation($"parentNode:{parentNode.Title}_index:{parentNode.Index}_url:{parentNode.Url}_parentId:{parentNode.ParentId}");
+                    if (deepth == 0)
+                    {
+                        parentOffset = parentNode.Index ?? 0;
+                    }
+                    if (!string.IsNullOrWhiteSpace(parentNode.Title)
+                        && !Consts.IsReservedBookmarkFolder(parentNode.Title))
+                    {
+                        deepth++;
+                        tags.Add(parentNode.Title);
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(node.Url) &&
+                    !string.IsNullOrWhiteSpace(node.Title))
+                {
+                    await _bkManager.UpdatePositionAsync(node.Url, tags.ToList(), deepth + 1, parentOffset, node.Index ?? 0);
+                }
             });
 
             Task.Run(async () =>
@@ -91,7 +134,7 @@ namespace Newbe.BookmarkManager.Services
             return GetAllChildren(bookmarkTreeNodes);
         }
 
-        private  List<BookmarkNode> GetAllChildren(IEnumerable<BookmarkTreeNode> bookmarkTreeNodes)
+        private List<BookmarkNode> GetAllChildren(IEnumerable<BookmarkTreeNode> bookmarkTreeNodes)
         {
             var queue = new Queue<BkItem>(bookmarkTreeNodes.Select(x => new BkItem(x, new BookmarkNode(x)
             {
@@ -117,7 +160,7 @@ namespace Newbe.BookmarkManager.Services
                     }
                     if (node.Children != null)
                     {
-                        _logger.LogInformation($"folder :{node.Title}_index : {node.Index}_child : {node.Children.Count()}");
+                        _logger.LogInformation($"folder  Id:{node.Id},ParentId:{node.ParentId},Title:{node.Title}_index : {node.Index}_child : {node.Children.Count()}");
                         foreach (var child in node.Children)
                         {
                             var tags = new List<string>(bookmarkNode.Tags);
@@ -129,11 +172,11 @@ namespace Newbe.BookmarkManager.Services
 
                             queue.Enqueue(new BkItem(child, new BookmarkNode(child)
                             {
-                                ParentNodeOffset = node.Index??0,
+                                ParentNodeOffset = node.Index ?? 0,
                                 Tags = tags,
                             }));
                         }
-                    
+
                     }
                 }
                 deepth++;

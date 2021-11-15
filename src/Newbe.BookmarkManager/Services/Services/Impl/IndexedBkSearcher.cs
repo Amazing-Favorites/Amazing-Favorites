@@ -15,6 +15,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly ILogger<IndexedBkSearcher> _logger;
         private readonly IIndexedDbRepo<BkTag, string> _tagRepo;
 
+        private const int LatestCount = 3;
         public IndexedBkSearcher(
             ILogger<IndexedBkSearcher> logger,
             IIndexedDbRepo<Bk, string> bkRepo,
@@ -31,9 +32,7 @@ namespace Newbe.BookmarkManager.Services
             var source = await SearchCore(searchText);
             source = source
                 .OrderByDescending(x => x.Score)
-                .ThenBy(x=>x.Bk.Deepth)
-                .ThenBy(x=>x.Bk.ParentNodeOffset)
-                .ThenBy(x=>x.Bk.Offset)
+                .ThenBy(x => x.Bk.Offset)
                 .ThenByDescending(x => x.LastClickTime)
                 .ThenByDescending(x => x.ClickCount)
                 .Take(limit)
@@ -50,6 +49,13 @@ namespace Newbe.BookmarkManager.Services
             var tags = await _tagRepo.GetAllAsync();
             if (string.IsNullOrWhiteSpace(searchText))
             {
+                var latest = source
+                    .Where(x => x.LastClickTime > 0 && x.ClickedCount > 0)
+                    .OrderByDescending(x => x.LastClickTime)
+                    .ThenByDescending(x => x.ClickedCount)
+                    .Select(x => x.Id)
+                    .Take(LatestCount)
+                    .ToList();
                 return source
                     .Select(x =>
                     {
@@ -58,9 +64,10 @@ namespace Newbe.BookmarkManager.Services
                             LastClickTime = x.LastClickTime
                         };
                         r.AddScore(ScoreReason.Const, 10);
-
-                        // int lastScore = -tags.TakeWhile(a => r?.Bk?.Tags?.LastOrDefault() != a.Tag).Count();
-                        // r.AddScore(ScoreReason.Default, lastScore);
+                        if (latest.FirstOrDefault(a => a == r.Bk.Id) != null)
+                        {
+                            r.AddScore(ScoreReason.Latest, 10 - latest.FindIndex(a => a == r.Bk.Id));
+                        }
                         return r;
                     });
 
