@@ -11,6 +11,7 @@
         public const string BkCloudToLocalEvent = "Bk Cloud To Local Event";
         public const string BkDeleteEvent = "Bk Delete Event";
         public const string BkTitleUpdateEvent = "Bk Title Update Event";
+        public const string BkPositionUpdateEvent = "Bk Position Update Event";
         public const string BkSearchEvent = "Bk Search Event";
         public const string BkLocalToCloudEvent = "Bk Local To Cloud Event";
         public const string UserOptionSaveEvent = "User Option Save Event";
