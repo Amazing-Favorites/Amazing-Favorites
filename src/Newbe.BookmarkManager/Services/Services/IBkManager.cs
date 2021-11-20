@@ -39,6 +39,9 @@ namespace Newbe.BookmarkManager.Services
 
         [Insight(EventName = BkTitleUpdateEvent)]
         Task UpdateTitleAsync(string url, string title);
+
+        [Insight(EventName = BkPositionUpdateEvent)]
+        Task UpdatePositionAsync(string url, List<string> tags, int deepth, int parentIndex, int index);
         Task<long> GetEtagVersionAsync();
         Task<Bk?> Get(string url);
         Task<Dictionary<string, int>> GetTagRelatedCountAsync();
@@ -64,11 +67,17 @@ namespace Newbe.BookmarkManager.Services
             Title = node.Title;
             Url = node.Url;
             DateAdded = node.DateAdded;
+            Offset = node.Index ?? 0;
         }
 
         public double? DateAdded { get; set; }
         public string Title { get; set; }
         public string Url { get; set; }
         public List<string> Tags { get; set; }
+
+        public int Deepth { get; set; }
+        public int ParentNodeOffset { get; set; }
+
+        public int Offset { get; set; }
     }
 }

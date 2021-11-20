@@ -177,6 +177,10 @@ namespace Newbe.BookmarkManager.Services
             }
         }
 
+        private decimal GetOffset(int deepth, int parentNodeOffset, int childNodeOffset)
+        {
+            return deepth + parentNodeOffset * 1E-6m + childNodeOffset * 1E-12m;
+        }
         public async Task AppendBookmarksAsync(IEnumerable<BookmarkNode> nodes)
         {
             var updated = false;
@@ -189,7 +193,8 @@ namespace Newbe.BookmarkManager.Services
                 LastCreateTime = x.DateAdded.HasValue
                     ? DateTimeOffset.FromUnixTimeMilliseconds((long)x.DateAdded.Value).ToUnixTimeSeconds()
                     : 0L,
-                Tags = x.Tags.Distinct().ToList()
+                Tags = x.Tags.Distinct().ToList(),
+                Offset = GetOffset(x.Deepth, x.ParentNodeOffset, x.Offset),
             });
             var bookmarksKeys = bkDic.Select(x => x.Key).ToHashSet();
             _logger.LogDebug("Found {Count} bookmark", bookmarksKeys.Count);
@@ -219,6 +224,7 @@ namespace Newbe.BookmarkManager.Services
                 foreach (var key in newKeys)
                 {
                     var bk = bkDic[key].First();
+                    _logger.LogInformation($"Current Upsert Node :{bk.Title}");
                     await _bkRepo.UpsertAsync(bk);
                     if (bk.Tags?.Any() == true)
                     {
@@ -299,6 +305,18 @@ namespace Newbe.BookmarkManager.Services
                 await _bkRepo.UpsertAsync(bk);
             }
         }
+
+        public async Task UpdatePositionAsync(string url, List<string> tags, int deepth, int parentIndex, int index)
+        {
+            var bk = await _bkRepo.GetAsync(url);
+            if (bk != null)
+            {
+                bk.Tags = tags;
+                bk.Offset = GetOffset(deepth, parentIndex, index);
+                await _bkRepo.UpsertAsync(bk);
+            }
+        }
+
         public async Task<long> GetEtagVersionAsync()
         {
             var meta = await GetMetadataAsync();

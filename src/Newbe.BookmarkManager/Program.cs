@@ -125,7 +125,7 @@ namespace Newbe.BookmarkManager
             builder.Services.AddIndexedDB(dbStore =>
             {
                 dbStore.DbName = Consts.DbName;
-                dbStore.Version = 6;
+                dbStore.Version = 7;
 
                 dbStore.Stores.Add(new StoreSchema
                 {

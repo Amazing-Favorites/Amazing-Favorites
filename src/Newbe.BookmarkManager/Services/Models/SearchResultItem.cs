@@ -18,7 +18,6 @@ namespace Newbe.BookmarkManager.Services
             { ScoreReason.TitleAlias, 80 },
             { ScoreReason.Url, 50 },
             { ScoreReason.Tags, 20 },
-            { ScoreReason.TagAlias, 20 },
         };
 
         public void AddScore(ScoreReason reason, bool matched)
@@ -53,6 +52,7 @@ namespace Newbe.BookmarkManager.Services
         TitleAlias,
         Url,
         Tags,
-        TagAlias
+        TagAlias,
+        Latest,
     }
 }

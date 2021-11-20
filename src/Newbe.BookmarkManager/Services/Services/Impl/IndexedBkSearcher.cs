@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BlazorApplicationInsights;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly ILogger<IndexedBkSearcher> _logger;
         private readonly IIndexedDbRepo<BkTag, string> _tagRepo;
 
+        private const int LatestCount = 3;
         public IndexedBkSearcher(
             ILogger<IndexedBkSearcher> logger,
             IIndexedDbRepo<Bk, string> bkRepo,
@@ -28,23 +30,13 @@ namespace Newbe.BookmarkManager.Services
         {
             var sw = Stopwatch.StartNew();
             var source = await SearchCore(searchText);
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                source = source
-                    .OrderByDescending(x => x.LastClickTime)
-                    .ThenByDescending(x => x.ClickCount)
-                    .Take(limit)
-                    .ToArray();
-            }
-            else
-            {
-                source = source
-                    .OrderByDescending(x => x.Score)
-                    .ThenByDescending(x => x.LastClickTime)
-                    .ThenByDescending(x => x.ClickCount)
-                    .Take(limit)
-                    .ToArray();
-            }
+            source = source
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Bk.Offset)
+                .ThenByDescending(x => x.LastClickTime)
+                .ThenByDescending(x => x.ClickCount)
+                .Take(limit)
+                .ToArray();
             var time = sw.ElapsedMilliseconds;
             _logger.LogInformation("Search cost: {Time} ms", time);
             return source.ToArray();
@@ -54,8 +46,16 @@ namespace Newbe.BookmarkManager.Services
         private async Task<IEnumerable<SearchResultItem>> SearchCore(string searchText)
         {
             var source = await _bkRepo.GetAllAsync();
+            var tags = await _tagRepo.GetAllAsync();
             if (string.IsNullOrWhiteSpace(searchText))
             {
+                var latest = source
+                    .Where(x => x.LastClickTime > 0 && x.ClickedCount > 0)
+                    .OrderByDescending(x => x.LastClickTime)
+                    .ThenByDescending(x => x.ClickedCount)
+                    .Select(x => x.Id)
+                    .Take(LatestCount)
+                    .ToList();
                 return source
                     .Select(x =>
                     {
@@ -64,8 +64,13 @@ namespace Newbe.BookmarkManager.Services
                             LastClickTime = x.LastClickTime
                         };
                         r.AddScore(ScoreReason.Const, 10);
+                        if (latest.FirstOrDefault(a => a == r.Bk.Id) != null)
+                        {
+                            r.AddScore(ScoreReason.Latest, 10 - latest.FindIndex(a => a == r.Bk.Id));
+                        }
                         return r;
                     });
+
             }
 
             var input = SearchInput.Parse(searchText);
@@ -75,7 +80,6 @@ namespace Newbe.BookmarkManager.Services
                 input.Keywords,
                 input.Tags);
 
-            var tags = await _tagRepo.GetAllAsync();
             var tagDict = tags.ToDictionary(x => x.Tag);
             var matchTags = tagDict
                 .Where(tag =>
