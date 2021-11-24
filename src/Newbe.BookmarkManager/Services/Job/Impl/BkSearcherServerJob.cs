@@ -17,17 +17,20 @@ namespace Newbe.BookmarkManager.Services
         private readonly IAfEventHub _afEventHub;
         private readonly ISmallCache _smallCache;
 
+        private readonly INotificationRecordServer _notificationRecordServer;
         public BkSearcherServerJob(ILogger<BkSearcherServerJob> logger,
             ILPCServer lpcServer,
             IBkSearcherServer bkSearcherServer,
             IAfEventHub afEventHub,
-            ISmallCache smallCache)
+            ISmallCache smallCache,
+            INotificationRecordServer notificationRecordServer)
         {
             _logger = logger;
             _lpcServer = lpcServer;
             _bkSearcherServer = bkSearcherServer;
             _afEventHub = afEventHub;
             _smallCache = smallCache;
+            _notificationRecordServer = notificationRecordServer;
         }
 
         public async ValueTask StartAsync()
@@ -36,7 +39,14 @@ namespace Newbe.BookmarkManager.Services
             _logger.LogInformation("There are {Count} method bind to LPCServer: {Names}",
                 methodInfos.Count,
                 methodInfos.Select(x => x.Name));
+            var methodInfos2 = _lpcServer.AddServerInstance(_notificationRecordServer);
+            _logger.LogInformation("There are {Count} method bind to LPCServer: {Names}",
+                methodInfos2.Count,
+                methodInfos2.Select(x => x.Name));
+
             await _lpcServer.StartAsync();
+            
+            
 
             _afEventHub.RegisterHandler<SmallCacheExpiredEvent>(Action);
             await _afEventHub.EnsureStartAsync();

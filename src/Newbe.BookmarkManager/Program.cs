@@ -88,7 +88,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
             builder.Services
                 .AddSingleton<IBkSearcherServer, BkSearcherServer>();
-
+            builder.Services
+                .AddSingleton<INotificationRecordServer, NotificationRecordServer>();
 
             builder.Services.AddLogging(loggingBuilder =>
             {

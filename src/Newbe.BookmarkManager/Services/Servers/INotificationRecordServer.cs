@@ -23,9 +23,9 @@ namespace Newbe.BookmarkManager.Services.Servers
     
     public record GetNewMessageStatusNotificationRequest : IRequest
     {}
-    public record AddNotificationRecordRequest : MsgItem, IRequest
+    public record AddNotificationRecordRequest : IRequest
     {
-
+        public MsgItem Item { get; set; }
     }
     public record NotificationRecordResponse : IResponse
     {
