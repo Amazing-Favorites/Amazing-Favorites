@@ -9,11 +9,9 @@ namespace Newbe.BookmarkManager.Services.Servers
 
         private readonly INotificationRecordService _notificationRecordService;
 
-        private readonly ILogger<INotificationRecordServer> _logger;
-        public NotificationRecordServer(INotificationRecordService notificationRecordService, ILogger<INotificationRecordServer> logger)
+        public NotificationRecordServer(INotificationRecordService notificationRecordService)
         {
             _notificationRecordService = notificationRecordService;
-            _logger = logger;
         }
         public async Task<NotificationRecordResponse> AddAsync(AddNotificationRecordRequest request)
         {
@@ -25,9 +23,6 @@ namespace Newbe.BookmarkManager.Services.Servers
         public async Task<NotificationRecordResponse<List<NotificationRecord>>> GetListAsync(GetListNotificationRecordRequest request)
         {
             var result = await _notificationRecordService.GetListAsync();
-
-            _logger.LogInformation("GetListAsync result:{@result}", result);
-
             return new NotificationRecordResponse<List<NotificationRecord>>()
             {
                 Data = result

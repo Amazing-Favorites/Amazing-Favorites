@@ -80,18 +80,8 @@ namespace Newbe.BookmarkManager.Components
 
         private async Task LoadDataAsync()
         {
-            // Records = await _notificationRecordService.GetListAsync();
-            // var status = await _notificationRecordService.GetNewMessageStatusAsync();
             Records = (await _lpcClient
                 .InvokeAsync<GetListNotificationRecordRequest, NotificationRecordResponse<List<NotificationRecord>>>(new GetListNotificationRecordRequest())).Data;
-
-            Console.WriteLine("Records: " + Records.Count);
-
-            foreach (var item in Records)
-            {
-                Console.WriteLine("item: " + item.Id);
-            }
-
             var status = (await _lpcClient
                 .InvokeAsync<GetNewMessageStatusNotificationRequest, NotificationRecordResponse<bool>>(
                     new GetNewMessageStatusNotificationRequest())).Data;
@@ -100,7 +90,6 @@ namespace Newbe.BookmarkManager.Components
 
         private async Task HandleNewNotificationEvent(NewNotificationEvent arg)
         {
-            Console.WriteLine("NewNotificationEvent");
             await LoadDataAsync();
             NewMessage = true;
             await StateChangeHandler.Invoke();

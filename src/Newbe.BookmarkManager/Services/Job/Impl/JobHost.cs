@@ -18,7 +18,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly IInviteAcceptPrivacyAgreementJob _inviteAcceptPrivacyAgreementJob;
         private readonly IHandleUserClickIconJob _handleUserClickIconJob;
         private readonly IHandleOmniBoxSuggestJob _handleOmniBoxSuggestJob;
-        private readonly IBkSearcherServerJob _bkSearcherServer;
+        private readonly IServerJob _bkSearcherServer;
         public JobHost(
             ILogger<JobHost> logger,
             ISyncBookmarkJob syncBookmarkJob,
@@ -32,7 +32,7 @@ namespace Newbe.BookmarkManager.Services
             IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob,
             IHandleUserClickIconJob handleUserClickIconJob,
             IHandleOmniBoxSuggestJob handleOmniBoxSuggestJob,
-            IBkSearcherServerJob bkSearcherServer)
+            IServerJob bkSearcherServer)
         {
             _logger = logger;
             _syncBookmarkJob = syncBookmarkJob;

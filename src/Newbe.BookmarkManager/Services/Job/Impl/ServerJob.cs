@@ -9,16 +9,16 @@ using Newbe.BookmarkManager.Services.Servers;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class BkSearcherServerJob : IBkSearcherServerJob
+    public class ServerJob : IServerJob
     {
-        private readonly ILogger<BkSearcherServerJob> _logger;
+        private readonly ILogger<ServerJob> _logger;
         private readonly ILPCServer _lpcServer;
         private readonly IBkSearcherServer _bkSearcherServer;
         private readonly IAfEventHub _afEventHub;
         private readonly ISmallCache _smallCache;
 
         private readonly INotificationRecordServer _notificationRecordServer;
-        public BkSearcherServerJob(ILogger<BkSearcherServerJob> logger,
+        public ServerJob(ILogger<ServerJob> logger,
             ILPCServer lpcServer,
             IBkSearcherServer bkSearcherServer,
             IAfEventHub afEventHub,
@@ -35,14 +35,15 @@ namespace Newbe.BookmarkManager.Services
 
         public async ValueTask StartAsync()
         {
-            var methodInfos = _lpcServer.AddServerInstance(_bkSearcherServer);
+            var bkSearchServerMethodInfos = _lpcServer.AddServerInstance(_bkSearcherServer);
             _logger.LogInformation("There are {Count} method bind to LPCServer: {Names}",
-                methodInfos.Count,
-                methodInfos.Select(x => x.Name));
-            var methodInfos2 = _lpcServer.AddServerInstance(_notificationRecordServer);
+                bkSearchServerMethodInfos.Count,
+                bkSearchServerMethodInfos.Select(x => x.Name));
+
+            var notificationMethodInfos = _lpcServer.AddServerInstance(_notificationRecordServer);
             _logger.LogInformation("There are {Count} method bind to LPCServer: {Names}",
-                methodInfos2.Count,
-                methodInfos2.Select(x => x.Name));
+                notificationMethodInfos.Count,
+                notificationMethodInfos.Select(x => x.Name));
 
             await _lpcServer.StartAsync();
 
