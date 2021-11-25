@@ -12,17 +12,17 @@ namespace Newbe.BookmarkManager.Services.Servers
         Task<NotificationRecordResponse> MakeAsReadAsync(MakeAsReadNotificationRecordRequest request);
         Task<NotificationRecordResponse<bool>> GetNewMessageStatusAsync(GetNewMessageStatusNotificationRequest request);
     }
-    
+
     public record GetListNotificationRecordRequest : IRequest
-    {}
+    { }
 
     public record MakeAsReadNotificationRecordRequest : IRequest
     {
-        
+
     }
-    
+
     public record GetNewMessageStatusNotificationRequest : IRequest
-    {}
+    { }
     public record AddNotificationRecordRequest : IRequest
     {
         public MsgItem Item { get; set; }

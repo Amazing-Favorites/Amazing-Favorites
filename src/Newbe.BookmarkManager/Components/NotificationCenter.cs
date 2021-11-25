@@ -54,7 +54,7 @@ namespace Newbe.BookmarkManager.Components
     {
         private readonly INotificationRecordService _notificationRecordService;
         private readonly IAfEventHub _afEventHub;
-        
+
         private readonly ILPCClient<INotificationRecordServer> _lpcClient;
 
         public NotificationCenterCore(
@@ -83,15 +83,15 @@ namespace Newbe.BookmarkManager.Components
             // Records = await _notificationRecordService.GetListAsync();
             // var status = await _notificationRecordService.GetNewMessageStatusAsync();
             Records = (await _lpcClient
-                .InvokeAsync<GetListNotificationRecordRequest, NotificationRecordResponse<List<NotificationRecord>>>( new GetListNotificationRecordRequest())).Data;
-            
+                .InvokeAsync<GetListNotificationRecordRequest, NotificationRecordResponse<List<NotificationRecord>>>(new GetListNotificationRecordRequest())).Data;
+
             Console.WriteLine("Records: " + Records.Count);
 
             foreach (var item in Records)
             {
                 Console.WriteLine("item: " + item.Id);
             }
-            
+
             var status = (await _lpcClient
                 .InvokeAsync<GetNewMessageStatusNotificationRequest, NotificationRecordResponse<bool>>(
                     new GetNewMessageStatusNotificationRequest())).Data;

@@ -45,8 +45,8 @@ namespace Newbe.BookmarkManager.Services
                 methodInfos2.Select(x => x.Name));
 
             await _lpcServer.StartAsync();
-            
-            
+
+
 
             _afEventHub.RegisterHandler<SmallCacheExpiredEvent>(Action);
             await _afEventHub.EnsureStartAsync();
