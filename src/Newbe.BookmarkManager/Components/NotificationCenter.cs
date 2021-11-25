@@ -74,6 +74,7 @@ namespace Newbe.BookmarkManager.Components
         public async Task InitAsync()
         {
             _afEventHub.RegisterHandler<NewNotificationEvent>(HandleNewNotificationEvent);
+            await _lpcClient.StartAsync();
             await LoadDataAsync();
         }
 
@@ -99,6 +100,7 @@ namespace Newbe.BookmarkManager.Components
 
         private async Task HandleNewNotificationEvent(NewNotificationEvent arg)
         {
+            Console.WriteLine("NewNotificationEvent");
             await LoadDataAsync();
             NewMessage = true;
             await StateChangeHandler.Invoke();
