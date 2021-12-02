@@ -9,34 +9,45 @@ using Newbe.BookmarkManager.Services.Servers;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class BkSearcherServerJob : IBkSearcherServerJob
+    public class ServerJob : IServerJob
     {
-        private readonly ILogger<BkSearcherServerJob> _logger;
+        private readonly ILogger<ServerJob> _logger;
         private readonly ILPCServer _lpcServer;
         private readonly IBkSearcherServer _bkSearcherServer;
         private readonly IAfEventHub _afEventHub;
         private readonly ISmallCache _smallCache;
 
-        public BkSearcherServerJob(ILogger<BkSearcherServerJob> logger,
+        private readonly INotificationRecordServer _notificationRecordServer;
+        public ServerJob(ILogger<ServerJob> logger,
             ILPCServer lpcServer,
             IBkSearcherServer bkSearcherServer,
             IAfEventHub afEventHub,
-            ISmallCache smallCache)
+            ISmallCache smallCache,
+            INotificationRecordServer notificationRecordServer)
         {
             _logger = logger;
             _lpcServer = lpcServer;
             _bkSearcherServer = bkSearcherServer;
             _afEventHub = afEventHub;
             _smallCache = smallCache;
+            _notificationRecordServer = notificationRecordServer;
         }
 
         public async ValueTask StartAsync()
         {
-            var methodInfos = _lpcServer.AddServerInstance(_bkSearcherServer);
+            var bkSearchServerMethodInfos = _lpcServer.AddServerInstance(_bkSearcherServer);
             _logger.LogInformation("There are {Count} method bind to LPCServer: {Names}",
-                methodInfos.Count,
-                methodInfos.Select(x => x.Name));
+                bkSearchServerMethodInfos.Count,
+                bkSearchServerMethodInfos.Select(x => x.Name));
+
+            var notificationMethodInfos = _lpcServer.AddServerInstance(_notificationRecordServer);
+            _logger.LogInformation("There are {Count} method bind to LPCServer: {Names}",
+                notificationMethodInfos.Count,
+                notificationMethodInfos.Select(x => x.Name));
+
             await _lpcServer.StartAsync();
+
+
 
             _afEventHub.RegisterHandler<SmallCacheExpiredEvent>(Action);
             await _afEventHub.EnsureStartAsync();

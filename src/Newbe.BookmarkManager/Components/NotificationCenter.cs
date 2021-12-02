@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Newbe.BookmarkManager.Services;
 using Newbe.BookmarkManager.Services.EventHubs;
+using Newbe.BookmarkManager.Services.LPC;
+using Newbe.BookmarkManager.Services.Servers;
 using Newbe.BookmarkManager.Services.SimpleData;
 
 namespace Newbe.BookmarkManager.Components
@@ -53,12 +55,16 @@ namespace Newbe.BookmarkManager.Components
         private readonly INotificationRecordService _notificationRecordService;
         private readonly IAfEventHub _afEventHub;
 
+        private readonly ILPCClient<INotificationRecordServer> _lpcClient;
+
         public NotificationCenterCore(
             INotificationRecordService notificationRecordService,
-            IAfEventHub afEventHub)
+            IAfEventHub afEventHub,
+            ILPCClient<INotificationRecordServer> lpcClient)
         {
             _notificationRecordService = notificationRecordService;
             _afEventHub = afEventHub;
+            _lpcClient = lpcClient;
         }
 
         public bool RedDot { get; private set; }
@@ -68,13 +74,17 @@ namespace Newbe.BookmarkManager.Components
         public async Task InitAsync()
         {
             _afEventHub.RegisterHandler<NewNotificationEvent>(HandleNewNotificationEvent);
+            await _lpcClient.StartAsync();
             await LoadDataAsync();
         }
 
         private async Task LoadDataAsync()
         {
-            Records = await _notificationRecordService.GetListAsync();
-            var status = await _notificationRecordService.GetNewMessageStatusAsync();
+            Records = (await _lpcClient
+                .InvokeAsync<GetListNotificationRecordRequest, NotificationRecordResponse<List<NotificationRecord>>>(new GetListNotificationRecordRequest())).Data;
+            var status = (await _lpcClient
+                .InvokeAsync<GetNewMessageStatusNotificationRequest, NotificationRecordResponse<bool>>(
+                    new GetNewMessageStatusNotificationRequest())).Data;
             RedDot = status;
         }
 

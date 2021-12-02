@@ -88,7 +88,8 @@ namespace Newbe.BookmarkManager
                 .AddSingleton<INotificationRecordService, NotificationRecordService>();
             builder.Services
                 .AddSingleton<IBkSearcherServer, BkSearcherServer>();
-
+            builder.Services
+                .AddSingleton<INotificationRecordServer, NotificationRecordServer>();
 
             builder.Services.AddLogging(loggingBuilder =>
             {
@@ -329,7 +330,7 @@ namespace Newbe.BookmarkManager
                     yield return typeof(DataFixJob);
                     yield return typeof(HandleUserClickIconJob);
                     yield return typeof(HandleOmniBoxSuggestJob);
-                    yield return typeof(BkSearcherServerJob);
+                    yield return typeof(ServerJob);
                     yield return typeof(ShowWelcomeJob);
                     yield return typeof(ShowWhatNewJob);
                     yield return typeof(InviteAcceptPrivacyAgreementJob);
