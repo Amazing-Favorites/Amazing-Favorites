@@ -4,77 +4,76 @@ using System.Linq;
 using Autofac;
 using ConcurrentCollections;
 
-namespace Newbe.BookmarkManager.Services.MessageBus
+namespace Newbe.BookmarkManager.Services.MessageBus;
+
+internal class MessageHandlerCollection
 {
-    internal class MessageHandlerCollection
+    private readonly IClock _clock;
+
+    public MessageHandlerCollection(
+        IClock clock)
     {
-        private readonly IClock _clock;
+        _clock = clock;
+    }
 
-        public MessageHandlerCollection(
-            IClock clock)
+    internal readonly ConcurrentHashSet<HandlerItem> HandlerItems = new();
+
+    public void AddHandler(Func<BusMessage, bool> filter, RequestHandlerDelegate handler,
+        long expiredAt = default)
+    {
+        HandlerItems.Add(new HandlerItem
         {
-            _clock = clock;
-        }
+            Filter = filter,
+            Handler = handler,
+            ExpiredAt = expiredAt
+        });
+    }
 
-        internal readonly ConcurrentHashSet<HandlerItem> HandlerItems = new();
-
-        public void AddHandler(Func<BusMessage, bool> filter, RequestHandlerDelegate handler,
-            long expiredAt = default)
+    public void Handle(BusMessage busMessage, ILifetimeScope lifetimeScope)
+    {
+        var toBeRemoved = new List<HandlerItem>(HandlerItems.Count);
+        var filterSuccessList = new List<HandlerItem>(HandlerItems.Count);
+        var now = _clock.UtcNow;
+        foreach (var item in HandlerItems)
         {
-            HandlerItems.Add(new HandlerItem
+            if (item.ExpiredAt != default)
             {
-                Filter = filter,
-                Handler = handler,
-                ExpiredAt = expiredAt
-            });
-        }
-
-        public void Handle(BusMessage busMessage, ILifetimeScope lifetimeScope)
-        {
-            var toBeRemoved = new List<HandlerItem>(HandlerItems.Count);
-            var filterSuccessList = new List<HandlerItem>(HandlerItems.Count);
-            var now = _clock.UtcNow;
-            foreach (var item in HandlerItems)
-            {
-                if (item.ExpiredAt != default)
-                {
-                    if (item.ExpiredAt < now)
-                    {
-                        toBeRemoved.Add(item);
-                        continue;
-                    }
-                }
-
-                if (item.Filter.Invoke(busMessage))
-                {
-                    filterSuccessList.Add(item);
-                }
-            }
-
-            foreach (var item in filterSuccessList)
-            {
-                var done = item.Handler.Invoke(lifetimeScope, busMessage);
-                if (done)
+                if (item.ExpiredAt < now)
                 {
                     toBeRemoved.Add(item);
+                    continue;
                 }
             }
 
-            var items = HandlerItems
-                .Where(x => x.Filter.Invoke(busMessage))
-                .ToList();
-
-            foreach (var item in toBeRemoved)
+            if (item.Filter.Invoke(busMessage))
             {
-                HandlerItems.TryRemove(item);
+                filterSuccessList.Add(item);
             }
         }
 
-        internal record HandlerItem
+        foreach (var item in filterSuccessList)
         {
-            public Func<BusMessage, bool> Filter { get; init; } = null!;
-            public RequestHandlerDelegate Handler { get; init; } = null!;
-            public long ExpiredAt { get; init; }
+            var done = item.Handler.Invoke(lifetimeScope, busMessage);
+            if (done)
+            {
+                toBeRemoved.Add(item);
+            }
         }
+
+        var items = HandlerItems
+            .Where(x => x.Filter.Invoke(busMessage))
+            .ToList();
+
+        foreach (var item in toBeRemoved)
+        {
+            HandlerItems.TryRemove(item);
+        }
+    }
+
+    internal record HandlerItem
+    {
+        public Func<BusMessage, bool> Filter { get; init; } = null!;
+        public RequestHandlerDelegate Handler { get; init; } = null!;
+        public long ExpiredAt { get; init; }
     }
 }

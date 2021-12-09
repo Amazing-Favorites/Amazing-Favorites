@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public interface IUrlHashService
 {
-    public interface IUrlHashService
-    {
-        string GetHash(string url);
-    }
+    string GetHash(string url);
 }

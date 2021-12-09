@@ -2,71 +2,70 @@
 using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services;
 
-namespace Newbe.BookmarkManager.Components
-{
-    public class ManagePageNotificationService : IManagePageNotificationService
-    {
-        private readonly IUserOptionsService _userOptionsService;
-        private readonly INewNotification _newNotification;
+namespace Newbe.BookmarkManager.Components;
 
-        public ManagePageNotificationService(
-            IUserOptionsService userOptionsService,
-            INewNotification newNotification)
+public class ManagePageNotificationService : IManagePageNotificationService
+{
+    private readonly IUserOptionsService _userOptionsService;
+    private readonly INewNotification _newNotification;
+
+    public ManagePageNotificationService(
+        IUserOptionsService userOptionsService,
+        INewNotification newNotification)
+    {
+        _userOptionsService = userOptionsService;
+        _newNotification = newNotification;
+    }
+
+    public async Task RunAsync()
+    {
+        var userOptions = await _userOptionsService.GetOptionsAsync();
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        var now = DateTime.Now;
+        if (userOptions?.PinyinFeature?.Enabled == true &&
+            userOptions.PinyinFeature?.ExpireDate.HasValue == true &&
+            userOptions.PinyinFeature.ExpireDate < now.AddDays(Consts.JwtExpiredWarningDays))
         {
-            _userOptionsService = userOptionsService;
-            _newNotification = newNotification;
+            var days = (userOptions.PinyinFeature.ExpireDate.Value - now).Days;
+            if (Math.Abs(days) < Consts.JwtExpiredWarningDays)
+            {
+                await _newNotification.PinyinTokenExpiredAsync(new PinyinTokenExpiredInput
+                {
+                    LeftDays = days
+                });
+            }
         }
 
-        public async Task RunAsync()
+        if (userOptions is
+            {
+                AcceptPrivacyAgreement: true,
+                CloudBkFeature:
+                {
+                    Enabled: true
+                }
+            })
         {
-            var userOptions = await _userOptionsService.GetOptionsAsync();
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
-            var now = DateTime.Now;
-            if (userOptions?.PinyinFeature?.Enabled == true &&
-                userOptions.PinyinFeature?.ExpireDate.HasValue == true &&
-                userOptions.PinyinFeature.ExpireDate < now.AddDays(Consts.JwtExpiredWarningDays))
+            var cloudBkFeature = userOptions.CloudBkFeature;
+            switch (cloudBkFeature.CloudBkProviderType)
             {
-                var days = (userOptions.PinyinFeature.ExpireDate.Value - now).Days;
-                if (Math.Abs(days) < Consts.JwtExpiredWarningDays)
-                {
-                    await _newNotification.PinyinTokenExpiredAsync(new PinyinTokenExpiredInput
+                case CloudBkProviderType.NewbeApi:
+                    if (cloudBkFeature.ExpireDate.HasValue &&
+                        cloudBkFeature.ExpireDate < now.AddDays(Consts.JwtExpiredWarningDays))
                     {
-                        LeftDays = days
-                    });
-                }
-            }
-
-            if (userOptions is
-                {
-                    AcceptPrivacyAgreement: true,
-                    CloudBkFeature:
-                    {
-                        Enabled: true
-                    }
-                })
-            {
-                var cloudBkFeature = userOptions.CloudBkFeature;
-                switch (cloudBkFeature.CloudBkProviderType)
-                {
-                    case CloudBkProviderType.NewbeApi:
-                        if (cloudBkFeature.ExpireDate.HasValue &&
-                            cloudBkFeature.ExpireDate < now.AddDays(Consts.JwtExpiredWarningDays))
+                        var days = (cloudBkFeature.ExpireDate.Value - now).Days;
+                        if (Math.Abs(days) < Consts.JwtExpiredWarningDays)
                         {
-                            var days = (cloudBkFeature.ExpireDate.Value - now).Days;
-                            if (Math.Abs(days) < Consts.JwtExpiredWarningDays)
+                            await _newNotification.CloudBkTokenExpiredAsync(new CloudBkTokenExpiredInput
                             {
-                                await _newNotification.CloudBkTokenExpiredAsync(new CloudBkTokenExpiredInput
-                                {
-                                    LeftDays = days
-                                });
-                            }
+                                LeftDays = days
+                            });
                         }
+                    }
 
-                        break;
-                    default:
-                        break;
-                }
+                    break;
+                default:
+                    break;
             }
         }
     }

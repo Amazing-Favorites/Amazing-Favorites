@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.MessageBus
+﻿namespace Newbe.BookmarkManager.Services.MessageBus;
+
+public interface IBusFactory
 {
-    public interface IBusFactory
-    {
-        IBus Create(BusOptions options);
-    }
+    IBus Create(BusOptions options);
 }

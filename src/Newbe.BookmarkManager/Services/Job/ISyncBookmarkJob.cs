@@ -1,6 +1,5 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public interface ISyncBookmarkJob : IJob
 {
-    public interface ISyncBookmarkJob : IJob
-    {
-    }
 }

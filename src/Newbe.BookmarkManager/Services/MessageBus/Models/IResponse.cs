@@ -1,6 +1,5 @@
-﻿namespace Newbe.BookmarkManager.Services.MessageBus
+﻿namespace Newbe.BookmarkManager.Services.MessageBus;
+
+public interface IResponse : IMessage
 {
-    public interface IResponse : IMessage
-    {
-    }
 }

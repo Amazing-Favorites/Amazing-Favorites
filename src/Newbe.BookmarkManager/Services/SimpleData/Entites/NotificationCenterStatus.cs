@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.SimpleData
+﻿namespace Newbe.BookmarkManager.Services.SimpleData;
+
+public record NotificationCenterStatus : ISimpleData
 {
-    public record NotificationCenterStatus : ISimpleData
-    {
-        public bool NewMessage { get; set; }
-    }
+    public bool NewMessage { get; set; }
 }

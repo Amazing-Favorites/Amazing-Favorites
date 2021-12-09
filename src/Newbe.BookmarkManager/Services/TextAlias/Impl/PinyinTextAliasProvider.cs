@@ -3,34 +3,33 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Newbe.BookmarkManager.Services
+namespace Newbe.BookmarkManager.Services;
+
+public class PinyinTextAliasProvider : TextAliasProviderBase
 {
-    public class PinyinTextAliasProvider : TextAliasProviderBase
+    private readonly IPinyinApi _pinyinApi;
+    public override TextAliasType TextAliasType => TextAliasType.Pinyin;
+
+    public PinyinTextAliasProvider(IClock clock,
+        ILogger<PinyinTextAliasProvider> logger,
+        IPinyinApi pinyinApi) : base(clock, logger)
     {
-        private readonly IPinyinApi _pinyinApi;
-        public override TextAliasType TextAliasType => TextAliasType.Pinyin;
+        _pinyinApi = pinyinApi;
+    }
 
-        public PinyinTextAliasProvider(IClock clock,
-            ILogger<PinyinTextAliasProvider> logger,
-            IPinyinApi pinyinApi) : base(clock, logger)
+
+    protected override async Task<Dictionary<string, string>> GetAliasCoreAsync(IEnumerable<string> title)
+    {
+        var repo = await _pinyinApi.GetPinyinAsync(new PinyinInput
         {
-            _pinyinApi = pinyinApi;
+            Text = title.ToArray()
+        });
+        if (repo.IsSuccessStatusCode && repo.Content != null)
+        {
+            var pinyinOutput = repo.Content;
+            return pinyinOutput.IsOk ? pinyinOutput.Pinyin : new();
         }
 
-
-        protected override async Task<Dictionary<string, string>> GetAliasCoreAsync(IEnumerable<string> title)
-        {
-            var repo = await _pinyinApi.GetPinyinAsync(new PinyinInput
-            {
-                Text = title.ToArray()
-            });
-            if (repo.IsSuccessStatusCode && repo.Content != null)
-            {
-                var pinyinOutput = repo.Content;
-                return pinyinOutput.IsOk ? pinyinOutput.Pinyin : new();
-            }
-
-            return new Dictionary<string, string>();
-        }
+        return new Dictionary<string, string>();
     }
 }

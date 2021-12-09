@@ -1,10 +1,9 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public interface IClock
 {
-    public interface IClock
-    {
-        /// <summary>
-        /// Unix time seconds
-        /// </summary>
-        public long UtcNow { get; }
-    }
+    /// <summary>
+    /// Unix time seconds
+    /// </summary>
+    public long UtcNow { get; }
 }

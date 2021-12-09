@@ -1,6 +1,5 @@
-﻿namespace Newbe.BookmarkManager.Services.SimpleData
+﻿namespace Newbe.BookmarkManager.Services.SimpleData;
+
+public interface ISimpleData
 {
-    public interface ISimpleData
-    {
-    }
 }

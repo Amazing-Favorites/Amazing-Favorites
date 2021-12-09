@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.SimpleData
+﻿namespace Newbe.BookmarkManager.Services.SimpleData;
+
+public class CloudBkSyncStatics : ISimpleData
 {
-    public class CloudBkSyncStatics : ISimpleData
-    {
-        public long? LastSyncTime { get; set; }
-    }
+    public long? LastSyncTime { get; set; }
 }
