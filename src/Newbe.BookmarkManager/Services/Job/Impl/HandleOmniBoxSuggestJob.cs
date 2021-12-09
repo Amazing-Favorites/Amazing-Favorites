@@ -135,7 +135,7 @@ public class HandleOmniBoxSuggestJob : IHandleOmniBoxSuggestJob
         await _webExtensions.Omnibox.OnInputEntered.RemoveListener(OmniboxSuggestTabOpenAsync);
     }
 
-    private async void OmniboxSuggestActiveAsync(string input, Action<IEnumerable<SuggestResult>> suggest)
+    private void OmniboxSuggestActiveAsync(string input, Action<IEnumerable<SuggestResult>> suggest)
     {
         _subject.OnNext(new SearchItem
         {
