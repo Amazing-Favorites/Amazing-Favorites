@@ -8,100 +8,99 @@ using Newbe.BookmarkManager.Services.LPC;
 using Newbe.BookmarkManager.Services.Servers;
 using Newbe.BookmarkManager.Services.SimpleData;
 
-namespace Newbe.BookmarkManager.Components
+namespace Newbe.BookmarkManager.Components;
+
+public partial class NotificationCenter
 {
-    public partial class NotificationCenter
+    [Inject] public INotificationCenterCore NotificationCenterCore { get; set; }
+
+    protected override Task OnInitializedAsync()
     {
-        [Inject] public INotificationCenterCore NotificationCenterCore { get; set; }
+        NotificationCenterCore.StateChangeHandler = () => InvokeAsync(StateHasChanged);
+        return base.OnInitializedAsync();
+    }
 
-        protected override Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
         {
-            NotificationCenterCore.StateChangeHandler = () => InvokeAsync(StateHasChanged);
-            return base.OnInitializedAsync();
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            await base.OnAfterRenderAsync(firstRender);
-            if (firstRender)
-            {
-                await NotificationCenterCore.InitAsync();
-                StateHasChanged();
-            }
-        }
-
-        private async Task ClickNotificationCenterAsync()
-        {
-            await NotificationCenterCore.MarkAsReadAsync();
+            await NotificationCenterCore.InitAsync();
+            StateHasChanged();
         }
     }
 
-    public interface IComponentService
+    private async Task ClickNotificationCenterAsync()
     {
-        Func<Task> StateChangeHandler { get; set; }
+        await NotificationCenterCore.MarkAsReadAsync();
+    }
+}
+
+public interface IComponentService
+{
+    Func<Task> StateChangeHandler { get; set; }
+}
+
+public interface INotificationCenterCore : IComponentService
+{
+    bool RedDot { get; }
+    bool NewMessage { get; }
+    List<NotificationRecord> Records { get; }
+    Task InitAsync();
+    Task MarkAsReadAsync();
+}
+
+public class NotificationCenterCore : INotificationCenterCore
+{
+    private readonly INotificationRecordService _notificationRecordService;
+    private readonly IAfEventHub _afEventHub;
+
+    private readonly ILPCClient<INotificationRecordServer> _lpcClient;
+
+    public NotificationCenterCore(
+        INotificationRecordService notificationRecordService,
+        IAfEventHub afEventHub,
+        ILPCClient<INotificationRecordServer> lpcClient)
+    {
+        _notificationRecordService = notificationRecordService;
+        _afEventHub = afEventHub;
+        _lpcClient = lpcClient;
     }
 
-    public interface INotificationCenterCore : IComponentService
+    public bool RedDot { get; private set; }
+    public bool NewMessage { get; private set; }
+    public List<NotificationRecord> Records { get; private set; } = new();
+
+    public async Task InitAsync()
     {
-        bool RedDot { get; }
-        bool NewMessage { get; }
-        List<NotificationRecord> Records { get; }
-        Task InitAsync();
-        Task MarkAsReadAsync();
+        _afEventHub.RegisterHandler<NewNotificationEvent>(HandleNewNotificationEvent);
+        await _lpcClient.StartAsync();
+        await LoadDataAsync();
     }
 
-    public class NotificationCenterCore : INotificationCenterCore
+    private async Task LoadDataAsync()
     {
-        private readonly INotificationRecordService _notificationRecordService;
-        private readonly IAfEventHub _afEventHub;
-
-        private readonly ILPCClient<INotificationRecordServer> _lpcClient;
-
-        public NotificationCenterCore(
-            INotificationRecordService notificationRecordService,
-            IAfEventHub afEventHub,
-            ILPCClient<INotificationRecordServer> lpcClient)
-        {
-            _notificationRecordService = notificationRecordService;
-            _afEventHub = afEventHub;
-            _lpcClient = lpcClient;
-        }
-
-        public bool RedDot { get; private set; }
-        public bool NewMessage { get; private set; }
-        public List<NotificationRecord> Records { get; private set; } = new();
-
-        public async Task InitAsync()
-        {
-            _afEventHub.RegisterHandler<NewNotificationEvent>(HandleNewNotificationEvent);
-            await _lpcClient.StartAsync();
-            await LoadDataAsync();
-        }
-
-        private async Task LoadDataAsync()
-        {
-            Records = (await _lpcClient
-                .InvokeAsync<GetListNotificationRecordRequest, NotificationRecordResponse<List<NotificationRecord>>>(new GetListNotificationRecordRequest())).Data;
-            var status = (await _lpcClient
-                .InvokeAsync<GetNewMessageStatusNotificationRequest, NotificationRecordResponse<bool>>(
-                    new GetNewMessageStatusNotificationRequest())).Data;
-            RedDot = status;
-        }
-
-        private async Task HandleNewNotificationEvent(NewNotificationEvent arg)
-        {
-            await LoadDataAsync();
-            NewMessage = true;
-            await StateChangeHandler.Invoke();
-        }
-
-        public async Task MarkAsReadAsync()
-        {
-            await _notificationRecordService.MakeAsReadAsync();
-            RedDot = false;
-            NewMessage = false;
-        }
-
-        public Func<Task> StateChangeHandler { get; set; }
+        Records = (await _lpcClient
+            .InvokeAsync<GetListNotificationRecordRequest, NotificationRecordResponse<List<NotificationRecord>>>(new GetListNotificationRecordRequest())).Data;
+        var status = (await _lpcClient
+            .InvokeAsync<GetNewMessageStatusNotificationRequest, NotificationRecordResponse<bool>>(
+                new GetNewMessageStatusNotificationRequest())).Data;
+        RedDot = status;
     }
+
+    private async Task HandleNewNotificationEvent(NewNotificationEvent arg)
+    {
+        await LoadDataAsync();
+        NewMessage = true;
+        await StateChangeHandler.Invoke();
+    }
+
+    public async Task MarkAsReadAsync()
+    {
+        await _notificationRecordService.MakeAsReadAsync();
+        RedDot = false;
+        NewMessage = false;
+    }
+
+    public Func<Task> StateChangeHandler { get; set; }
 }

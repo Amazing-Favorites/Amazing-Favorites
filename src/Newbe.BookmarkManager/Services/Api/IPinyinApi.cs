@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Refit;
 
-namespace Newbe.BookmarkManager.Services
+namespace Newbe.BookmarkManager.Services;
+
+public interface IPinyinApi
 {
-    public interface IPinyinApi
-    {
-        [Post("/pinyin")]
-        Task<ApiResponse<PinyinOutput>> GetPinyinAsync(PinyinInput input);
-    }
+    [Post("/pinyin")]
+    Task<ApiResponse<PinyinOutput>> GetPinyinAsync(PinyinInput input);
 }

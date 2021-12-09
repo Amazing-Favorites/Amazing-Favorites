@@ -1,10 +1,9 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public enum AfCodeType
 {
-    public enum AfCodeType
-    {
-        JsonBase64 = 1,
-        CompressionJsonBase64 = 2,
-        PlainText = 3,
-        Cloud = 7,
-    }
+    JsonBase64 = 1,
+    CompressionJsonBase64 = 2,
+    PlainText = 3,
+    Cloud = 7,
 }

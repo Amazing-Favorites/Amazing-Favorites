@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Newbe.BookmarkManager.Services
+namespace Newbe.BookmarkManager.Services;
+
+public interface IJob
 {
-    public interface IJob
-    {
-        ValueTask StartAsync();
-    }
+    ValueTask StartAsync();
 }

@@ -1,8 +1,7 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public record BkViewItem(Bk Bk)
 {
-    public record BkViewItem(Bk Bk)
-    {
-        public bool ShowIndex { get; set; }
-        public int LineIndex { get; set; }
-    }
+    public bool ShowIndex { get; set; }
+    public int LineIndex { get; set; }
 }

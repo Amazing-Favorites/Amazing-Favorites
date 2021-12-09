@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.EventHubs
+﻿namespace Newbe.BookmarkManager.Services.EventHubs;
+
+public record SmallCacheExpiredEvent : IAfEvent
 {
-    public record SmallCacheExpiredEvent : IAfEvent
-    {
-        public string CacheKey { get; set; }
-    }
+    public string CacheKey { get; set; }
 }

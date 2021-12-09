@@ -1,6 +1,5 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public interface ISyncCloudStatusCheckJob : IJob
 {
-    public interface ISyncCloudStatusCheckJob : IJob
-    {
-    }
 }

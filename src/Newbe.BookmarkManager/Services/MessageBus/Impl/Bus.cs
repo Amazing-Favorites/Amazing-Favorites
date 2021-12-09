@@ -6,110 +6,109 @@ using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Extensions.Logging;
 
-namespace Newbe.BookmarkManager.Services.MessageBus
+namespace Newbe.BookmarkManager.Services.MessageBus;
+
+public class Bus : IBus
 {
-    public class Bus : IBus
+    public delegate Bus Factory(BusOptions options);
+
+    internal static readonly long DefaultExpiredDuration = (long)TimeSpan.FromSeconds(5).TotalSeconds;
+    internal readonly MessageHandlerCollection MessageHandlerCollection;
+    private readonly BusOptions _busOptions;
+    private readonly ILogger<Bus> _logger;
+    private readonly IStorageApiWrapper _storageApiWrapper;
+    private readonly ILifetimeScope _lifetimeScope;
+    private readonly IClock _clock;
+
+    public Bus(
+        BusOptions options,
+        ILogger<Bus> logger,
+        IStorageApiWrapper storageApiWrapper,
+        ILifetimeScope lifetimeScope,
+        IClock clock)
     {
-        public delegate Bus Factory(BusOptions options);
+        _busOptions = options;
+        _logger = logger;
+        _storageApiWrapper = storageApiWrapper;
+        _lifetimeScope = lifetimeScope;
+        _clock = clock;
+        MessageHandlerCollection = new MessageHandlerCollection(_clock);
+        BusId = RandomIdHelper.GetId();
+    }
 
-        internal static readonly long DefaultExpiredDuration = (long)TimeSpan.FromSeconds(5).TotalSeconds;
-        internal readonly MessageHandlerCollection MessageHandlerCollection;
-        private readonly BusOptions _busOptions;
-        private readonly ILogger<Bus> _logger;
-        private readonly IStorageApiWrapper _storageApiWrapper;
-        private readonly ILifetimeScope _lifetimeScope;
-        private readonly IClock _clock;
+    private int _locker;
 
-        public Bus(
-            BusOptions options,
-            ILogger<Bus> logger,
-            IStorageApiWrapper storageApiWrapper,
-            ILifetimeScope lifetimeScope,
-            IClock clock)
+    public string BusId { get; }
+
+    public async Task EnsureStartAsync()
+    {
+        if (Interlocked.Increment(ref _locker) != 1)
         {
-            _busOptions = options;
-            _logger = logger;
-            _storageApiWrapper = storageApiWrapper;
-            _lifetimeScope = lifetimeScope;
-            _clock = clock;
-            MessageHandlerCollection = new MessageHandlerCollection(_clock);
-            BusId = RandomIdHelper.GetId();
+            _logger.LogInformation("AfEventHub already started");
+            return;
         }
 
-        private int _locker;
+        _logger.LogInformation("Start to run AfEventHub");
 
-        public string BusId { get; }
+        await _storageApiWrapper.RegisterCallBack(OnReceivedChanged);
+    }
 
-        public async Task EnsureStartAsync()
+    private void OnReceivedChanged(JsonElement jsonElement, string area)
+    {
+        _logger.LogDebug("receive storage changes {Changes}", jsonElement);
+        if (jsonElement.TryGetProperty(_busOptions.EnvelopName, out var value))
         {
-            if (Interlocked.Increment(ref _locker) != 1)
+            if (value.TryGetProperty("newValue", out var newValue))
             {
-                _logger.LogInformation("AfEventHub already started");
-                return;
-            }
-
-            _logger.LogInformation("Start to run AfEventHub");
-
-            await _storageApiWrapper.RegisterCallBack(OnReceivedChanged);
-        }
-
-        private void OnReceivedChanged(JsonElement jsonElement, string area)
-        {
-            _logger.LogDebug("receive storage changes {Changes}", jsonElement);
-            if (jsonElement.TryGetProperty(_busOptions.EnvelopName, out var value))
-            {
-                if (value.TryGetProperty("newValue", out var newValue))
+                var channelMessage = newValue.Deserialize<BusMessageEnvelop>();
+                if (channelMessage == null)
                 {
-                    var channelMessage = newValue.Deserialize<BusMessageEnvelop>();
-                    if (channelMessage == null)
-                    {
-                        _logger.LogInformation("Not channel message");
-                        return;
-                    }
-
-                    MessageHandlerCollection.Handle(channelMessage.Message, _lifetimeScope);
+                    _logger.LogInformation("Not channel message");
+                    return;
                 }
+
+                MessageHandlerCollection.Handle(channelMessage.Message, _lifetimeScope);
             }
         }
+    }
 
-        public void RegisterHandler(string messageType, RequestHandlerDelegate handler, string? messageId = null)
+    public void RegisterHandler(string messageType, RequestHandlerDelegate handler, string? messageId = null)
+    {
+        var eventName = messageType;
+        if (string.IsNullOrEmpty(messageId))
         {
-            var eventName = messageType;
-            if (string.IsNullOrEmpty(messageId))
-            {
-                MessageHandlerCollection.AddHandler(message => message.MessageType == messageType,
-                    handler);
-            }
-            else
-            {
-                MessageHandlerCollection.AddHandler(
-                    message => message.MessageType == messageType && message.ParentMessageId == messageId,
-                    handler,
-                    _clock.UtcNow + DefaultExpiredDuration);
-            }
+            MessageHandlerCollection.AddHandler(message => message.MessageType == messageType,
+                handler);
         }
-
-        public async Task SendMessage(BusMessage message)
+        else
         {
-            var messageType = message.MessageType;
-            message.SenderId = BusId;
-            _logger.LogInformation("Event published {MessageType}", messageType);
-            try
+            MessageHandlerCollection.AddHandler(
+                message => message.MessageType == messageType && message.ParentMessageId == messageId,
+                handler,
+                _clock.UtcNow + DefaultExpiredDuration);
+        }
+    }
+
+    public async Task SendMessage(BusMessage message)
+    {
+        var messageType = message.MessageType;
+        message.SenderId = BusId;
+        _logger.LogInformation("Event published {MessageType}", messageType);
+        try
+        {
+            var channelMessageEnvelop = new BusMessageEnvelop
             {
-                var channelMessageEnvelop = new BusMessageEnvelop
-                {
-                    Message = message,
-                    UtcNow = _clock.UtcNow
-                };
-                await _storageApiWrapper.SetLocal(new Dictionary<string, object>
-                {
-                    { _busOptions.EnvelopName, channelMessageEnvelop }
-                });
-            }
-            catch (Exception)
+                Message = message,
+                UtcNow = _clock.UtcNow
+            };
+            await _storageApiWrapper.SetLocal(new Dictionary<string, object>
             {
-                // ignore
-            }
+                { _busOptions.EnvelopName, channelMessageEnvelop }
+            });
+        }
+        catch (Exception)
+        {
+            // ignore
         }
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.SimpleData
+﻿namespace Newbe.BookmarkManager.Services.SimpleData;
+
+public record GoogleDriveStatics : ISimpleData
 {
-    public record GoogleDriveStatics : ISimpleData
-    {
-        public long? LastSuccessUploadTime { get; set; }
-    }
+    public long? LastSuccessUploadTime { get; set; }
 }

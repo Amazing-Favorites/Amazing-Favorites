@@ -1,8 +1,7 @@
 ﻿using Newbe.BookmarkManager.Services.MessageBus;
 
-namespace Newbe.BookmarkManager.Services.EventHubs
+namespace Newbe.BookmarkManager.Services.EventHubs;
+
+public interface IAfEvent : IMessage
 {
-    public interface IAfEvent : IMessage
-    {
-    }
 }

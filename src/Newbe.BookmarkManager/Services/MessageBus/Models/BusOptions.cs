@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.MessageBus
+﻿namespace Newbe.BookmarkManager.Services.MessageBus;
+
+public record BusOptions
 {
-    public record BusOptions
-    {
-        public string EnvelopName { get; set; } = null!;
-    }
+    public string EnvelopName { get; set; } = null!;
 }

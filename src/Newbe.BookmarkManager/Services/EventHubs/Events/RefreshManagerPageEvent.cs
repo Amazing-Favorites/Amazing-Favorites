@@ -1,9 +1,8 @@
 ﻿
 
 
-namespace Newbe.BookmarkManager.Services.EventHubs
+namespace Newbe.BookmarkManager.Services.EventHubs;
+
+public record RefreshManagerPageEvent : IAfEvent
 {
-    public record RefreshManagerPageEvent : IAfEvent
-    {
-    }
 }
