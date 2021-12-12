@@ -1,7 +1,7 @@
 ﻿{
   "manifest_version": 2,
   "name": "Amazing Favorites",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Amazing Favorites help you to manage you bookmarks efficiently",
   "omnibox": {
     "keyword": "af"
