@@ -19,6 +19,7 @@ namespace Newbe.BookmarkManager.Services
         private readonly IHandleUserClickIconJob _handleUserClickIconJob;
         private readonly IHandleOmniBoxSuggestJob _handleOmniBoxSuggestJob;
         private readonly IServerJob _bkSearcherServer;
+        private readonly IInviteUserCommentsJob _inviteUserCommentsJob;
         public JobHost(
             ILogger<JobHost> logger,
             ISyncBookmarkJob syncBookmarkJob,
@@ -32,7 +33,7 @@ namespace Newbe.BookmarkManager.Services
             IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob,
             IHandleUserClickIconJob handleUserClickIconJob,
             IHandleOmniBoxSuggestJob handleOmniBoxSuggestJob,
-            IServerJob bkSearcherServer)
+            IServerJob bkSearcherServer, IInviteUserCommentsJob inviteUserCommentsJob)
         {
             _logger = logger;
             _syncBookmarkJob = syncBookmarkJob;
@@ -47,6 +48,7 @@ namespace Newbe.BookmarkManager.Services
             _handleUserClickIconJob = handleUserClickIconJob;
             _handleOmniBoxSuggestJob = handleOmniBoxSuggestJob;
             _bkSearcherServer = bkSearcherServer;
+            _inviteUserCommentsJob = inviteUserCommentsJob;
         }
 
         public async Task StartAsync()
@@ -77,6 +79,7 @@ namespace Newbe.BookmarkManager.Services
                 yield return _syncTagRelatedBkCountJob;
                 yield return _syncCloudStatusCheckJob;
                 yield return _inviteAcceptPrivacyAgreementJob;
+                yield return _inviteUserCommentsJob;
             }
         }
     }

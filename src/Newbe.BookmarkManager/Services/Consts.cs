@@ -9,6 +9,8 @@ namespace Newbe.BookmarkManager.Services
         public const string CurrentVersion = "0.7.1";
         public const string PrivacyAgreementVersionDate = "2021/08/29";
 
+        public const int InviteUserCommentsCdDays = 14;
+
         public static readonly string[] Versions =
         {
             CurrentVersion,

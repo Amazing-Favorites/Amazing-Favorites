@@ -339,6 +339,7 @@ namespace Newbe.BookmarkManager
                     yield return typeof(SyncTagRelatedBkCountJob);
                     yield return typeof(SyncCloudJob);
                     yield return typeof(SyncCloudStatusCheckJob);
+                    yield return typeof(InviteUserCommentsJob);
                 }
             }
         }
