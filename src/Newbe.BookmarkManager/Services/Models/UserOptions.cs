@@ -16,6 +16,7 @@ namespace Newbe.BookmarkManager.Services
         public HotTagsFeature? HotTagsFeature { get; set; }
         public ApplicationInsightFeature? ApplicationInsightFeature { get; set; }
 
+        public DateTime? InvitationTime { get; set; }
         public OmniboxSuggestFeature? OmniboxSuggestFeature { get; set; }
     }
 

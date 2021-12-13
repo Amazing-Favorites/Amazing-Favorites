@@ -91,5 +91,16 @@ namespace Newbe.BookmarkManager.Services
                 ArgsJson = JsonSerializer.Serialize(input)
             });
         }
+
+        public Task InviteUserCommentsAsync()
+        {
+            return _notificationRecordService.AddAsync(new MsgItem
+            {
+                Type = UserNotificationType.PrivacyAgreementUpdated,
+                Title = "⚖ Invite user comments",
+                Message =
+                    "Invite user comments"
+            });
+        }
     }
 }

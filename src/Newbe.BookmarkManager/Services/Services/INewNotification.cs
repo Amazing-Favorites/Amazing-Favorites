@@ -11,6 +11,7 @@ namespace Newbe.BookmarkManager.Services
         Task CloudBkTokenExpiredAsync(CloudBkTokenExpiredInput input);
         Task SuccessToSyncBkWithCloudAsync(SuccessToSyncBkWithCloudInput input);
         Task SyncDataWithCloudAsync(SyncDataWithCloudInput input);
+        Task InviteUserCommentsAsync();
     }
 
     public record NewReleaseInput
