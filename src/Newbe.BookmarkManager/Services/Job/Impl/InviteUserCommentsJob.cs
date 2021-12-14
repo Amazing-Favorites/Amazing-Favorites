@@ -9,6 +9,14 @@ namespace Newbe.BookmarkManager.Services
         private readonly IUserOptionsService _userOptionsService;
         private readonly INewNotification _newNotification;
         private readonly ILogger<InviteAcceptPrivacyAgreementJob> _logger;
+
+        public InviteUserCommentsJob(IUserOptionsService userOptionsService, INewNotification newNotification, ILogger<InviteAcceptPrivacyAgreementJob> logger)
+        {
+            _userOptionsService = userOptionsService;
+            _newNotification = newNotification;
+            _logger = logger;
+        }
+
         public async ValueTask StartAsync()
         {
             var userOptions = await _userOptionsService.GetOptionsAsync();
