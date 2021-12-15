@@ -1,7 +1,7 @@
 ﻿namespace Newbe.BookmarkManager.Services
 {
-    public interface IInviteUserCommentsJob:IJob
+    public interface IInviteUserCommentsJob : IJob
     {
-        
+
     }
 }

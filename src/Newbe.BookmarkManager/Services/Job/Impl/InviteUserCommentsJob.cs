@@ -5,7 +5,7 @@ using WebExtensions.Net;
 
 namespace Newbe.BookmarkManager.Services
 {
-    public class InviteUserCommentsJob:IInviteUserCommentsJob
+    public class InviteUserCommentsJob : IInviteUserCommentsJob
     {
         private readonly IUserOptionsService _userOptionsService;
         private readonly INewNotification _newNotification;

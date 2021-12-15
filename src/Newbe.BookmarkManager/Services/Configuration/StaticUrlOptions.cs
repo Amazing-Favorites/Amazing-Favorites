@@ -8,6 +8,6 @@
         public string Welcome { get; set; }
 
         public string ExtensionStore { get; set; }
-        
+
     }
 }
