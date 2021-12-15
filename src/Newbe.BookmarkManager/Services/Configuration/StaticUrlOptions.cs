@@ -1,4 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.Configuration
+﻿namespace Newbe.BookmarkManager.Services.Configuration;
+
+public record StaticUrlOptions
 {
     public record StaticUrlOptions
     {
@@ -10,4 +12,5 @@
         public string ExtensionStore { get; set; }
 
     }
+
 }

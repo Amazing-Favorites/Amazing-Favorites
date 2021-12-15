@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public interface IEntity<out TKey>
 {
-    public interface IEntity<out TKey>
-    {
-        public TKey Id { get; }
-    }
+    public TKey Id { get; }
 }

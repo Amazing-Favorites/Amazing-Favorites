@@ -1,13 +1,12 @@
 ﻿using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services.MessageBus;
 
-namespace Newbe.BookmarkManager.Services.LPC
+namespace Newbe.BookmarkManager.Services.LPC;
+
+public interface ILPCClient<out T>
 {
-    public interface ILPCClient<out T>
-    {
-        Task StartAsync();
-        Task<TResponse> InvokeAsync<TRequest, TResponse>(TRequest request)
-            where TResponse : IResponse
-            where TRequest : IRequest;
-    }
+    Task StartAsync();
+    Task<TResponse> InvokeAsync<TRequest, TResponse>(TRequest request)
+        where TResponse : IResponse
+        where TRequest : IRequest;
 }

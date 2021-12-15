@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.EventHubs
+﻿namespace Newbe.BookmarkManager.Services.EventHubs;
+
+public interface IAfEventHandler
 {
-    public interface IAfEventHandler
-    {
-        void Handle(IAfEvent afEvent);
-    }
+    void Handle(IAfEvent afEvent);
 }

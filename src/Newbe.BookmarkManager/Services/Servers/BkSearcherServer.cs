@@ -1,34 +1,33 @@
 ﻿using System.Threading.Tasks;
 
-namespace Newbe.BookmarkManager.Services.Servers
+namespace Newbe.BookmarkManager.Services.Servers;
+
+public class BkSearcherServer : IBkSearcherServer
 {
-    public class BkSearcherServer : IBkSearcherServer
+    private readonly IBkSearcher _bkSearcher;
+
+    public BkSearcherServer(IBkSearcher bkSearcher)
     {
-        private readonly IBkSearcher _bkSearcher;
+        _bkSearcher = bkSearcher;
+    }
 
-        public BkSearcherServer(IBkSearcher bkSearcher)
+    public async Task<BkSearchResponse> SearchAsync(BkSearchRequest request)
+    {
+        var result = await _bkSearcher.Search(request.SearchText, request.Limit);
+        var response = new BkSearchResponse
         {
-            _bkSearcher = bkSearcher;
-        }
+            ResultItems = result
+        };
+        return response;
+    }
 
-        public async Task<BkSearchResponse> SearchAsync(BkSearchRequest request)
+    public async Task<BkSearchResponse> GetHistoryAsync(BkSearchHistoryRequest request)
+    {
+        var result = await _bkSearcher.History(request.Limit);
+        var response = new BkSearchResponse
         {
-            var result = await _bkSearcher.Search(request.SearchText, request.Limit);
-            var response = new BkSearchResponse
-            {
-                ResultItems = result
-            };
-            return response;
-        }
-
-        public async Task<BkSearchResponse> GetHistoryAsync(BkSearchHistoryRequest request)
-        {
-            var result = await _bkSearcher.History(request.Limit);
-            var response = new BkSearchResponse
-            {
-                ResultItems = result
-            };
-            return response;
-        }
+            ResultItems = result
+        };
+        return response;
     }
 }

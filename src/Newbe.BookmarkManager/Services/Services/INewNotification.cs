@@ -1,42 +1,44 @@
 ﻿using System.Threading.Tasks;
 
-namespace Newbe.BookmarkManager.Services
+namespace Newbe.BookmarkManager.Services;
+
+public interface INewNotification
 {
-    public interface INewNotification
-    {
-        Task NewReleaseAsync(NewReleaseInput input);
-        Task WelcomeAsync();
-        Task PrivacyAgreementUpdateAsync();
-        Task PinyinTokenExpiredAsync(PinyinTokenExpiredInput input);
-        Task CloudBkTokenExpiredAsync(CloudBkTokenExpiredInput input);
-        Task SuccessToSyncBkWithCloudAsync(SuccessToSyncBkWithCloudInput input);
-        Task SyncDataWithCloudAsync(SyncDataWithCloudInput input);
-        Task InviteUserCommentsAsync();
-    }
 
-    public record NewReleaseInput
-    {
-        public string Version { get; set; } = null!;
-        public string WhatsNewUrl { get; set; } = null!;
-    }
+public interface INewNotification
+{
+    Task NewReleaseAsync(NewReleaseInput input);
+    Task WelcomeAsync();
+    Task PrivacyAgreementUpdateAsync();
+    Task PinyinTokenExpiredAsync(PinyinTokenExpiredInput input);
+    Task CloudBkTokenExpiredAsync(CloudBkTokenExpiredInput input);
+    Task SuccessToSyncBkWithCloudAsync(SuccessToSyncBkWithCloudInput input);
+    Task SyncDataWithCloudAsync(SyncDataWithCloudInput input);
+    Task InviteUserCommentsAsync();
+}
 
-    public record PinyinTokenExpiredInput
-    {
-        public int LeftDays { get; set; }
-    }
+public record NewReleaseInput
+{
+    public string Version { get; set; } = null!;
+    public string WhatsNewUrl { get; set; } = null!;
+}
 
-    public record CloudBkTokenExpiredInput
-    {
-        public int LeftDays { get; set; }
-    }
+public record PinyinTokenExpiredInput
+{
+    public int LeftDays { get; set; }
+}
 
-    public record SuccessToSyncBkWithCloudInput
-    {
-        public CloudBkProviderType CloudBkProviderType { get; set; }
-    }
+public record CloudBkTokenExpiredInput
+{
+    public int LeftDays { get; set; }
+}
 
-    public record SyncDataWithCloudInput
-    {
-        public long LastSyncTime { get; set; }
-    }
+public record SuccessToSyncBkWithCloudInput
+{
+    public CloudBkProviderType CloudBkProviderType { get; set; }
+}
+
+public record SyncDataWithCloudInput
+{
+    public long LastSyncTime { get; set; }
 }

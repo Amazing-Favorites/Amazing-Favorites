@@ -1,7 +1,6 @@
-﻿namespace Newbe.BookmarkManager.Services.Configuration
+﻿namespace Newbe.BookmarkManager.Services.Configuration;
+
+public record DevOptions
 {
-    public record DevOptions
-    {
-        public bool Enabled { get; set; }
-    }
+    public bool Enabled { get; set; }
 }

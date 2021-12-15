@@ -1,6 +1,5 @@
-﻿namespace Newbe.BookmarkManager.Services
+﻿namespace Newbe.BookmarkManager.Services;
+
+public interface IInviteAcceptPrivacyAgreementJob : IJob
 {
-    public interface IInviteAcceptPrivacyAgreementJob : IJob
-    {
-    }
 }

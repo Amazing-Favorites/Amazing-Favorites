@@ -1,9 +1,8 @@
-﻿namespace Newbe.BookmarkManager.Services.SimpleData
+﻿namespace Newbe.BookmarkManager.Services.SimpleData;
+
+public record LastUserClickIconTabData(int TabId, long ClickTime) : ISimpleData
 {
-    public record LastUserClickIconTabData(int TabId, long ClickTime) : ISimpleData
+    public LastUserClickIconTabData() : this(0, 0)
     {
-        public LastUserClickIconTabData() : this(0, 0)
-        {
-        }
     }
 }

@@ -1,6 +1,5 @@
-﻿namespace Newbe.BookmarkManager.Services.EventHubs
+﻿namespace Newbe.BookmarkManager.Services.EventHubs;
+
+public record TriggerCloudSyncEvent : IAfEvent
 {
-    public record TriggerCloudSyncEvent : IAfEvent
-    {
-    }
 }

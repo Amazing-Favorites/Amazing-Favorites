@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 
-namespace Newbe.BookmarkManager.Services.MessageBus
+namespace Newbe.BookmarkManager.Services.MessageBus;
+
+public interface IStorageApiWrapper
 {
-    public interface IStorageApiWrapper
-    {
-        ValueTask RegisterCallBack(StorageChangeCallback callback);
-        ValueTask SetLocal(object value);
-    }
+    ValueTask RegisterCallBack(StorageChangeCallback callback);
+    ValueTask SetLocal(object value);
 }

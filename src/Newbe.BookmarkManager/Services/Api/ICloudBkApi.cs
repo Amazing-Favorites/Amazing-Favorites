@@ -2,14 +2,13 @@
 using Newbe.BookmarkManager.WebApi;
 using Refit;
 
-namespace Newbe.BookmarkManager.Services
-{
-    public interface ICloudBkApi
-    {
-        [Post("/bk")]
-        Task<ApiResponse<SaveToCloudOutput>> SaveToCloudAsync(CloudBkCollection cloudBkCollection);
+namespace Newbe.BookmarkManager.Services;
 
-        [Get("/bk")]
-        Task<ApiResponse<GetCloudOutput>> GetCloudBkAsync(long etagVersion);
-    }
+public interface ICloudBkApi
+{
+    [Post("/bk")]
+    Task<ApiResponse<SaveToCloudOutput>> SaveToCloudAsync(CloudBkCollection cloudBkCollection);
+
+    [Get("/bk")]
+    Task<ApiResponse<GetCloudOutput>> GetCloudBkAsync(long etagVersion);
 }

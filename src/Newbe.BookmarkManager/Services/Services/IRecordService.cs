@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Newbe.BookmarkManager.Services
+namespace Newbe.BookmarkManager.Services;
+
+public interface IRecordService
 {
-    public interface IRecordService
-    {
-        Task AddAsync(UserClickRecord userClickRecord);
-    }
+    Task AddAsync(UserClickRecord userClickRecord);
 }

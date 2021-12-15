@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace Newbe.BookmarkManager.Components
+namespace Newbe.BookmarkManager.Components;
+
+public interface IManagePageNotificationService
 {
-    public interface IManagePageNotificationService
-    {
-        Task RunAsync();
-    }
+    Task RunAsync();
 }

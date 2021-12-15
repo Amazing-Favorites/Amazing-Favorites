@@ -2,13 +2,12 @@
 using Newbe.BookmarkManager.Services.Ai;
 using static Newbe.BookmarkManager.Services.Ai.Events;
 
-namespace Newbe.BookmarkManager.Services
-{
-    public interface IBkSearcher
-    {
-        [Insight(EventName = BkSearchEvent)]
-        Task<SearchResultItem[]> Search(string searchText, int limit);
+namespace Newbe.BookmarkManager.Services;
 
-        Task<SearchResultItem[]> History(int limit);
-    }
+public interface IBkSearcher
+{
+    [Insight(EventName = BkSearchEvent)]
+    Task<SearchResultItem[]> Search(string searchText, int limit);
+
+    Task<SearchResultItem[]> History(int limit);
 }

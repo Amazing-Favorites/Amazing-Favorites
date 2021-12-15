@@ -1,12 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Newbe.BookmarkManager.Services.SimpleData;
 
-namespace Newbe.BookmarkManager.Services
+namespace Newbe.BookmarkManager.Services;
+
+public interface IRecentSearchHolder
 {
-    public interface IRecentSearchHolder
-    {
-        RecentSearch RecentSearch { get; }
-        Task AddAsync(string text);
-        Task<RecentSearch> LoadAsync();
-    }
+    RecentSearch RecentSearch { get; }
+    Task AddAsync(string text);
+    Task<RecentSearch> LoadAsync();
 }

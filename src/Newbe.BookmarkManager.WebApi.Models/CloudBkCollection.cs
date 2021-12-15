@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Newbe.BookmarkManager.WebApi
+namespace Newbe.BookmarkManager.WebApi;
+
+public record CloudBkCollection
 {
-    public record CloudBkCollection
-    {
-        [JsonPropertyName("d")] public long LastUpdateTime { get; init; }
+    [JsonPropertyName("d")] public long LastUpdateTime { get; init; }
 
-        [JsonPropertyName("e")] public long EtagVersion { get; set; }
+    [JsonPropertyName("e")] public long EtagVersion { get; set; }
 
-        /// <summary>
-        /// key: urlHash
-        /// </summary>
-        [JsonPropertyName("bks")]
-        public Dictionary<string, CloudBk> Bks { get; init; } = new();
-    }
+    /// <summary>
+    /// key: urlHash
+    /// </summary>
+    [JsonPropertyName("bks")]
+    public Dictionary<string, CloudBk> Bks { get; init; } = new();
 }

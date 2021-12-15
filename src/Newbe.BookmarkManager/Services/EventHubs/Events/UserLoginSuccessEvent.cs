@@ -1,8 +1,7 @@
-﻿namespace Newbe.BookmarkManager.Services.EventHubs
+﻿namespace Newbe.BookmarkManager.Services.EventHubs;
+
+public record UserLoginSuccessEvent(
+    CloudBkProviderType CloudBkProviderType,
+    string AccessToken) : IAfEvent
 {
-    public record UserLoginSuccessEvent(
-        CloudBkProviderType CloudBkProviderType,
-        string AccessToken) : IAfEvent
-    {
-    }
 }
