@@ -30,6 +30,7 @@ namespace Newbe.BookmarkManager.Services
         PrivacyAgreementUpdated,
         PinyinTokenExpired,
         CloudBkTokenExpired,
-        SuccessToSyncBkWithCloud
+        SuccessToSyncBkWithCloud,
+        InviteUserComments,
     }
 }

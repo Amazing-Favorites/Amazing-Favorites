@@ -96,10 +96,10 @@ namespace Newbe.BookmarkManager.Services
         {
             return _notificationRecordService.AddAsync(new MsgItem
             {
-                Type = UserNotificationType.PrivacyAgreementUpdated,
-                Title = "⚖ Invite user comments",
+                Type = UserNotificationType.InviteUserComments,
+                Title = "👍 Like",
                 Message =
-                    "Invite user comments"
+                    ""
             });
         }
     }

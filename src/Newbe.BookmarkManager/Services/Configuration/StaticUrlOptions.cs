@@ -6,5 +6,8 @@
         public string WhatsNew { get; set; }
         public string PrivacyAgreement { get; set; }
         public string Welcome { get; set; }
+
+        public string ExtensionStore { get; set; }
+        
     }
 }

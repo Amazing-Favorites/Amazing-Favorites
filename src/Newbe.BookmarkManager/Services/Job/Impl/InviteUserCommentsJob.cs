@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using WebExtensions.Net;
 
 namespace Newbe.BookmarkManager.Services
 {
@@ -10,7 +11,10 @@ namespace Newbe.BookmarkManager.Services
         private readonly INewNotification _newNotification;
         private readonly ILogger<InviteAcceptPrivacyAgreementJob> _logger;
 
-        public InviteUserCommentsJob(IUserOptionsService userOptionsService, INewNotification newNotification, ILogger<InviteAcceptPrivacyAgreementJob> logger)
+        public InviteUserCommentsJob(IUserOptionsService userOptionsService,
+            INewNotification newNotification,
+            ILogger<InviteAcceptPrivacyAgreementJob> logger,
+            IWebExtensionsApi webExtensionsApi)
         {
             _userOptionsService = userOptionsService;
             _newNotification = newNotification;
