@@ -28,9 +28,9 @@ public class InviteUserCommentsJobTest
             .Setup(x => x.InviteUserCommentsAsync())
             .Returns(Task.CompletedTask)
             .Verifiable();
-        
+
         mocker.Mock<IUserOptionsService>()
-            .Setup(x=> x.GetOptionsAsync())
+            .Setup(x => x.GetOptionsAsync())
             .ReturnsAsync(new UserOptions
             {
                 InvitationTime = DateTime.Now.Date.AddDays(-Consts.InviteUserCommentsCdDays).AddDays(-1)
@@ -44,9 +44,9 @@ public class InviteUserCommentsJobTest
     {
         using var mocker = AutoMock.GetLoose();
         mocker.Mock<INewNotification>()
-            .Verify(x => x.InviteUserCommentsAsync(),Times.Never);
+            .Verify(x => x.InviteUserCommentsAsync(), Times.Never);
         mocker.Mock<IUserOptionsService>()
-            .Setup(x=> x.GetOptionsAsync())
+            .Setup(x => x.GetOptionsAsync())
             .ReturnsAsync(new UserOptions
             {
                 InvitationTime = DateTime.Now.Date.AddDays(-Consts.InviteUserCommentsCdDays).AddDays(1)
@@ -55,5 +55,5 @@ public class InviteUserCommentsJobTest
         var job = mocker.Create<InviteUserCommentsJob>();
         await job.StartAsync();
     }
-    
+
 }
