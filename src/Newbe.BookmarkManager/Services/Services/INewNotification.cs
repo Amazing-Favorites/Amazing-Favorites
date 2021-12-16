@@ -4,9 +4,6 @@ namespace Newbe.BookmarkManager.Services;
 
 public interface INewNotification
 {
-
-public interface INewNotification
-{
     Task NewReleaseAsync(NewReleaseInput input);
     Task WelcomeAsync();
     Task PrivacyAgreementUpdateAsync();

@@ -83,13 +83,13 @@ public class NewNotification : INewNotification
     public Task SyncDataWithCloudAsync(SyncDataWithCloudInput input)
     {
         return _notificationRecordService.AddAsync(new MsgItem
-            {
-                Type = UserNotificationType.SyncDataWithCloud,
-                Title = "☁ Remind to sync to cloud",
-                Message =
+        {
+            Type = UserNotificationType.SyncDataWithCloud,
+            Title = "☁ Remind to sync to cloud",
+            Message =
                     "You haven`t sync your data for a few time, please click the button to keep your data up to date",
-                ArgsJson = JsonSerializer.Serialize(input)
-            });
+            ArgsJson = JsonSerializer.Serialize(input)
+        });
     }
 
     public Task InviteUserCommentsAsync()
