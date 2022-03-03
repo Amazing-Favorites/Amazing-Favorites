@@ -50,7 +50,7 @@ jobs:
           cp Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}/content/manifest_prod.json Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}/manifest.json -f
           zip -r Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: |
             src/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip

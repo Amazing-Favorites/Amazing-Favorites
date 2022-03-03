@@ -67,7 +67,7 @@ jobs:
           assets: |
             src/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip
       - name: Archive artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: |
             src/Amazing-Favorites-${{ steps.gitversion.outputs.MajorMinorPatch }}-aot-${{ matrix.enable-aot }}.zip
