@@ -325,6 +325,7 @@ public class Program
                     .SingleInstance();
             }
 
+
             IEnumerable<Type> GetJobTypes()
             {
                 yield return typeof(DataFixJob);
@@ -339,7 +340,9 @@ public class Program
                 yield return typeof(SyncTagRelatedBkCountJob);
                 yield return typeof(SyncCloudJob);
                 yield return typeof(SyncCloudStatusCheckJob);
+                yield return typeof(InviteUserCommentsJob);
             }
+
         }
     }
 }

@@ -87,8 +87,19 @@ public class NewNotification : INewNotification
             Type = UserNotificationType.SyncDataWithCloud,
             Title = "☁ Remind to sync to cloud",
             Message =
-                "You haven`t sync your data for a few time, please click the button to keep your data up to date",
+                    "You haven`t sync your data for a few time, please click the button to keep your data up to date",
             ArgsJson = JsonSerializer.Serialize(input)
+        });
+    }
+
+    public Task InviteUserCommentsAsync()
+    {
+        return _notificationRecordService.AddAsync(new MsgItem
+        {
+            Type = UserNotificationType.InviteUserComments,
+            Title = "👍 Like",
+            Message =
+                ""
         });
     }
 }

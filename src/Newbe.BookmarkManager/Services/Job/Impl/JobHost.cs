@@ -19,6 +19,7 @@ public class JobHost : IJobHost
     private readonly IHandleUserClickIconJob _handleUserClickIconJob;
     private readonly IHandleOmniBoxSuggestJob _handleOmniBoxSuggestJob;
     private readonly IServerJob _bkSearcherServer;
+    private readonly IInviteUserCommentsJob _inviteUserCommentsJob;
     public JobHost(
         ILogger<JobHost> logger,
         ISyncBookmarkJob syncBookmarkJob,
@@ -32,7 +33,8 @@ public class JobHost : IJobHost
         IInviteAcceptPrivacyAgreementJob inviteAcceptPrivacyAgreementJob,
         IHandleUserClickIconJob handleUserClickIconJob,
         IHandleOmniBoxSuggestJob handleOmniBoxSuggestJob,
-        IServerJob bkSearcherServer)
+        IServerJob bkSearcherServer,
+        IInviteUserCommentsJob inviteUserCommentsJob)
     {
         _logger = logger;
         _syncBookmarkJob = syncBookmarkJob;
@@ -47,6 +49,7 @@ public class JobHost : IJobHost
         _handleUserClickIconJob = handleUserClickIconJob;
         _handleOmniBoxSuggestJob = handleOmniBoxSuggestJob;
         _bkSearcherServer = bkSearcherServer;
+        _inviteUserCommentsJob = inviteUserCommentsJob;
     }
 
     public async Task StartAsync()
@@ -77,6 +80,7 @@ public class JobHost : IJobHost
             yield return _syncTagRelatedBkCountJob;
             yield return _syncCloudStatusCheckJob;
             yield return _inviteAcceptPrivacyAgreementJob;
+            yield return _inviteUserCommentsJob;
         }
     }
 }
