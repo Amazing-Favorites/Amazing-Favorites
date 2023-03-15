@@ -12,7 +12,7 @@
 
     <ItemGroup>
         <PackageReference Include="AntDesign" Version="0.14.2" />
-        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
         <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.1" />
         <PackageReference Include="Blazor.BrowserExtension" Version="0.7.3" />
         <PackageReference Include="BlazorApplicationInsights" Version="1.5.0" />
