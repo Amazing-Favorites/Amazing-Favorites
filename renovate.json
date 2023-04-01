@@ -2,6 +2,6 @@
   "extends": [
     "config:base"
   ],
-  "labels": ["skip-changelog"]，
+  "labels": ["skip-changelog"],
   "enabled": false
 }
