@@ -30,5 +30,6 @@ public enum UserNotificationType
     PrivacyAgreementUpdated,
     PinyinTokenExpired,
     CloudBkTokenExpired,
-    SuccessToSyncBkWithCloud
+    SuccessToSyncBkWithCloud,
+    InviteUserComments,
 }

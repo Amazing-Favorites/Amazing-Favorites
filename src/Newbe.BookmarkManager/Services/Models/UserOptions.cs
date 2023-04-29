@@ -15,9 +15,10 @@ public record UserOptions : IEntity<string>
     public CloudBkFeature? CloudBkFeature { get; set; }
     public HotTagsFeature? HotTagsFeature { get; set; }
     public ApplicationInsightFeature? ApplicationInsightFeature { get; set; }
-
+    public DateTime? InvitationTime { get; set; }
     public OmniboxSuggestFeature? OmniboxSuggestFeature { get; set; }
 }
+
 
 public record PinyinFeature
 {

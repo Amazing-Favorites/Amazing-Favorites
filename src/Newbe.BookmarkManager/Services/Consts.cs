@@ -8,6 +8,8 @@ public static class Consts
     public const string AppName = "Amazing Favorites";
     public const string CurrentVersion = "0.8.0";
     public const string PrivacyAgreementVersionDate = "2021/08/29";
+    public const int InviteUserCommentsCdDays = 14;
+
 
     public static readonly string[] Versions =
     {
@@ -18,6 +20,7 @@ public static class Consts
         "0.6.2",
         "0.6.1"
     };
+
 
     public static class Omnibox
     {
